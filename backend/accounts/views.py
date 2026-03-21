@@ -125,7 +125,8 @@ class ClerkWebhookView(APIView):
     def post(self, request, *args, **kwargs):
         secret = getattr(settings, 'CLERK_WEBHOOK_SECRET', '')
         if not secret:
-            return Response("Secret not configured", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Avoid HTTP 500 so Clerk does not retry; sync still works via JWT + /api/auth/me/
+            return Response({"detail": "webhook_disabled"}, status=status.HTTP_200_OK)
 
         headers = request.headers
         try:
