@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../lib/fetchWithAuth";
 import { adminMonitorSocketUrl } from "../../lib/ws";
 
@@ -33,6 +33,7 @@ type DjangoUser = {
 
 export default function AdminDashboardPage() {
   const { isLoaded, isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const api = useApiClient();
   const fetchMe = useFetchMe();
@@ -64,15 +65,26 @@ export default function AdminDashboardPage() {
 
   // WebSocket for live updates
   useEffect(() => {
-    const ws = new WebSocket(adminMonitorSocketUrl());
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.event === "ADMIN_MONITOR_UPDATE" && msg.payload?.battles) {
-        setBattles(msg.payload.battles);
-      }
+    if (!djangoUser) return;
+    if (djangoUser.role !== "admin" && djangoUser.role !== "superadmin") return;
+
+    let ws: WebSocket | null = null;
+    const run = async () => {
+      const token = await getToken();
+      if (!token) return;
+      ws = new WebSocket(adminMonitorSocketUrl(token));
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.event === "ADMIN_MONITOR_UPDATE" && msg.payload?.battles) {
+          setBattles(msg.payload.battles);
+        }
+      };
     };
-    return () => ws.close();
-  }, []);
+    void run();
+    return () => {
+      ws?.close();
+    };
+  }, [djangoUser, getToken]);
 
   const changeRole = async (id: number, role: string) => {
     await api.patch(`/api/admin/users/${id}/role/`, { role });

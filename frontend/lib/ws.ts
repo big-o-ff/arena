@@ -12,3 +12,8 @@ export function lobbySocketUrl(token: string) {
   return `${WS_BASE_URL.replace(/\/$/, "")}/ws/lobby/?token=${token}`;
 }
 
+/** Same path as lobby; dashboard consumer joins the admin_monitor group. */
+export function adminMonitorSocketUrl(token: string) {
+  return lobbySocketUrl(token);
+}
+
