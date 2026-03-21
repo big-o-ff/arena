@@ -1,0 +1,13 @@
+python-dotenv==1.0.1
+pymysql==1.1.1
+PyJWT==2.8.0
+django==5.0.6
+djangorestframework==3.15.1
+django-cors-headers==4.3.1
+channels==4.0.0
+channels-redis==4.1.0
+mysqlclient==2.2.4
+Pillow==10.2.0
+celery==5.4.0
+redis==5.0.7
+svix==1.88.0
