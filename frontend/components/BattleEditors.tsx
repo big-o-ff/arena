@@ -60,7 +60,7 @@ type Props = {
   onRun: (code: string, language: string, problemId: number) => Promise<RunResult | null>;
   onSubmit: () => void;
   isSubmitting: boolean;
-  battleEnded: boolean;
+  battleComplete: boolean;
 
   // GC sabotage
   myHp: number;
@@ -98,7 +98,7 @@ export function BattleEditors({
   onRun,
   onSubmit,
   isSubmitting,
-  battleEnded,
+  battleComplete,
   myHp,
   gcUsed,
   onGC,
@@ -147,7 +147,7 @@ export function BattleEditors({
     onGC();
   }, [onGC]);
 
-  const gcAllowed = myHp >= 80 && !gcUsed && !battleEnded;
+  const gcAllowed = myHp >= 80 && !gcUsed && !battleComplete;
   const gcInsufficient = myHp < 80 && !gcUsed;
 
   // ---- Reset run result when problem changes ----
@@ -361,26 +361,26 @@ export function BattleEditors({
             onClick={onSubmit}
             disabled={
               isSubmitting ||
-              battleEnded ||
+              battleComplete ||
               !selectedProblem ||
               solvedProblems.has(selectedProblem?.id ?? -1)
             }
             style={{
               background: "transparent",
               border: `1px solid ${
-                isSubmitting || battleEnded || solvedProblems.has(selectedProblem?.id ?? -1)
+                isSubmitting || battleComplete || solvedProblems.has(selectedProblem?.id ?? -1)
                   ? "rgba(200,211,224,0.2)"
                   : "#00ff88"
               }`,
               borderRadius: "4px",
               color:
-                isSubmitting || battleEnded || solvedProblems.has(selectedProblem?.id ?? -1)
+                isSubmitting || battleComplete || solvedProblems.has(selectedProblem?.id ?? -1)
                   ? "rgba(200,211,224,0.3)"
                   : "#00ff88",
               fontSize: "11px",
               padding: "5px 14px",
               cursor:
-                isSubmitting || battleEnded || solvedProblems.has(selectedProblem?.id ?? -1)
+                isSubmitting || battleComplete || solvedProblems.has(selectedProblem?.id ?? -1)
                   ? "not-allowed"
                   : "pointer",
               fontFamily: "monospace",
@@ -654,17 +654,17 @@ export function BattleEditors({
 export function GCButton({
   gcUsed,
   myHp,
-  battleEnded,
+  battleComplete,
   onConfirm,
 }: {
   gcUsed: boolean;
   myHp: number;
-  battleEnded: boolean;
+  battleComplete: boolean;
   onConfirm: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   const insufficient = myHp < 80;
-  const disabled = gcUsed || battleEnded || insufficient;
+  const disabled = gcUsed || battleComplete || insufficient;
 
   if (confirming) {
     return (

@@ -1,0 +1,7 @@
+Problem statements and examples are derived from the public JSON dataset:
+
+  https://github.com/neenza/leetcode-problems
+
+The file first_100_leetcode.json was generated from merged_problems.json (field: questions),
+taking the first 100 entries and converting them to this app’s Problem schema (stdin/stdout
+test cases parsed from example Input/Output lines). Not affiliated with LeetCode.

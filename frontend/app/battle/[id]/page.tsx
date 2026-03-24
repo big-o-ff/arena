@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../../lib/fetchWithAuth";
 import { battleSocketUrl } from "../../../lib/ws";
 import { GCButton } from "../../../components/BattleEditors";
@@ -55,7 +55,13 @@ type BattleState = {
   player2_hp: number;
   current_round: number;
   status: string;
+  /** Wall-clock end of match (server). */
+  ends_at?: string | null;
+  /** Set when battle is completed (winner user id). */
+  winner?: number | null;
   rounds?: RoundInfo[];
+  /** Present on resign response / share payload. */
+  share_url?: string;
 };
 
 type WSMessage = {
@@ -155,6 +161,7 @@ export default function BattlePage() {
   const battleId = params.id;
   const router = useRouter();
   const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const api = useApiClient();
   const fetchMe = useFetchMe();
 
@@ -167,9 +174,12 @@ export default function BattlePage() {
   const [selectedLanguage, setSelectedLanguage] = useState("python");
   const [selectedProblemIdx, setSelectedProblemIdx] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResigning, setIsResigning] = useState(false);
 
   // Solved problems tracking (by problem id)
   const [solvedProblems, setSolvedProblems] = useState<Set<number>>(new Set());
+  /** Local submit lock — server rejects duplicate submits; WS may be down so ROUND_RESULT never marks solved. */
+  const [submittedProblems, setSubmittedProblems] = useState<Set<number>>(new Set());
 
   // Round result flash
   const [roundFlash, setRoundFlash] = useState<{
@@ -186,10 +196,6 @@ export default function BattlePage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastIdRef = useRef(0);
 
-  // Battle end
-  const [battleEnded, setBattleEnded] = useState(false);
-  const [battleEndData, setBattleEndData] = useState<Record<string, any> | null>(null);
-
   // WS ref
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -199,8 +205,7 @@ export default function BattlePage() {
   useEffect(() => { battleRef.current = battle; }, [battle]);
   useEffect(() => { djangoUserRef.current = djangoUser; }, [djangoUser]);
 
-  // Debounce timer for code updates
-  const codeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const battleComplete = battle?.status === "completed";
 
   // ------------------------------------------------------------------
   // Toast helper
@@ -236,41 +241,94 @@ export default function BattlePage() {
       .then((res) => setBattle(res.data));
   }, [battleId, api]);
 
-  // ------------------------------------------------------------------
-  // Editor change — update state + debounce WS code_update
-  // ------------------------------------------------------------------
-  const handleCodeChange = useCallback(
-    (code: string) => {
-      setMyCode(code);
-      // Debounce 800ms
-      if (codeDebounceRef.current) clearTimeout(codeDebounceRef.current);
-      codeDebounceRef.current = setTimeout(() => {
-        const ws = wsRef.current;
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: "code_update", code }));
-        }
-      }, 800);
-    },
-    []
-  );
+  /** Sync countdown to server end time. */
+  useEffect(() => {
+    if (!battle) return;
+    if (battle.status === "completed") return;
+    if (battle.ends_at) {
+      const sec = Math.max(
+        0,
+        Math.floor((new Date(battle.ends_at).getTime() - Date.now()) / 1000)
+      );
+      setTimer(sec);
+    }
+  }, [battle?.id, battle?.ends_at, battle?.status]);
+
+  /** Completed battle → report card page. */
+  useEffect(() => {
+    if (!battleId || !battle || battle.status !== "completed") return;
+    router.replace(`/battle/${battleId}/ended`);
+  }, [battleId, battle, router]);
+
+  const timeUpPollRef = useRef(false);
+  useEffect(() => {
+    if (timer > 0) timeUpPollRef.current = false;
+  }, [timer]);
+
+  /** Timer hit 0 — server finalizes on next GET (works without Celery). */
+  useEffect(() => {
+    if (!battleId || !battle || battleComplete) return;
+    if (timer > 0 || battle.status === "completed") return;
+    if (timeUpPollRef.current) return;
+    timeUpPollRef.current = true;
+    let cancelled = false;
+    api.get(`/api/battles/${battleId}/state/`).then((res) => {
+      if (cancelled) return;
+      const b = res.data as BattleState;
+      setBattle(b);
+      if (b.status === "completed") {
+        router.replace(`/battle/${battleId}/ended`);
+      } else if (b.ends_at) {
+        const sec = Math.max(
+          0,
+          Math.floor((new Date(b.ends_at).getTime() - Date.now()) / 1000)
+        );
+        setTimer(sec);
+        timeUpPollRef.current = false;
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [timer, battleComplete, battleId, battle, api, router]);
 
   // ------------------------------------------------------------------
-  // WebSocket — single connection
+  // Editor change — broadcast every keystroke so spectators see live typing
+  // ------------------------------------------------------------------
+  const handleCodeChange = useCallback((code: string) => {
+    setMyCode(code);
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "code_update", code }));
+    }
+  }, []);
+
+  // ------------------------------------------------------------------
+  // WebSocket — single connection (Clerk token → Django user on WS for code_update player_id)
   // ------------------------------------------------------------------
   useEffect(() => {
-    const ws = new WebSocket(battleSocketUrl(battleId));
-    wsRef.current = ws;
+    if (!battleId || !isSignedIn) return;
 
-    ws.onopen = () => {
-      const ping = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ event: "PING", payload: {} }));
-        }
-      }, 25_000);
-      (ws as any).__pingInterval = ping;
-    };
+    let cancelled = false;
+    let ws: WebSocket | null = null;
 
-    ws.onmessage = (event) => {
+    const connect = async () => {
+      const token = await getToken();
+      if (!token || cancelled) return;
+
+      ws = new WebSocket(battleSocketUrl(battleId, token));
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        const ping = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ event: "PING", payload: {} }));
+          }
+        }, 25_000);
+        (ws as any).__pingInterval = ping;
+      };
+
+      ws.onmessage = (event) => {
       const msg: WSMessage = JSON.parse(event.data);
       const p = msg.payload;
       const b = battleRef.current;
@@ -380,23 +438,27 @@ export default function BattlePage() {
           setFogActive(false);
           break;
 
-        // Battle end — full screen modal
+        // Battle end → report card route (both players)
         case "BATTLE_END":
-          setBattleEnded(true);
-          setBattleEndData(p);
           if (b) {
             setBattle({
               ...b,
               status: "completed",
+              winner: p.winner_id ?? b.winner ?? null,
               player1_hp: p.player1_final_hp ?? b.player1_hp,
               player2_hp: p.player2_final_hp ?? b.player2_hp,
             });
           }
+          router.replace(`/battle/${battleId}/ended`);
           break;
 
-        // Opponent code feed
+        // Opponent code feed (ignore until server sends real player_id — needs WS ?token=)
         case "OPPONENT_CODE":
-          if (me && p.player_id !== me.id) {
+          if (
+            me &&
+            p.player_id != null &&
+            p.player_id !== me.id
+          ) {
             setOpponentCode(p.code ?? "");
           }
           break;
@@ -409,27 +471,33 @@ export default function BattlePage() {
       }
     };
 
-    ws.onclose = () => {
-      clearInterval((ws as any).__pingInterval);
+      ws.onclose = () => {
+        clearInterval((ws as any).__pingInterval);
+      };
     };
 
+    void connect();
+
     return () => {
-      clearInterval((ws as any).__pingInterval);
-      ws.close();
+      cancelled = true;
+      if (ws) {
+        clearInterval((ws as any).__pingInterval);
+        ws.close();
+      }
       wsRef.current = null;
     };
-  }, [battleId, addToast]);
+  }, [battleId, addToast, isSignedIn, getToken, router]);
 
   // ------------------------------------------------------------------
   // Timer countdown
   // ------------------------------------------------------------------
   useEffect(() => {
-    if (battleEnded) return;
+    if (battleComplete) return;
     const interval = window.setInterval(() => {
       setTimer((t) => Math.max(0, t - 1));
     }, 1000);
     return () => window.clearInterval(interval);
-  }, [battleEnded]);
+  }, [battleComplete]);
 
   // ------------------------------------------------------------------
   // Run — synchronous sample execution
@@ -469,15 +537,35 @@ export default function BattlePage() {
     }
     setIsSubmitting(true);
     try {
-      await api.post(`/api/battles/${battleId}/submit/`, {
+      const res = await api.post(`/api/battles/${battleId}/submit/`, {
         code: myCode,
         language: selectedLanguage,
         problem_id: round.problem.id,
       });
-      addToast("Submitted — evaluating…", "info");
+      setSubmittedProblems((prev) => new Set([...prev, round.problem.id]));
+      const evaluation = res.data?.evaluation;
+      if (evaluation) {
+        try {
+          sessionStorage.setItem(
+            `arena-eval-${battleId}-${round.problem.id}`,
+            JSON.stringify(evaluation)
+          );
+        } catch {
+          /* ignore quota */
+        }
+      }
+      addToast("Code evaluated — opening review.", "success");
+      router.push(`/battle/${battleId}/review/${round.problem.id}`);
     } catch (err: any) {
       const detail = err?.response?.data?.detail ?? "Submission error";
-      addToast(detail, "danger");
+      const msg = typeof detail === "string" ? detail : "";
+      if (msg.toLowerCase().includes("already submitted")) {
+        setSubmittedProblems((prev) => new Set([...prev, round.problem.id]));
+        addToast("Already submitted — waiting for result.", "info");
+        router.push(`/battle/${battleId}/review/${round.problem.id}`);
+      } else {
+        addToast(detail, "danger");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -490,7 +578,35 @@ export default function BattlePage() {
     api,
     isSubmitting,
     addToast,
+    router,
   ]);
+
+  // ------------------------------------------------------------------
+  // Resign — forfeit (opponent wins, battle ends)
+  // ------------------------------------------------------------------
+  const handleResign = useCallback(async () => {
+    if (!battleId || battleComplete || !djangoUser) return;
+    if (
+      !window.confirm(
+        "Resign and end the battle? Your opponent wins and ratings will be updated."
+      )
+    ) {
+      return;
+    }
+    setIsResigning(true);
+    try {
+      const res = await api.post(`/api/battles/${battleId}/resign/`);
+      const b = res.data as BattleState;
+      setBattle(b);
+      addToast("You resigned — battle ended.", "warning");
+      router.replace(`/battle/${battleId}/ended`);
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail ?? "Could not resign";
+      addToast(typeof detail === "string" ? detail : "Could not resign", "danger");
+    } finally {
+      setIsResigning(false);
+    }
+  }, [battleId, battleComplete, djangoUser, api, addToast, router]);
 
   // ------------------------------------------------------------------
   // Trigger GC sabotage
@@ -577,11 +693,12 @@ export default function BattlePage() {
   return (
     <div
       style={{
-        height: "100vh",
-        overflow: "hidden",
-        background: "#0a0c10",
+        flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
+        background: "#0a0c10",
         padding: "8px",
         gap: "8px",
         boxSizing: "border-box",
@@ -675,7 +792,7 @@ export default function BattlePage() {
         >
           Battle #{battle.id}
         </span>
-        {battleEnded && (
+        {battleComplete && (
           <span
             style={{
               color: "#ff4444",
@@ -697,10 +814,11 @@ export default function BattlePage() {
         style={{
           display: "grid",
           gridTemplateColumns: "40% 35% 25%",
+          gridTemplateRows: "minmax(0, 1fr)",
           flex: 1,
           gap: "8px",
-          overflow: "hidden",
           minHeight: 0,
+          alignItems: "stretch",
         }}
       >
         {/* ---- LEFT: Code Editor ---- */}
@@ -712,6 +830,8 @@ export default function BattlePage() {
             border: "1px solid rgba(0,255,136,0.15)",
             borderRadius: "8px",
             overflow: "hidden",
+            minHeight: 0,
+            height: "100%",
             ...(roundFlash
               ? {
                   animation: `${
@@ -773,8 +893,9 @@ export default function BattlePage() {
             battleId={battleId}
             selectedProblemIdx={selectedProblemIdx}
             solvedProblems={solvedProblems}
+            submittedProblems={submittedProblems}
             isSubmitting={isSubmitting}
-            battleEnded={battleEnded}
+            battleComplete={battleComplete}
             onRun={handleRun}
             onSubmit={handleSubmit}
           />
@@ -797,10 +918,12 @@ export default function BattlePage() {
             background: "rgba(10,12,16,0.95)",
             border: "1px solid rgba(0,255,136,0.15)",
             borderRadius: "8px",
-            overflow: "hidden",
+            minHeight: 0,
+            height: "100%",
             padding: "14px",
             gap: "16px",
             overflowY: "auto",
+            overflowX: "hidden",
           }}
         >
           {/* Battle ID header */}
@@ -972,164 +1095,57 @@ export default function BattlePage() {
             <GCButton
               gcUsed={gcUsed}
               myHp={myHp}
-              battleEnded={battleEnded}
+              battleComplete={battleComplete}
               onConfirm={triggerGC}
             />
           </div>
-        </div>
-      </div>
 
-      {/* ============ BATTLE END OVERLAY ============ */}
-      {battleEnded && battleEndData && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(0,0,0,0.85)",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <div
-            style={{
-              background: "rgba(10,12,16,0.98)",
-              border: "1px solid rgba(0,255,136,0.3)",
-              borderRadius: "12px",
-              padding: "40px",
-              maxWidth: "420px",
-              width: "100%",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>
-              {battleEndData.winner_id === djangoUser.id
-                ? "🏆"
-                : battleEndData.winner_id
-                ? "💀"
-                : "🤝"}
-            </div>
-            <h2
-              style={{
-                fontSize: "24px",
-                fontWeight: "700",
-                fontFamily: "monospace",
-                color:
-                  battleEndData.winner_id === djangoUser.id
-                    ? "#00ff88"
-                    : battleEndData.winner_id
-                    ? "#ff4444"
-                    : "#ffa500",
-                marginBottom: "8px",
-                letterSpacing: "0.1em",
-              }}
-            >
-              {battleEndData.winner_id === djangoUser.id
-                ? "VICTORY"
-                : battleEndData.winner_id
-                ? "DEFEAT"
-                : "DRAW"}
-            </h2>
-            <p
-              style={{
-                color: "rgba(200,211,224,0.5)",
-                fontSize: "11px",
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                marginBottom: "24px",
-              }}
-            >
-              {battleEndData.reason === "timeout" ? "Time expired" : "HP depleted"}
-            </p>
+          {/* Resign */}
+          <div>
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-around",
-                marginBottom: "24px",
+                fontSize: "9px",
+                color: "rgba(200,211,224,0.3)",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                marginBottom: "8px",
               }}
             >
-              <div>
-                <div
-                  style={{ color: "rgba(200,211,224,0.4)", fontSize: "11px", marginBottom: "4px" }}
-                >
-                  You
-                </div>
-                <div
-                  style={{
-                    fontSize: "22px",
-                    fontWeight: "700",
-                    fontFamily: "monospace",
-                    color: hpColor(myHp),
-                  }}
-                >
-                  {myHp} HP
-                </div>
-              </div>
-              <div>
-                <div
-                  style={{ color: "rgba(200,211,224,0.4)", fontSize: "11px", marginBottom: "4px" }}
-                >
-                  Opponent
-                </div>
-                <div
-                  style={{
-                    fontSize: "22px",
-                    fontWeight: "700",
-                    fontFamily: "monospace",
-                    color: hpColor(oppHp),
-                  }}
-                >
-                  {oppHp} HP
-                </div>
-              </div>
+              End battle
             </div>
-            {battleEndData.share_url && (
-              <a
-                href={battleEndData.share_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "block",
-                  marginBottom: "10px",
-                  padding: "10px",
-                  border: "1px solid rgba(0,255,136,0.4)",
-                  borderRadius: "6px",
-                  color: "#00ff88",
-                  fontSize: "12px",
-                  textDecoration: "none",
-                  fontFamily: "monospace",
-                  letterSpacing: "0.1em",
-                  transition: "background 0.2s",
-                }}
-              >
-                Share Result Card
-              </a>
-            )}
             <button
-              onClick={() =>
-                router.push(`/profile/${djangoUser?.username ?? ""}`)
-              }
+              type="button"
+              onClick={() => void handleResign()}
+              disabled={battleComplete || isResigning}
               style={{
                 width: "100%",
-                background: "transparent",
-                border: "1px solid rgba(200,211,224,0.3)",
+                padding: "10px 12px",
                 borderRadius: "6px",
-                color: "rgba(200,211,224,0.7)",
-                fontSize: "12px",
-                padding: "10px",
-                cursor: "pointer",
+                border: "1px solid rgba(255,100,100,0.45)",
+                background: "rgba(255,60,60,0.06)",
+                color: "#ff8888",
+                fontSize: "11px",
                 fontFamily: "monospace",
-                letterSpacing: "0.1em",
-                transition: "border-color 0.2s",
+                letterSpacing: "0.12em",
+                cursor: battleComplete || isResigning ? "not-allowed" : "pointer",
+                opacity: battleComplete || isResigning ? 0.45 : 1,
               }}
             >
-              Back to Profile
+              {isResigning ? "Resigning…" : "Resign (forfeit)"}
             </button>
+            <div
+              style={{
+                marginTop: "6px",
+                fontSize: "9px",
+                color: "rgba(200,211,224,0.28)",
+                lineHeight: 1.4,
+              }}
+            >
+              Ends the match now. Opponent wins; ELO updates apply.
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -1156,8 +1172,9 @@ function EditorPane({
   battleId,
   selectedProblemIdx,
   solvedProblems,
+  submittedProblems,
   isSubmitting,
-  battleEnded,
+  battleComplete,
   onRun,
   onSubmit,
 }: {
@@ -1170,8 +1187,9 @@ function EditorPane({
   battleId: string;
   selectedProblemIdx: number;
   solvedProblems: Set<number>;
+  submittedProblems: Set<number>;
   isSubmitting: boolean;
-  battleEnded: boolean;
+  battleComplete: boolean;
   onRun: (code: string, lang: string, pid: number) => Promise<RunResult2 | null>;
   onSubmit: () => void;
 }) {
@@ -1202,11 +1220,126 @@ function EditorPane({
   };
 
   const isSolved = solvedProblems.has(selectedProblem?.id ?? -1);
+  const hasSubmitted = submittedProblems.has(selectedProblem?.id ?? -1);
+
+  const actionBar = (
+    <div
+      style={{
+        padding: "8px 12px",
+        borderBottom: "1px solid rgba(0,255,136,0.15)",
+        display: "flex",
+        gap: "8px",
+        alignItems: "center",
+        flexShrink: 0,
+        background: "rgba(8,10,14,0.98)",
+        zIndex: 25,
+      }}
+    >
+      <button
+        id="run-btn"
+        type="button"
+        onClick={handleRun}
+        disabled={isRunning || runCooldown || !selectedProblem}
+        style={{
+          background: "rgba(0,255,136,0.08)",
+          border: "1px solid rgba(0,255,136,0.35)",
+          borderRadius: "4px",
+          color:
+            isRunning || runCooldown
+              ? "rgba(200,211,224,0.25)"
+              : "#00ff88",
+          fontSize: "12px",
+          padding: "6px 16px",
+          cursor: isRunning || runCooldown ? "not-allowed" : "pointer",
+          fontFamily: "monospace",
+          letterSpacing: "0.06em",
+          fontWeight: 600,
+        }}
+      >
+        {isRunning ? "Running…" : runCooldown ? "wait…" : "▷ Run (sample)"}
+      </button>
+      <button
+        id="submit-btn"
+        type="button"
+        onClick={onSubmit}
+        disabled={
+          isSubmitting ||
+          battleComplete ||
+          isSolved ||
+          hasSubmitted ||
+          !selectedProblem
+        }
+        style={{
+          background:
+            isSubmitting || battleComplete || isSolved || hasSubmitted
+              ? "transparent"
+              : "rgba(0,255,136,0.12)",
+          border: `1px solid ${
+            isSubmitting || battleComplete || isSolved || hasSubmitted
+              ? "rgba(200,211,224,0.15)"
+              : "#00ff88"
+          }`,
+          borderRadius: "4px",
+          color:
+            isSubmitting || battleComplete || isSolved || hasSubmitted
+              ? "rgba(200,211,224,0.25)"
+              : "#00ff88",
+          fontSize: "12px",
+          padding: "6px 16px",
+          cursor:
+            isSubmitting || battleComplete || isSolved || hasSubmitted
+              ? "not-allowed"
+              : "pointer",
+          fontFamily: "monospace",
+          letterSpacing: "0.06em",
+          fontWeight: 700,
+          flex: 1,
+        }}
+      >
+        {isSubmitting
+          ? "Submitting…"
+          : isSolved
+            ? "✓ Solved"
+            : hasSubmitted
+              ? "Submitted"
+              : "Submit"}
+      </button>
+      <span
+        style={{
+          fontSize: "9px",
+          color: "rgba(200,211,224,0.35)",
+          maxWidth: "120px",
+          lineHeight: 1.3,
+        }}
+        title="Run tests on the sample only. Submit runs all hidden tests."
+      >
+        Run = sample · Submit = judge
+      </span>
+    </div>
+  );
 
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        minHeight: 0,
+        overflowY: "auto",
+        overflowX: "hidden",
+      }}
+    >
+      {actionBar}
       {/* Monaco editor */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden", minHeight: 0 }}>
+      <div
+        style={{
+          flex: 1,
+          position: "relative",
+          overflowY: "auto",
+          overflowX: "hidden",
+          minHeight: 0,
+        }}
+      >
         {gcActive && (
           <div
             style={{
@@ -1262,6 +1395,7 @@ function EditorPane({
             smoothScrolling: true,
             scrollBeyondLastLine: false,
             padding: { top: 8 },
+            readOnly: battleComplete,
           }}
         />
       </div>
@@ -1306,90 +1440,7 @@ function EditorPane({
           )}
         </div>
       )}
-
-      {/* Bottom action bar */}
-      <div
-        style={{
-          padding: "8px 12px",
-          borderTop: "1px solid rgba(0,255,136,0.1)",
-          display: "flex",
-          gap: "8px",
-          alignItems: "center",
-          flexShrink: 0,
-        }}
-      >
-        <button
-          id="run-btn"
-          onClick={handleRun}
-          disabled={isRunning || runCooldown || !selectedProblem}
-          style={{
-            background: "transparent",
-            border: "1px solid rgba(200,211,224,0.2)",
-            borderRadius: "4px",
-            color:
-              isRunning || runCooldown
-                ? "rgba(200,211,224,0.25)"
-                : "rgba(200,211,224,0.6)",
-            fontSize: "11px",
-            padding: "5px 14px",
-            cursor: isRunning || runCooldown ? "not-allowed" : "pointer",
-            fontFamily: "monospace",
-            letterSpacing: "0.05em",
-            transition: "all 0.2s",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            flexShrink: 0,
-          }}
-        >
-          {isRunning ? (
-            <>
-              <span
-                style={{
-                  display: "inline-block",
-                  animation: "spin 1s linear infinite",
-                }}
-              >
-                ⟳
-              </span>
-              Running…
-            </>
-          ) : runCooldown ? (
-            "wait…"
-          ) : (
-            "▷ Run (sample)"
-          )}
-        </button>
-
-        <button
-          id="submit-btn"
-          onClick={onSubmit}
-          disabled={isSubmitting || battleEnded || isSolved || !selectedProblem}
-          style={{
-            background: "transparent",
-            border: `1px solid ${
-              isSubmitting || battleEnded || isSolved ? "rgba(200,211,224,0.15)" : "#00ff88"
-            }`,
-            borderRadius: "4px",
-            color:
-              isSubmitting || battleEnded || isSolved
-                ? "rgba(200,211,224,0.25)"
-                : "#00ff88",
-            fontSize: "11px",
-            padding: "5px 0",
-            cursor:
-              isSubmitting || battleEnded || isSolved ? "not-allowed" : "pointer",
-            fontFamily: "monospace",
-            letterSpacing: "0.05em",
-            fontWeight: "600",
-            transition: "all 0.2s",
-            flex: 1,
-          }}
-        >
-          {isSubmitting ? "Submitting…" : isSolved ? "✓ Solved" : "Submit"}
-        </button>
-      </div>
-    </>
+    </div>
   );
 }
 
@@ -1423,6 +1474,8 @@ function MiddlePanel({
         background: "rgba(10,12,16,0.95)",
         border: "1px solid rgba(0,255,136,0.15)",
         borderRadius: "8px",
+        minHeight: 0,
+        height: "100%",
         overflow: "hidden",
       }}
     >
@@ -1499,8 +1552,17 @@ function MiddlePanel({
         </div>
       )}
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "14px" }}>
+      {/* Content — scrolls inside column (grid/flex min-height:0) */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          overflowX: "hidden",
+          WebkitOverflowScrolling: "touch",
+          padding: "14px",
+        }}
+      >
         {tab === "problem" ? (
           selectedProblem ? (
             <div>

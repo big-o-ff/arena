@@ -1,0 +1,23 @@
+# Terminal A — API + WebSockets (required for live battle/spectate)
+cd /Users/adityamadhava/Downloads/arena/backend
+source .venv/bin/activate
+daphne -b 127.0.0.1 -p 8000 config.asgi:application
+
+
+# Terminal B — Celery worker
+cd /Users/adityamadhava/Downloads/arena/backend
+source .venv/bin/activate
+celery -A config worker -l info -Q execution,events --without-heartbeat
+
+
+# Terminal C — Redis (if not already running)
+redis-server
+
+
+# Terminal D — Next.js frontend (if needed)
+cd /Users/adityamadhava/Downloads/arena/frontend
+npm run dev
+
+
+npm run dev -- --hostname 0.0.0.0 --port 3000
+

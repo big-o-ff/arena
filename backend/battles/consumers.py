@@ -1,8 +1,4 @@
-from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-
-from accounts.models import User
-from .models import Battle
 
 
 class BattleConsumer(AsyncJsonWebsocketConsumer):
@@ -46,18 +42,23 @@ class BattleConsumer(AsyncJsonWebsocketConsumer):
             return
 
         # ------------------------------------------------------------------
-        # CODE_UPDATE — debounced keystrokes from the editor
-        # Broadcast to the group as OPPONENT_CODE so the other player's
-        # blurred feed updates in real-time.
+        # CODE_UPDATE — each editor change from the client (live typing)
+        # Broadcast to the group as OPPONENT_CODE for opponent + spectators.
         # ------------------------------------------------------------------
         if event_type == "code_update":
+            if self.user_id is None:
+                return
             code = content.get("code", "")
+            # Use broadcast.event so SpectatorConsumer gets the same delivery path as HP_UPDATE
             await self.channel_layer.group_send(
                 self.group_name,
                 {
-                    "type": "opponent.code",      # → self.opponent_code()
-                    "player_id": self.user_id,
-                    "code": code,
+                    "type": "broadcast.event",
+                    "event": "OPPONENT_CODE",
+                    "payload": {
+                        "player_id": self.user_id,
+                        "code": code,
+                    },
                 },
             )
             return
@@ -83,22 +84,6 @@ class BattleConsumer(AsyncJsonWebsocketConsumer):
             {
                 "event": event["event"],
                 "payload": event.get("payload", {}),
-            }
-        )
-
-    # ------------------------------------------------------------------
-    # opponent_code — relays editor keystrokes to the opponent
-    # Each client receives this; in the frontend, if player_id !== me
-    # the blurred opponent panel re-renders.
-    # ------------------------------------------------------------------
-    async def opponent_code(self, event):
-        await self.send_json(
-            {
-                "event": "OPPONENT_CODE",
-                "payload": {
-                    "player_id": event["player_id"],
-                    "code": event["code"],
-                },
             }
         )
 

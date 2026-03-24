@@ -1,0 +1,2306 @@
+[
+  {
+    "title": "Two Sum",
+    "difficulty": "easy",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\nYou can return the answer in any order.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "2 <= nums.length <= 104\n-109 <= nums[i] <= 109\n-109 <= target <= 109\nOnly one valid answer exists.",
+    "sample_input": "nums = [2,7,11,15], target = 9",
+    "sample_output": "[0,1]",
+    "test_cases": [
+      {
+        "input": "nums = [2,7,11,15], target = 9",
+        "expected_output": "[0,1]"
+      },
+      {
+        "input": "nums = [3,2,4], target = 6",
+        "expected_output": "[1,2]"
+      },
+      {
+        "input": "nums = [3,3], target = 6",
+        "expected_output": "[0,1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Add Two Numbers",
+    "difficulty": "medium",
+    "description": "You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order, and each of their nodes contains a single digit. Add the two numbers and return the sum as a linked list.\nYou may assume the two numbers do not contain any leading zero, except the number 0 itself.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in each linked list is in the range [1, 100].\n0 <= Node.val <= 9\nIt is guaranteed that the list represents a number that does not have leading zeros.",
+    "sample_input": "l1 = [2,4,3], l2 = [5,6,4]",
+    "sample_output": "[7,0,8]",
+    "test_cases": [
+      {
+        "input": "l1 = [2,4,3], l2 = [5,6,4]",
+        "expected_output": "[7,0,8]"
+      },
+      {
+        "input": "l1 = [0], l2 = [0]",
+        "expected_output": "[0]"
+      },
+      {
+        "input": "l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]",
+        "expected_output": "[8,9,9,9,0,0,0,1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Longest Substring Without Repeating Characters",
+    "difficulty": "medium",
+    "description": "Given a string s, find the length of the longest substring without duplicate characters.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= s.length <= 5 * 104\ns consists of English letters, digits, symbols and spaces.",
+    "sample_input": "s = \"abcabcbb\"",
+    "sample_output": "3",
+    "test_cases": [
+      {
+        "input": "s = \"abcabcbb\"",
+        "expected_output": "3"
+      },
+      {
+        "input": "s = \"bbbbb\"",
+        "expected_output": "1"
+      },
+      {
+        "input": "s = \"pwwkew\"",
+        "expected_output": "3"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Median of Two Sorted Arrays",
+    "difficulty": "hard",
+    "description": "Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays.\nThe overall run time complexity should be O(log (m+n)).\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "nums1.length == m\nnums2.length == n\n0 <= m <= 1000\n0 <= n <= 1000\n1 <= m + n <= 2000\n-106 <= nums1[i], nums2[i] <= 106",
+    "sample_input": "nums1 = [1,3], nums2 = [2]",
+    "sample_output": "2.00000",
+    "test_cases": [
+      {
+        "input": "nums1 = [1,3], nums2 = [2]",
+        "expected_output": "2.00000"
+      },
+      {
+        "input": "nums1 = [1,2], nums2 = [3,4]",
+        "expected_output": "2.50000"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Longest Palindromic Substring",
+    "difficulty": "medium",
+    "description": "Given a string s, return the longest palindromic substring in s.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 1000\ns consist of only digits and English letters.",
+    "sample_input": "s = \"babad\"",
+    "sample_output": "\"bab\"",
+    "test_cases": [
+      {
+        "input": "s = \"babad\"",
+        "expected_output": "\"bab\""
+      },
+      {
+        "input": "s = \"cbbd\"",
+        "expected_output": "\"bb\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Zigzag Conversion",
+    "difficulty": "medium",
+    "description": "The string \"PAYPALISHIRING\" is written in a zigzag pattern on a given number of rows like this: (you may want to display this pattern in a fixed font for better legibility)\nAnd then read line by line: \"PAHNAPLSIIGYIR\"\nWrite the code that will take a string and make this conversion given a number of rows:\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 1000\ns consists of English letters (lower-case and upper-case), ',' and '.'.\n1 <= numRows <= 1000",
+    "sample_input": "s = \"PAYPALISHIRING\", numRows = 3",
+    "sample_output": "\"PAHNAPLSIIGYIR\"",
+    "test_cases": [
+      {
+        "input": "s = \"PAYPALISHIRING\", numRows = 3",
+        "expected_output": "\"PAHNAPLSIIGYIR\""
+      },
+      {
+        "input": "s = \"PAYPALISHIRING\", numRows = 4",
+        "expected_output": "\"PINALSIGYAHRPI\""
+      },
+      {
+        "input": "s = \"A\", numRows = 1",
+        "expected_output": "\"A\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Reverse Integer",
+    "difficulty": "medium",
+    "description": "Given a signed 32-bit integer x, return x with its digits reversed. If reversing x causes the value to go outside the signed 32-bit integer range [-231, 231 - 1], then return 0.\nAssume the environment does not allow you to store 64-bit integers (signed or unsigned).\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "-231 <= x <= 231 - 1",
+    "sample_input": "x = 123",
+    "sample_output": "321",
+    "test_cases": [
+      {
+        "input": "x = 123",
+        "expected_output": "321"
+      },
+      {
+        "input": "x = -123",
+        "expected_output": "-321"
+      },
+      {
+        "input": "x = 120",
+        "expected_output": "21"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Palindrome Number",
+    "difficulty": "easy",
+    "description": "Given an integer x, return true if x is a palindrome, and false otherwise.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "-231 <= x <= 231 - 1",
+    "sample_input": "x = 121",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "x = 121",
+        "expected_output": "true"
+      },
+      {
+        "input": "x = -121",
+        "expected_output": "false"
+      },
+      {
+        "input": "x = 10",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Regular Expression Matching",
+    "difficulty": "hard",
+    "description": "Given an input string s and a pattern p, implement regular expression matching with support for '.' and '*' where:\nThe matching should cover the entire input string (not partial).\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 20\n1 <= p.length <= 20\ns contains only lowercase English letters.\np contains only lowercase English letters, '.', and '*'.\nIt is guaranteed for each appearance of the character '*', there will be a previous valid character to match.",
+    "sample_input": "s = \"aa\", p = \"a\"",
+    "sample_output": "false",
+    "test_cases": [
+      {
+        "input": "s = \"aa\", p = \"a\"",
+        "expected_output": "false"
+      },
+      {
+        "input": "s = \"aa\", p = \"a*\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s = \"ab\", p = \".*\"",
+        "expected_output": "true"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Container With Most Water",
+    "difficulty": "medium",
+    "description": "You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]).\nFind two lines that together with the x-axis form a container, such that the container contains the most water.\nReturn the maximum amount of water a container can store.\nNotice that you may not slant the container.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "n == height.length\n2 <= n <= 105\n0 <= height[i] <= 104",
+    "sample_input": "height = [1,8,6,2,5,4,8,3,7]",
+    "sample_output": "49",
+    "test_cases": [
+      {
+        "input": "height = [1,8,6,2,5,4,8,3,7]",
+        "expected_output": "49"
+      },
+      {
+        "input": "height = [1,1]",
+        "expected_output": "1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Roman to Integer",
+    "difficulty": "easy",
+    "description": "Roman numerals are represented by seven different symbols: I, V, X, L, C, D and M.\nFor example, 2 is written as II in Roman numeral, just two ones added together. 12 is written as XII, which is simply X + II. The number 27 is written as XXVII, which is XX + V + II.\nRoman numerals are usually written largest to smallest from left to right. However, the numeral for four is not IIII. Instead, the number four is written as IV. Because the one is before the five we subtract it making four. The same principle applies to the number nine, which is written as IX. There are six instances where subtraction is used:\nGiven a roman numeral, convert it to an integer.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 15\ns contains only the characters ('I', 'V', 'X', 'L', 'C', 'D', 'M').\nIt is guaranteed that s is a valid roman numeral in the range [1, 3999].",
+    "sample_input": "s = \"III\"",
+    "sample_output": "3",
+    "test_cases": [
+      {
+        "input": "s = \"III\"",
+        "expected_output": "3"
+      },
+      {
+        "input": "s = \"LVIII\"",
+        "expected_output": "58"
+      },
+      {
+        "input": "s = \"MCMXCIV\"",
+        "expected_output": "1994"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Longest Common Prefix",
+    "difficulty": "easy",
+    "description": "Write a function to find the longest common prefix string amongst an array of strings.\nIf there is no common prefix, return an empty string \"\".\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= strs.length <= 200\n0 <= strs[i].length <= 200\nstrs[i] consists of only lowercase English letters if it is non-empty.",
+    "sample_input": "strs = [\"flower\",\"flow\",\"flight\"]",
+    "sample_output": "\"fl\"",
+    "test_cases": [
+      {
+        "input": "strs = [\"flower\",\"flow\",\"flight\"]",
+        "expected_output": "\"fl\""
+      },
+      {
+        "input": "strs = [\"dog\",\"racecar\",\"car\"]",
+        "expected_output": "\"\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "3Sum",
+    "difficulty": "medium",
+    "description": "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0.\nNotice that the solution set must not contain duplicate triplets.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "3 <= nums.length <= 3000\n-105 <= nums[i] <= 105",
+    "sample_input": "nums = [-1,0,1,2,-1,-4]",
+    "sample_output": "[[-1,-1,2],[-1,0,1]]",
+    "test_cases": [
+      {
+        "input": "nums = [-1,0,1,2,-1,-4]",
+        "expected_output": "[[-1,-1,2],[-1,0,1]]"
+      },
+      {
+        "input": "nums = [0,1,1]",
+        "expected_output": "[]"
+      },
+      {
+        "input": "nums = [0,0,0]",
+        "expected_output": "[[0,0,0]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "3Sum Closest",
+    "difficulty": "medium",
+    "description": "Given an integer array nums of length n and an integer target, find three integers in nums such that the sum is closest to target.\nReturn the sum of the three integers.\nYou may assume that each input would have exactly one solution.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "3 <= nums.length <= 500\n-1000 <= nums[i] <= 1000\n-104 <= target <= 104",
+    "sample_input": "nums = [-1,2,1,-4], target = 1",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "nums = [-1,2,1,-4], target = 1",
+        "expected_output": "2"
+      },
+      {
+        "input": "nums = [0,0,0], target = 1",
+        "expected_output": "0"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Letter Combinations of a Phone Number",
+    "difficulty": "medium",
+    "description": "Given a string containing digits from 2-9 inclusive, return all possible letter combinations that the number could represent. Return the answer in any order.\nA mapping of digits to letters (just like on the telephone buttons) is given below. Note that 1 does not map to any letters.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= digits.length <= 4\ndigits[i] is a digit in the range ['2', '9'].",
+    "sample_input": "digits = \"23\"",
+    "sample_output": "[\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]",
+    "test_cases": [
+      {
+        "input": "digits = \"23\"",
+        "expected_output": "[\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]"
+      },
+      {
+        "input": "digits = \"\"",
+        "expected_output": "[]"
+      },
+      {
+        "input": "digits = \"2\"",
+        "expected_output": "[\"a\",\"b\",\"c\"]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "4Sum",
+    "difficulty": "medium",
+    "description": "Given an array nums of n integers, return an array of all the unique quadruplets [nums[a], nums[b], nums[c], nums[d]] such that:\nYou may return the answer in any order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 200\n-109 <= nums[i] <= 109\n-109 <= target <= 109",
+    "sample_input": "nums = [1,0,-1,0,-2,2], target = 0",
+    "sample_output": "[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]",
+    "test_cases": [
+      {
+        "input": "nums = [1,0,-1,0,-2,2], target = 0",
+        "expected_output": "[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]"
+      },
+      {
+        "input": "nums = [2,2,2,2,2], target = 8",
+        "expected_output": "[[2,2,2,2]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Remove Nth Node From End of List",
+    "difficulty": "medium",
+    "description": "Given the head of a linked list, remove the nth node from the end of the list and return its head.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\nFollow up: Could you do this in one pass?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is sz.\n1 <= sz <= 30\n0 <= Node.val <= 100\n1 <= n <= sz",
+    "sample_input": "head = [1,2,3,4,5], n = 2",
+    "sample_output": "[1,2,3,5]",
+    "test_cases": [
+      {
+        "input": "head = [1,2,3,4,5], n = 2",
+        "expected_output": "[1,2,3,5]"
+      },
+      {
+        "input": "head = [1], n = 1",
+        "expected_output": "[]"
+      },
+      {
+        "input": "head = [1,2], n = 1",
+        "expected_output": "[1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Valid Parentheses",
+    "difficulty": "easy",
+    "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\nAn input string is valid if:\nExample 1:\nExample 2:\nExample 3:\nExample 4:\nExample 5:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 104\ns consists of parentheses only '()[]{}'.",
+    "sample_input": "s = \"()\"",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "s = \"()\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s = \"()[]{}\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s = \"(]\"",
+        "expected_output": "false"
+      },
+      {
+        "input": "s = \"([])\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s = \"([)]\"",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Merge Two Sorted Lists",
+    "difficulty": "easy",
+    "description": "You are given the heads of two sorted linked lists list1 and list2.\nMerge the two lists into one sorted list. The list should be made by splicing together the nodes of the first two lists.\nReturn the head of the merged linked list.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in both lists is in the range [0, 50].\n-100 <= Node.val <= 100\nBoth list1 and list2 are sorted in non-decreasing order.",
+    "sample_input": "list1 = [1,2,4], list2 = [1,3,4]",
+    "sample_output": "[1,1,2,3,4,4]",
+    "test_cases": [
+      {
+        "input": "list1 = [1,2,4], list2 = [1,3,4]",
+        "expected_output": "[1,1,2,3,4,4]"
+      },
+      {
+        "input": "list1 = [], list2 = []",
+        "expected_output": "[]"
+      },
+      {
+        "input": "list1 = [], list2 = [0]",
+        "expected_output": "[0]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Generate Parentheses",
+    "difficulty": "medium",
+    "description": "Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 8",
+    "sample_input": "n = 3",
+    "sample_output": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+    "test_cases": [
+      {
+        "input": "n = 3",
+        "expected_output": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "[\"()\"]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Merge k Sorted Lists",
+    "difficulty": "hard",
+    "description": "You are given an array of k linked-lists lists, each linked-list is sorted in ascending order.\nMerge all the linked-lists into one sorted linked-list and return it.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "k == lists.length\n0 <= k <= 104\n0 <= lists[i].length <= 500\n-104 <= lists[i][j] <= 104\nlists[i] is sorted in ascending order.\nThe sum of lists[i].length will not exceed 104.",
+    "sample_input": "lists = [[1,4,5],[1,3,4],[2,6]]",
+    "sample_output": "[1,1,2,3,4,4,5,6]",
+    "test_cases": [
+      {
+        "input": "lists = [[1,4,5],[1,3,4],[2,6]]",
+        "expected_output": "[1,1,2,3,4,4,5,6]"
+      },
+      {
+        "input": "lists = []",
+        "expected_output": "[]"
+      },
+      {
+        "input": "lists = [[]]",
+        "expected_output": "[]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Swap Nodes in Pairs",
+    "difficulty": "medium",
+    "description": "Given a linked list, swap every two adjacent nodes and return its head. You must solve the problem without modifying the values in the list's nodes (i.e., only nodes themselves may be changed.)\nExample 1:\nExample 2:\nExample 3:\nExample 4:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is in the range [0, 100].\n0 <= Node.val <= 100",
+    "sample_input": "head = [1,2,3,4]",
+    "sample_output": "[2,1,4,3]",
+    "test_cases": [
+      {
+        "input": "head = [1,2,3,4]",
+        "expected_output": "[2,1,4,3]"
+      },
+      {
+        "input": "head = []",
+        "expected_output": "[]"
+      },
+      {
+        "input": "head = [1]",
+        "expected_output": "[1]"
+      },
+      {
+        "input": "head = [1,2,3]",
+        "expected_output": "[2,1,3]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Reverse Nodes in k-Group",
+    "difficulty": "hard",
+    "description": "Given the head of a linked list, reverse the nodes of the list k at a time, and return the modified list.\nk is a positive integer and is less than or equal to the length of the linked list. If the number of nodes is not a multiple of k then left-out nodes, in the end, should remain as it is.\nYou may not alter the values in the list's nodes, only nodes themselves may be changed.\nExample 1:\nExample 2:\nConstraints:\nFollow-up: Can you solve the problem in O(1) extra memory space?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is n.\n1 <= k <= n <= 5000\n0 <= Node.val <= 1000",
+    "sample_input": "head = [1,2,3,4,5], k = 2",
+    "sample_output": "[2,1,4,3,5]",
+    "test_cases": [
+      {
+        "input": "head = [1,2,3,4,5], k = 2",
+        "expected_output": "[2,1,4,3,5]"
+      },
+      {
+        "input": "head = [1,2,3,4,5], k = 3",
+        "expected_output": "[3,2,1,4,5]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Remove Duplicates from Sorted Array",
+    "difficulty": "easy",
+    "description": "Given an integer array nums sorted in non-decreasing order, remove the duplicates in-place such that each unique element appears only once. The relative order of the elements should be kept the same. Then return the number of unique elements in nums.\nConsider the number of unique elements of nums to be k, to get accepted, you need to do the following things:\nCustom Judge:\nThe judge will test your solution with the following code:\nIf all assertions pass, then your solution will be accepted.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 3 * 104\n-100 <= nums[i] <= 100\nnums is sorted in non-decreasing order.",
+    "sample_input": "nums = [1,1,2]",
+    "sample_output": "2, nums = [1,2,_]",
+    "test_cases": [
+      {
+        "input": "nums = [1,1,2]",
+        "expected_output": "2, nums = [1,2,_]"
+      },
+      {
+        "input": "nums = [0,0,1,1,1,2,2,3,3,4]",
+        "expected_output": "5, nums = [0,1,2,3,4,_,_,_,_,_]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Remove Element",
+    "difficulty": "easy",
+    "description": "Given an integer array nums and an integer val, remove all occurrences of val in nums in-place. The order of the elements may be changed. Then return the number of elements in nums which are not equal to val.\nConsider the number of elements in nums which are not equal to val be k, to get accepted, you need to do the following things:\nCustom Judge:\nThe judge will test your solution with the following code:\nIf all assertions pass, then your solution will be accepted.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= nums.length <= 100\n0 <= nums[i] <= 50\n0 <= val <= 100",
+    "sample_input": "nums = [3,2,2,3], val = 3",
+    "sample_output": "2, nums = [2,2,_,_]",
+    "test_cases": [
+      {
+        "input": "nums = [3,2,2,3], val = 3",
+        "expected_output": "2, nums = [2,2,_,_]"
+      },
+      {
+        "input": "nums = [0,1,2,2,3,0,4,2], val = 2",
+        "expected_output": "5, nums = [0,1,4,0,3,_,_,_]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Find the Index of the First Occurrence in a String",
+    "difficulty": "easy",
+    "description": "Given two strings needle and haystack, return the index of the first occurrence of needle in haystack, or -1 if needle is not part of haystack.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= haystack.length, needle.length <= 104\nhaystack and needle consist of only lowercase English characters.",
+    "sample_input": "haystack = \"sadbutsad\", needle = \"sad\"",
+    "sample_output": "0",
+    "test_cases": [
+      {
+        "input": "haystack = \"sadbutsad\", needle = \"sad\"",
+        "expected_output": "0"
+      },
+      {
+        "input": "haystack = \"leetcode\", needle = \"leeto\"",
+        "expected_output": "-1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Divide Two Integers",
+    "difficulty": "medium",
+    "description": "Given two integers dividend and divisor, divide two integers without using multiplication, division, and mod operator.\nThe integer division should truncate toward zero, which means losing its fractional part. For example, 8.345 would be truncated to 8, and -2.7335 would be truncated to -2.\nReturn the quotient after dividing dividend by divisor.\nNote: Assume we are dealing with an environment that could only store integers within the 32-bit signed integer range: [−231, 231 − 1]. For this problem, if the quotient is strictly greater than 231 - 1, then return 231 - 1, and if the quotient is strictly less than -231, then return -231.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "-231 <= dividend, divisor <= 231 - 1\ndivisor != 0",
+    "sample_input": "dividend = 10, divisor = 3",
+    "sample_output": "3",
+    "test_cases": [
+      {
+        "input": "dividend = 10, divisor = 3",
+        "expected_output": "3"
+      },
+      {
+        "input": "dividend = 7, divisor = -3",
+        "expected_output": "-2"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Substring with Concatenation of All Words",
+    "difficulty": "hard",
+    "description": "You are given a string s and an array of strings words. All the strings of words are of the same length.\nA concatenated string is a string that exactly contains all the strings of any permutation of words concatenated.\nReturn an array of the starting indices of all the concatenated substrings in s. You can return the answer in any order.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 104\n1 <= words.length <= 5000\n1 <= words[i].length <= 30\ns and words[i] consist of lowercase English letters.",
+    "sample_input": "s = \"barfoothefoobarman\", words = [\"foo\",\"bar\"]",
+    "sample_output": "[0,9]",
+    "test_cases": [
+      {
+        "input": "s = \"barfoothefoobarman\", words = [\"foo\",\"bar\"]",
+        "expected_output": "[0,9]"
+      },
+      {
+        "input": "s = \"wordgoodgoodgoodbestword\", words = [\"word\",\"good\",\"best\",\"word\"]",
+        "expected_output": "[]"
+      },
+      {
+        "input": "s = \"barfoofoobarthefoobarman\", words = [\"bar\",\"foo\",\"the\"]",
+        "expected_output": "[6,9,12]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Next Permutation",
+    "difficulty": "medium",
+    "description": "A permutation of an array of integers is an arrangement of its members into a sequence or linear order.\nThe next permutation of an array of integers is the next lexicographically greater permutation of its integer. More formally, if all the permutations of the array are sorted in one container according to their lexicographical order, then the next permutation of that array is the permutation that follows it in the sorted container. If such arrangement is not possible, the array must be rearranged as the lowest possible order (i.e., sorted in ascending order).\nGiven an array of integers nums, find the next permutation of nums.\nThe replacement must be in place and use only constant extra memory.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 100\n0 <= nums[i] <= 100",
+    "sample_input": "nums = [1,2,3]",
+    "sample_output": "[1,3,2]",
+    "test_cases": [
+      {
+        "input": "nums = [1,2,3]",
+        "expected_output": "[1,3,2]"
+      },
+      {
+        "input": "nums = [3,2,1]",
+        "expected_output": "[1,2,3]"
+      },
+      {
+        "input": "nums = [1,1,5]",
+        "expected_output": "[1,5,1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Longest Valid Parentheses",
+    "difficulty": "hard",
+    "description": "Given a string containing just the characters '(' and ')', return the length of the longest valid (well-formed) parentheses substring.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= s.length <= 3 * 104\ns[i] is '(', or ')'.",
+    "sample_input": "s = \"(()\"",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "s = \"(()\"",
+        "expected_output": "2"
+      },
+      {
+        "input": "s = \")()())\"",
+        "expected_output": "4"
+      },
+      {
+        "input": "s = \"\"",
+        "expected_output": "0"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Search in Rotated Sorted Array",
+    "difficulty": "medium",
+    "description": "There is an integer array nums sorted in ascending order (with distinct values).\nPrior to being passed to your function, nums is possibly rotated at an unknown pivot index k (1 <= k < nums.length) such that the resulting array is [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]] (0-indexed). For example, [0,1,2,4,5,6,7] might be rotated at pivot index 3 and become [4,5,6,7,0,1,2].\nGiven the array nums after the possible rotation and an integer target, return the index of target if it is in nums, or -1 if it is not in nums.\nYou must write an algorithm with O(log n) runtime complexity.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 5000\n-104 <= nums[i] <= 104\nAll values of nums are unique.\nnums is an ascending array that is possibly rotated.\n-104 <= target <= 104",
+    "sample_input": "nums = [4,5,6,7,0,1,2], target = 0",
+    "sample_output": "4",
+    "test_cases": [
+      {
+        "input": "nums = [4,5,6,7,0,1,2], target = 0",
+        "expected_output": "4"
+      },
+      {
+        "input": "nums = [4,5,6,7,0,1,2], target = 3",
+        "expected_output": "-1"
+      },
+      {
+        "input": "nums = [1], target = 0",
+        "expected_output": "-1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Find First and Last Position of Element in Sorted Array",
+    "difficulty": "medium",
+    "description": "Given an array of integers nums sorted in non-decreasing order, find the starting and ending position of a given target value.\nIf target is not found in the array, return [-1, -1].\nYou must write an algorithm with O(log n) runtime complexity.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= nums.length <= 105\n-109 <= nums[i] <= 109\nnums is a non-decreasing array.\n-109 <= target <= 109",
+    "sample_input": "nums = [5,7,7,8,8,10], target = 8",
+    "sample_output": "[3,4]",
+    "test_cases": [
+      {
+        "input": "nums = [5,7,7,8,8,10], target = 8",
+        "expected_output": "[3,4]"
+      },
+      {
+        "input": "nums = [5,7,7,8,8,10], target = 6",
+        "expected_output": "[-1,-1]"
+      },
+      {
+        "input": "nums = [], target = 0",
+        "expected_output": "[-1,-1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Search Insert Position",
+    "difficulty": "easy",
+    "description": "Given a sorted array of distinct integers and a target value, return the index if the target is found. If not, return the index where it would be if it were inserted in order.\nYou must write an algorithm with O(log n) runtime complexity.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 104\n-104 <= nums[i] <= 104\nnums contains distinct values sorted in ascending order.\n-104 <= target <= 104",
+    "sample_input": "nums = [1,3,5,6], target = 5",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "nums = [1,3,5,6], target = 5",
+        "expected_output": "2"
+      },
+      {
+        "input": "nums = [1,3,5,6], target = 2",
+        "expected_output": "1"
+      },
+      {
+        "input": "nums = [1,3,5,6], target = 7",
+        "expected_output": "4"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Valid Sudoku",
+    "difficulty": "medium",
+    "description": "Determine if a 9 x 9 Sudoku board is valid. Only the filled cells need to be validated according to the following rules:\nNote:\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "board.length == 9\nboard[i].length == 9\nboard[i][j] is a digit 1-9 or '.'.",
+    "sample_input": "board = \n[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"]\n,[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"]\n,[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"]\n,[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"]\n,[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"]\n,[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"]\n,[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"]\n,[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"]\n,[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "board = \n[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"]\n,[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"]\n,[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"]\n,[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"]\n,[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"]\n,[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"]\n,[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"]\n,[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"]\n,[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+        "expected_output": "true"
+      },
+      {
+        "input": "board = \n[[\"8\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"]\n,[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"]\n,[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"]\n,[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"]\n,[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"]\n,[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"]\n,[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"]\n,[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"]\n,[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Sudoku Solver",
+    "difficulty": "hard",
+    "description": "Write a program to solve a Sudoku puzzle by filling the empty cells.\nA sudoku solution must satisfy all of the following rules:\nThe '.' character indicates empty cells.\nExample 1:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "board.length == 9\nboard[i].length == 9\nboard[i][j] is a digit or '.'.\nIt is guaranteed that the input board has only one solution.",
+    "sample_input": "board = [[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+    "sample_output": "[[\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],[\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],[\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],[\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],[\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],[\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],[\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],[\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],[\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"]]",
+    "test_cases": [
+      {
+        "input": "board = [[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+        "expected_output": "[[\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],[\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],[\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],[\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],[\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],[\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],[\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],[\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],[\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Combination Sum",
+    "difficulty": "medium",
+    "description": "Given an array of distinct integers candidates and a target integer target, return a list of all unique combinations of candidates where the chosen numbers sum to target. You may return the combinations in any order.\nThe same number may be chosen from candidates an unlimited number of times. Two combinations are unique if the frequency of at least one of the chosen numbers is different.\nThe test cases are generated such that the number of unique combinations that sum up to target is less than 150 combinations for the given input.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= candidates.length <= 30\n2 <= candidates[i] <= 40\nAll elements of candidates are distinct.\n1 <= target <= 40",
+    "sample_input": "candidates = [2,3,6,7], target = 7",
+    "sample_output": "[[2,2,3],[7]]",
+    "test_cases": [
+      {
+        "input": "candidates = [2,3,6,7], target = 7",
+        "expected_output": "[[2,2,3],[7]]"
+      },
+      {
+        "input": "candidates = [2,3,5], target = 8",
+        "expected_output": "[[2,2,2,2],[2,3,3],[3,5]]"
+      },
+      {
+        "input": "candidates = [2], target = 1",
+        "expected_output": "[]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Combination Sum II",
+    "difficulty": "medium",
+    "description": "Given a collection of candidate numbers (candidates) and a target number (target), find all unique combinations in candidates where the candidate numbers sum to target.\nEach number in candidates may only be used once in the combination.\nNote: The solution set must not contain duplicate combinations.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= candidates.length <= 100\n1 <= candidates[i] <= 50\n1 <= target <= 30",
+    "sample_input": "candidates = [10,1,2,7,6,1,5], target = 8",
+    "sample_output": "[",
+    "test_cases": [
+      {
+        "input": "candidates = [10,1,2,7,6,1,5], target = 8",
+        "expected_output": "["
+      },
+      {
+        "input": "candidates = [2,5,2,1,2], target = 5",
+        "expected_output": "["
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "First Missing Positive",
+    "difficulty": "hard",
+    "description": "Given an unsorted integer array nums. Return the smallest positive integer that is not present in nums.\nYou must implement an algorithm that runs in O(n) time and uses O(1) auxiliary space.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 105\n-231 <= nums[i] <= 231 - 1",
+    "sample_input": "nums = [1,2,0]",
+    "sample_output": "3",
+    "test_cases": [
+      {
+        "input": "nums = [1,2,0]",
+        "expected_output": "3"
+      },
+      {
+        "input": "nums = [3,4,-1,1]",
+        "expected_output": "2"
+      },
+      {
+        "input": "nums = [7,8,9,11,12]",
+        "expected_output": "1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Trapping Rain Water",
+    "difficulty": "hard",
+    "description": "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "n == height.length\n1 <= n <= 2 * 104\n0 <= height[i] <= 105",
+    "sample_input": "height = [0,1,0,2,1,0,1,3,2,1,2,1]",
+    "sample_output": "6",
+    "test_cases": [
+      {
+        "input": "height = [0,1,0,2,1,0,1,3,2,1,2,1]",
+        "expected_output": "6"
+      },
+      {
+        "input": "height = [4,2,0,3,2,5]",
+        "expected_output": "9"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Multiply Strings",
+    "difficulty": "medium",
+    "description": "Given two non-negative integers num1 and num2 represented as strings, return the product of num1 and num2, also represented as a string.\nNote: You must not use any built-in BigInteger library or convert the inputs to integer directly.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= num1.length, num2.length <= 200\nnum1 and num2 consist of digits only.\nBoth num1 and num2 do not contain any leading zero, except the number 0 itself.",
+    "sample_input": "num1 = \"2\", num2 = \"3\"",
+    "sample_output": "\"6\"",
+    "test_cases": [
+      {
+        "input": "num1 = \"2\", num2 = \"3\"",
+        "expected_output": "\"6\""
+      },
+      {
+        "input": "num1 = \"123\", num2 = \"456\"",
+        "expected_output": "\"56088\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Wildcard Matching",
+    "difficulty": "hard",
+    "description": "Given an input string (s) and a pattern (p), implement wildcard pattern matching with support for '?' and '*' where:\nThe matching should cover the entire input string (not partial).\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= s.length, p.length <= 2000\ns contains only lowercase English letters.\np contains only lowercase English letters, '?' or '*'.",
+    "sample_input": "s = \"aa\", p = \"a\"",
+    "sample_output": "false",
+    "test_cases": [
+      {
+        "input": "s = \"aa\", p = \"a\"",
+        "expected_output": "false"
+      },
+      {
+        "input": "s = \"aa\", p = \"*\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s = \"cb\", p = \"?a\"",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Jump Game II",
+    "difficulty": "medium",
+    "description": "You are given a 0-indexed array of integers nums of length n. You are initially positioned at nums[0].\nEach element nums[i] represents the maximum length of a forward jump from index i. In other words, if you are at nums[i], you can jump to any nums[i + j] where:\nReturn the minimum number of jumps to reach nums[n - 1]. The test cases are generated such that you can reach nums[n - 1].\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 104\n0 <= nums[i] <= 1000\nIt's guaranteed that you can reach nums[n - 1].",
+    "sample_input": "nums = [2,3,1,1,4]",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "nums = [2,3,1,1,4]",
+        "expected_output": "2"
+      },
+      {
+        "input": "nums = [2,3,0,1,4]",
+        "expected_output": "2"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Permutations",
+    "difficulty": "medium",
+    "description": "Given an array nums of distinct integers, return all the possible permutations. You can return the answer in any order.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 6\n-10 <= nums[i] <= 10\nAll the integers of nums are unique.",
+    "sample_input": "nums = [1,2,3]",
+    "sample_output": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]",
+    "test_cases": [
+      {
+        "input": "nums = [1,2,3]",
+        "expected_output": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]"
+      },
+      {
+        "input": "nums = [0,1]",
+        "expected_output": "[[0,1],[1,0]]"
+      },
+      {
+        "input": "nums = [1]",
+        "expected_output": "[[1]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Permutations II",
+    "difficulty": "medium",
+    "description": "Given a collection of numbers, nums, that might contain duplicates, return all possible unique permutations in any order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 8\n-10 <= nums[i] <= 10",
+    "sample_input": "nums = [1,1,2]",
+    "sample_output": "[[1,1,2],",
+    "test_cases": [
+      {
+        "input": "nums = [1,1,2]",
+        "expected_output": "[[1,1,2],"
+      },
+      {
+        "input": "nums = [1,2,3]",
+        "expected_output": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Rotate Image",
+    "difficulty": "medium",
+    "description": "You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise).\nYou have to rotate the image in-place, which means you have to modify the input 2D matrix directly. DO NOT allocate another 2D matrix and do the rotation.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "n == matrix.length == matrix[i].length\n1 <= n <= 20\n-1000 <= matrix[i][j] <= 1000",
+    "sample_input": "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
+    "sample_output": "[[7,4,1],[8,5,2],[9,6,3]]",
+    "test_cases": [
+      {
+        "input": "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
+        "expected_output": "[[7,4,1],[8,5,2],[9,6,3]]"
+      },
+      {
+        "input": "matrix = [[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]",
+        "expected_output": "[[15,13,2,5],[14,3,4,1],[12,6,8,9],[16,7,10,11]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Group Anagrams",
+    "difficulty": "medium",
+    "description": "Given an array of strings strs, group the anagrams together. You can return the answer in any order.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= strs.length <= 104\n0 <= strs[i].length <= 100\nstrs[i] consists of lowercase English letters.",
+    "sample_input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+    "sample_output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+    "test_cases": [
+      {
+        "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+        "expected_output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]"
+      },
+      {
+        "input": "strs = [\"\"]",
+        "expected_output": "[[\"\"]]"
+      },
+      {
+        "input": "strs = [\"a\"]",
+        "expected_output": "[[\"a\"]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Pow(x, n)",
+    "difficulty": "medium",
+    "description": "Implement pow(x, n), which calculates x raised to the power n (i.e., xn).\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "-100.0 < x < 100.0\n-231 <= n <= 231-1\nn is an integer.\nEither x is not zero or n > 0.\n-104 <= xn <= 104",
+    "sample_input": "x = 2.00000, n = 10",
+    "sample_output": "1024.00000",
+    "test_cases": [
+      {
+        "input": "x = 2.00000, n = 10",
+        "expected_output": "1024.00000"
+      },
+      {
+        "input": "x = 2.10000, n = 3",
+        "expected_output": "9.26100"
+      },
+      {
+        "input": "x = 2.00000, n = -2",
+        "expected_output": "0.25000"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "N-Queens",
+    "difficulty": "hard",
+    "description": "The n-queens puzzle is the problem of placing n queens on an n x n chessboard such that no two queens attack each other.\nGiven an integer n, return all distinct solutions to the n-queens puzzle. You may return the answer in any order.\nEach solution contains a distinct board configuration of the n-queens' placement, where 'Q' and '.' both indicate a queen and an empty space, respectively.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 9",
+    "sample_input": "n = 4",
+    "sample_output": "[[\".Q..\",\"...Q\",\"Q...\",\"..Q.\"],[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"]]",
+    "test_cases": [
+      {
+        "input": "n = 4",
+        "expected_output": "[[\".Q..\",\"...Q\",\"Q...\",\"..Q.\"],[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"]]"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "[[\"Q\"]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "N-Queens II",
+    "difficulty": "hard",
+    "description": "The n-queens puzzle is the problem of placing n queens on an n x n chessboard such that no two queens attack each other.\nGiven an integer n, return the number of distinct solutions to the n-queens puzzle.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 9",
+    "sample_input": "n = 4",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "n = 4",
+        "expected_output": "2"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Maximum Subarray",
+    "difficulty": "medium",
+    "description": "Given an integer array nums, find the subarray with the largest sum, and return its sum.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\nFollow up: If you have figured out the O(n) solution, try coding another solution using the divide and conquer approach, which is more subtle.\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 105\n-104 <= nums[i] <= 104",
+    "sample_input": "nums = [-2,1,-3,4,-1,2,1,-5,4]",
+    "sample_output": "6",
+    "test_cases": [
+      {
+        "input": "nums = [-2,1,-3,4,-1,2,1,-5,4]",
+        "expected_output": "6"
+      },
+      {
+        "input": "nums = [1]",
+        "expected_output": "1"
+      },
+      {
+        "input": "nums = [5,4,-1,7,8]",
+        "expected_output": "23"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Spiral Matrix",
+    "difficulty": "medium",
+    "description": "Given an m x n matrix, return all elements of the matrix in spiral order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == matrix.length\nn == matrix[i].length\n1 <= m, n <= 10\n-100 <= matrix[i][j] <= 100",
+    "sample_input": "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
+    "sample_output": "[1,2,3,6,9,8,7,4,5]",
+    "test_cases": [
+      {
+        "input": "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
+        "expected_output": "[1,2,3,6,9,8,7,4,5]"
+      },
+      {
+        "input": "matrix = [[1,2,3,4],[5,6,7,8],[9,10,11,12]]",
+        "expected_output": "[1,2,3,4,8,12,11,10,9,5,6,7]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Jump Game",
+    "difficulty": "medium",
+    "description": "You are given an integer array nums. You are initially positioned at the array's first index, and each element in the array represents your maximum jump length at that position.\nReturn true if you can reach the last index, or false otherwise.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 104\n0 <= nums[i] <= 105",
+    "sample_input": "nums = [2,3,1,1,4]",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "nums = [2,3,1,1,4]",
+        "expected_output": "true"
+      },
+      {
+        "input": "nums = [3,2,1,0,4]",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Merge Intervals",
+    "difficulty": "medium",
+    "description": "Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= intervals.length <= 104\nintervals[i].length == 2\n0 <= starti <= endi <= 104",
+    "sample_input": "intervals = [[1,3],[2,6],[8,10],[15,18]]",
+    "sample_output": "[[1,6],[8,10],[15,18]]",
+    "test_cases": [
+      {
+        "input": "intervals = [[1,3],[2,6],[8,10],[15,18]]",
+        "expected_output": "[[1,6],[8,10],[15,18]]"
+      },
+      {
+        "input": "intervals = [[1,4],[4,5]]",
+        "expected_output": "[[1,5]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Insert Interval",
+    "difficulty": "medium",
+    "description": "You are given an array of non-overlapping intervals intervals where intervals[i] = [starti, endi] represent the start and the end of the ith interval and intervals is sorted in ascending order by starti. You are also given an interval newInterval = [start, end] that represents the start and end of another interval.\nInsert newInterval into intervals such that intervals is still sorted in ascending order by starti and intervals still does not have any overlapping intervals (merge overlapping intervals if necessary).\nReturn intervals after the insertion.\nNote that you don't need to modify intervals in-place. You can make a new array and return it.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= intervals.length <= 104\nintervals[i].length == 2\n0 <= starti <= endi <= 105\nintervals is sorted by starti in ascending order.\nnewInterval.length == 2\n0 <= start <= end <= 105",
+    "sample_input": "intervals = [[1,3],[6,9]], newInterval = [2,5]",
+    "sample_output": "[[1,5],[6,9]]",
+    "test_cases": [
+      {
+        "input": "intervals = [[1,3],[6,9]], newInterval = [2,5]",
+        "expected_output": "[[1,5],[6,9]]"
+      },
+      {
+        "input": "intervals = [[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval = [4,8]",
+        "expected_output": "[[1,2],[3,10],[12,16]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Length of Last Word",
+    "difficulty": "easy",
+    "description": "Given a string s consisting of words and spaces, return the length of the last word in the string.\nA word is a maximal substring consisting of non-space characters only.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 104\ns consists of only English letters and spaces ' '.\nThere will be at least one word in s.",
+    "sample_input": "s = \"Hello World\"",
+    "sample_output": "5",
+    "test_cases": [
+      {
+        "input": "s = \"Hello World\"",
+        "expected_output": "5"
+      },
+      {
+        "input": "s = \"   fly me   to   the moon  \"",
+        "expected_output": "4"
+      },
+      {
+        "input": "s = \"luffy is still joyboy\"",
+        "expected_output": "6"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Spiral Matrix II",
+    "difficulty": "medium",
+    "description": "Given a positive integer n, generate an n x n matrix filled with elements from 1 to n2 in spiral order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 20",
+    "sample_input": "n = 3",
+    "sample_output": "[[1,2,3],[8,9,4],[7,6,5]]",
+    "test_cases": [
+      {
+        "input": "n = 3",
+        "expected_output": "[[1,2,3],[8,9,4],[7,6,5]]"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "[[1]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Permutation Sequence",
+    "difficulty": "hard",
+    "description": "The set [1, 2, 3, ..., n] contains a total of n! unique permutations.\nBy listing and labeling all of the permutations in order, we get the following sequence for n = 3:\nGiven n and k, return the kth permutation sequence.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 9\n1 <= k <= n!",
+    "sample_input": "n = 3, k = 3",
+    "sample_output": "\"213\"",
+    "test_cases": [
+      {
+        "input": "n = 3, k = 3",
+        "expected_output": "\"213\""
+      },
+      {
+        "input": "n = 4, k = 9",
+        "expected_output": "\"2314\""
+      },
+      {
+        "input": "n = 3, k = 1",
+        "expected_output": "\"123\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Rotate List",
+    "difficulty": "medium",
+    "description": "Given the head of a linked list, rotate the list to the right by k places.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is in the range [0, 500].\n-100 <= Node.val <= 100\n0 <= k <= 2 * 109",
+    "sample_input": "head = [1,2,3,4,5], k = 2",
+    "sample_output": "[4,5,1,2,3]",
+    "test_cases": [
+      {
+        "input": "head = [1,2,3,4,5], k = 2",
+        "expected_output": "[4,5,1,2,3]"
+      },
+      {
+        "input": "head = [0,1,2], k = 4",
+        "expected_output": "[2,0,1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Unique Paths",
+    "difficulty": "medium",
+    "description": "There is a robot on an m x n grid. The robot is initially located at the top-left corner (i.e., grid[0][0]). The robot tries to move to the bottom-right corner (i.e., grid[m - 1][n - 1]). The robot can only move either down or right at any point in time.\nGiven the two integers m and n, return the number of possible unique paths that the robot can take to reach the bottom-right corner.\nThe test cases are generated so that the answer will be less than or equal to 2 * 109.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= m, n <= 100",
+    "sample_input": "m = 3, n = 7",
+    "sample_output": "28",
+    "test_cases": [
+      {
+        "input": "m = 3, n = 7",
+        "expected_output": "28"
+      },
+      {
+        "input": "m = 3, n = 2",
+        "expected_output": "3"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Unique Paths II",
+    "difficulty": "medium",
+    "description": "You are given an m x n integer array grid. There is a robot initially located at the top-left corner (i.e., grid[0][0]). The robot tries to move to the bottom-right corner (i.e., grid[m - 1][n - 1]). The robot can only move either down or right at any point in time.\nAn obstacle and space are marked as 1 or 0 respectively in grid. A path that the robot takes cannot include any square that is an obstacle.\nReturn the number of possible unique paths that the robot can take to reach the bottom-right corner.\nThe testcases are generated so that the answer will be less than or equal to 2 * 109.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == obstacleGrid.length\nn == obstacleGrid[i].length\n1 <= m, n <= 100\nobstacleGrid[i][j] is 0 or 1.",
+    "sample_input": "obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]]",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]]",
+        "expected_output": "2"
+      },
+      {
+        "input": "obstacleGrid = [[0,1],[0,0]]",
+        "expected_output": "1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Minimum Path Sum",
+    "difficulty": "medium",
+    "description": "Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right, which minimizes the sum of all numbers along its path.\nNote: You can only move either down or right at any point in time.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == grid.length\nn == grid[i].length\n1 <= m, n <= 200\n0 <= grid[i][j] <= 200",
+    "sample_input": "grid = [[1,3,1],[1,5,1],[4,2,1]]",
+    "sample_output": "7",
+    "test_cases": [
+      {
+        "input": "grid = [[1,3,1],[1,5,1],[4,2,1]]",
+        "expected_output": "7"
+      },
+      {
+        "input": "grid = [[1,2,3],[4,5,6]]",
+        "expected_output": "12"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Valid Number",
+    "difficulty": "hard",
+    "description": "Given a string s, return whether s is a valid number.\n\nFor example, all the following are valid numbers: \"2\", \"0089\", \"-0.1\", \"+3.14\", \"4.\", \"-.9\", \"2e10\", \"-90E3\", \"3e+7\", \"+6e-1\", \"53.5e93\", \"-123.456e789\", while the following are not valid numbers: \"abc\", \"1a\", \"1e\", \"e3\", \"99e2.5\", \"--6\", \"-+3\", \"95a54e53\".\nFormally, a valid number is defined using one of the following definitions:\nAn integer number is defined with an optional sign '-' or '+' followed by digits.\nA decimal number is defined with an optional sign '-' or '+' followed by one of the following definitions:\nAn exponent is defined with an exponent notation 'e' or 'E' followed by an integer number.\nThe digits are defined as one or more digits.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 20\ns consists of only English letters (both uppercase and lowercase), digits (0-9), plus '+', minus '-', or dot '.'.",
+    "sample_input": "s = \"0\"",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "s = \"0\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s = \"e\"",
+        "expected_output": "false"
+      },
+      {
+        "input": "s = \".\"",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Plus One",
+    "difficulty": "easy",
+    "description": "You are given a large integer represented as an integer array digits, where each digits[i] is the ith digit of the integer. The digits are ordered from most significant to least significant in left-to-right order. The large integer does not contain any leading 0's.\nIncrement the large integer by one and return the resulting array of digits.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= digits.length <= 100\n0 <= digits[i] <= 9\ndigits does not contain any leading 0's.",
+    "sample_input": "digits = [1,2,3]",
+    "sample_output": "[1,2,4]",
+    "test_cases": [
+      {
+        "input": "digits = [1,2,3]",
+        "expected_output": "[1,2,4]"
+      },
+      {
+        "input": "digits = [4,3,2,1]",
+        "expected_output": "[4,3,2,2]"
+      },
+      {
+        "input": "digits = [9]",
+        "expected_output": "[1,0]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Add Binary",
+    "difficulty": "easy",
+    "description": "Given two binary strings a and b, return their sum as a binary string.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= a.length, b.length <= 104\na and b consist only of '0' or '1' characters.\nEach string does not contain leading zeros except for the zero itself.",
+    "sample_input": "a = \"11\", b = \"1\"",
+    "sample_output": "\"100\"",
+    "test_cases": [
+      {
+        "input": "a = \"11\", b = \"1\"",
+        "expected_output": "\"100\""
+      },
+      {
+        "input": "a = \"1010\", b = \"1011\"",
+        "expected_output": "\"10101\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Text Justification",
+    "difficulty": "hard",
+    "description": "Given an array of strings words and a width maxWidth, format the text such that each line has exactly maxWidth characters and is fully (left and right) justified.\nYou should pack your words in a greedy approach; that is, pack as many words as you can in each line. Pad extra spaces ' ' when necessary so that each line has exactly maxWidth characters.\nExtra spaces between words should be distributed as evenly as possible. If the number of spaces on a line does not divide evenly between words, the empty slots on the left will be assigned more spaces than the slots on the right.\nFor the last line of text, it should be left-justified, and no extra space is inserted between words.\nNote:\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= words.length <= 300\n1 <= words[i].length <= 20\nwords[i] consists of only English letters and symbols.\n1 <= maxWidth <= 100\nwords[i].length <= maxWidth",
+    "sample_input": "words = [\"This\", \"is\", \"an\", \"example\", \"of\", \"text\", \"justification.\"], maxWidth = 16",
+    "sample_output": "[",
+    "test_cases": [
+      {
+        "input": "words = [\"This\", \"is\", \"an\", \"example\", \"of\", \"text\", \"justification.\"], maxWidth = 16",
+        "expected_output": "["
+      },
+      {
+        "input": "words = [\"What\",\"must\",\"be\",\"acknowledgment\",\"shall\",\"be\"], maxWidth = 16",
+        "expected_output": "["
+      },
+      {
+        "input": "words = [\"Science\",\"is\",\"what\",\"we\",\"understand\",\"well\",\"enough\",\"to\",\"explain\",\"to\",\"a\",\"computer.\",\"Art\",\"is\",\"everything\",\"else\",\"we\",\"do\"], maxWidth = 20",
+        "expected_output": "["
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Sqrt(x)",
+    "difficulty": "easy",
+    "description": "Given a non-negative integer x, return the square root of x rounded down to the nearest integer. The returned integer should be non-negative as well.\nYou must not use any built-in exponent function or operator.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= x <= 231 - 1",
+    "sample_input": "x = 4",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "x = 4",
+        "expected_output": "2"
+      },
+      {
+        "input": "x = 8",
+        "expected_output": "2"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Climbing Stairs",
+    "difficulty": "easy",
+    "description": "You are climbing a staircase. It takes n steps to reach the top.\nEach time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 45",
+    "sample_input": "n = 2",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "n = 2",
+        "expected_output": "2"
+      },
+      {
+        "input": "n = 3",
+        "expected_output": "3"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Simplify Path",
+    "difficulty": "medium",
+    "description": "You are given an absolute path for a Unix-style file system, which always begins with a slash '/'. Your task is to transform this absolute path into its simplified canonical path.\nThe rules of a Unix-style file system are as follows:\nThe simplified canonical path should follow these rules:\nReturn the simplified canonical path.\nExample 1:\nExample 2:\nExample 3:\nExample 4:\nExample 5:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= path.length <= 3000\npath consists of English letters, digits, period '.', slash '/' or '_'.\npath is a valid absolute Unix path.",
+    "sample_input": "path = \"/home/\"",
+    "sample_output": "\"/home\"",
+    "test_cases": [
+      {
+        "input": "path = \"/home/\"",
+        "expected_output": "\"/home\""
+      },
+      {
+        "input": "path = \"/home//foo/\"",
+        "expected_output": "\"/home/foo\""
+      },
+      {
+        "input": "path = \"/home/user/Documents/../Pictures\"",
+        "expected_output": "\"/home/user/Pictures\""
+      },
+      {
+        "input": "path = \"/../\"",
+        "expected_output": "\"/\""
+      },
+      {
+        "input": "path = \"/.../a/../b/c/../d/./\"",
+        "expected_output": "\"/.../b/d\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Edit Distance",
+    "difficulty": "medium",
+    "description": "Given two strings word1 and word2, return the minimum number of operations required to convert word1 to word2.\nYou have the following three operations permitted on a word:\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= word1.length, word2.length <= 500\nword1 and word2 consist of lowercase English letters.",
+    "sample_input": "word1 = \"horse\", word2 = \"ros\"",
+    "sample_output": "3",
+    "test_cases": [
+      {
+        "input": "word1 = \"horse\", word2 = \"ros\"",
+        "expected_output": "3"
+      },
+      {
+        "input": "word1 = \"intention\", word2 = \"execution\"",
+        "expected_output": "5"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Set Matrix Zeroes",
+    "difficulty": "medium",
+    "description": "Given an m x n integer matrix matrix, if an element is 0, set its entire row and column to 0's.\nYou must do it in place.\nExample 1:\nExample 2:\nConstraints:\nFollow up:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == matrix.length\nn == matrix[0].length\n1 <= m, n <= 200\n-231 <= matrix[i][j] <= 231 - 1",
+    "sample_input": "matrix = [[1,1,1],[1,0,1],[1,1,1]]",
+    "sample_output": "[[1,0,1],[0,0,0],[1,0,1]]",
+    "test_cases": [
+      {
+        "input": "matrix = [[1,1,1],[1,0,1],[1,1,1]]",
+        "expected_output": "[[1,0,1],[0,0,0],[1,0,1]]"
+      },
+      {
+        "input": "matrix = [[0,1,2,0],[3,4,5,2],[1,3,1,5]]",
+        "expected_output": "[[0,0,0,0],[0,4,5,0],[0,3,1,0]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Search a 2D Matrix",
+    "difficulty": "medium",
+    "description": "You are given an m x n integer matrix matrix with the following two properties:\nGiven an integer target, return true if target is in matrix or false otherwise.\nYou must write a solution in O(log(m * n)) time complexity.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == matrix.length\nn == matrix[i].length\n1 <= m, n <= 100\n-104 <= matrix[i][j], target <= 104",
+    "sample_input": "matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3",
+        "expected_output": "true"
+      },
+      {
+        "input": "matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Sort Colors",
+    "difficulty": "medium",
+    "description": "Given an array nums with n objects colored red, white, or blue, sort them in-place so that objects of the same color are adjacent, with the colors in the order red, white, and blue.\nWe will use the integers 0, 1, and 2 to represent the color red, white, and blue, respectively.\nYou must solve this problem without using the library's sort function.\nExample 1:\nExample 2:\nConstraints:\nFollow up: Could you come up with a one-pass algorithm using only constant extra space?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "n == nums.length\n1 <= n <= 300\nnums[i] is either 0, 1, or 2.",
+    "sample_input": "nums = [2,0,2,1,1,0]",
+    "sample_output": "[0,0,1,1,2,2]",
+    "test_cases": [
+      {
+        "input": "nums = [2,0,2,1,1,0]",
+        "expected_output": "[0,0,1,1,2,2]"
+      },
+      {
+        "input": "nums = [2,0,1]",
+        "expected_output": "[0,1,2]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Minimum Window Substring",
+    "difficulty": "hard",
+    "description": "Given two strings s and t of lengths m and n respectively, return the minimum window substring of s such that every character in t (including duplicates) is included in the window. If there is no such substring, return the empty string \"\".\nThe testcases will be generated such that the answer is unique.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\nFollow up: Could you find an algorithm that runs in O(m + n) time?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == s.length\nn == t.length\n1 <= m, n <= 105\ns and t consist of uppercase and lowercase English letters.",
+    "sample_input": "s = \"ADOBECODEBANC\", t = \"ABC\"",
+    "sample_output": "\"BANC\"",
+    "test_cases": [
+      {
+        "input": "s = \"ADOBECODEBANC\", t = \"ABC\"",
+        "expected_output": "\"BANC\""
+      },
+      {
+        "input": "s = \"a\", t = \"a\"",
+        "expected_output": "\"a\""
+      },
+      {
+        "input": "s = \"a\", t = \"aa\"",
+        "expected_output": "\"\""
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Combinations",
+    "difficulty": "medium",
+    "description": "Given two integers n and k, return all possible combinations of k numbers chosen from the range [1, n].\nYou may return the answer in any order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 20\n1 <= k <= n",
+    "sample_input": "n = 4, k = 2",
+    "sample_output": "[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]",
+    "test_cases": [
+      {
+        "input": "n = 4, k = 2",
+        "expected_output": "[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]"
+      },
+      {
+        "input": "n = 1, k = 1",
+        "expected_output": "[[1]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Subsets",
+    "difficulty": "medium",
+    "description": "Given an integer array nums of unique elements, return all possible subsets (the power set).\nThe solution set must not contain duplicate subsets. Return the solution in any order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 10\n-10 <= nums[i] <= 10\nAll the numbers of nums are unique.",
+    "sample_input": "nums = [1,2,3]",
+    "sample_output": "[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]",
+    "test_cases": [
+      {
+        "input": "nums = [1,2,3]",
+        "expected_output": "[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]"
+      },
+      {
+        "input": "nums = [0]",
+        "expected_output": "[[],[0]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Word Search",
+    "difficulty": "medium",
+    "description": "Given an m x n grid of characters board and a string word, return true if word exists in the grid.\nThe word can be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. The same letter cell may not be used more than once.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\nFollow up: Could you use search pruning to make your solution faster with a larger board?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "m == board.length\nn = board[i].length\n1 <= m, n <= 6\n1 <= word.length <= 15\nboard and word consists of only lowercase and uppercase English letters.",
+    "sample_input": "board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"ABCCED\"",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"ABCCED\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"SEE\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "board = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]], word = \"ABCB\"",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Remove Duplicates from Sorted Array II",
+    "difficulty": "medium",
+    "description": "Given an integer array nums sorted in non-decreasing order, remove some duplicates in-place such that each unique element appears at most twice. The relative order of the elements should be kept the same.\nSince it is impossible to change the length of the array in some languages, you must instead have the result be placed in the first part of the array nums. More formally, if there are k elements after removing the duplicates, then the first k elements of nums should hold the final result. It does not matter what you leave beyond the first k elements.\nReturn k after placing the final result in the first k slots of nums.\nDo not allocate extra space for another array. You must do this by modifying the input array in-place with O(1) extra memory.\nCustom Judge:\nThe judge will test your solution with the following code:\nIf all assertions pass, then your solution will be accepted.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 3 * 104\n-104 <= nums[i] <= 104\nnums is sorted in non-decreasing order.",
+    "sample_input": "nums = [1,1,1,2,2,3]",
+    "sample_output": "5, nums = [1,1,2,2,3,_]",
+    "test_cases": [
+      {
+        "input": "nums = [1,1,1,2,2,3]",
+        "expected_output": "5, nums = [1,1,2,2,3,_]"
+      },
+      {
+        "input": "nums = [0,0,1,1,1,1,2,3,3]",
+        "expected_output": "7, nums = [0,0,1,1,2,3,3,_,_]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Search in Rotated Sorted Array II",
+    "difficulty": "medium",
+    "description": "There is an integer array nums sorted in non-decreasing order (not necessarily with distinct values).\nBefore being passed to your function, nums is rotated at an unknown pivot index k (0 <= k < nums.length) such that the resulting array is [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]] (0-indexed). For example, [0,1,2,4,4,4,5,6,6,7] might be rotated at pivot index 5 and become [4,5,6,6,7,0,1,2,4,4].\nGiven the array nums after the rotation and an integer target, return true if target is in nums, or false if it is not in nums.\nYou must decrease the overall operation steps as much as possible.\nExample 1:\nExample 2:\nConstraints:\nFollow up: This problem is similar to Search in Rotated Sorted Array, but nums may contain duplicates. Would this affect the runtime complexity? How and why?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 5000\n-104 <= nums[i] <= 104\nnums is guaranteed to be rotated at some pivot.\n-104 <= target <= 104",
+    "sample_input": "nums = [2,5,6,0,0,1,2], target = 0",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "nums = [2,5,6,0,0,1,2], target = 0",
+        "expected_output": "true"
+      },
+      {
+        "input": "nums = [2,5,6,0,0,1,2], target = 3",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Remove Duplicates from Sorted List II",
+    "difficulty": "medium",
+    "description": "Given the head of a sorted linked list, delete all nodes that have duplicate numbers, leaving only distinct numbers from the original list. Return the linked list sorted as well.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is in the range [0, 300].\n-100 <= Node.val <= 100\nThe list is guaranteed to be sorted in ascending order.",
+    "sample_input": "head = [1,2,3,3,4,4,5]",
+    "sample_output": "[1,2,5]",
+    "test_cases": [
+      {
+        "input": "head = [1,2,3,3,4,4,5]",
+        "expected_output": "[1,2,5]"
+      },
+      {
+        "input": "head = [1,1,1,2,3]",
+        "expected_output": "[2,3]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Remove Duplicates from Sorted List",
+    "difficulty": "easy",
+    "description": "Given the head of a sorted linked list, delete all duplicates such that each element appears only once. Return the linked list sorted as well.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is in the range [0, 300].\n-100 <= Node.val <= 100\nThe list is guaranteed to be sorted in ascending order.",
+    "sample_input": "head = [1,1,2]",
+    "sample_output": "[1,2]",
+    "test_cases": [
+      {
+        "input": "head = [1,1,2]",
+        "expected_output": "[1,2]"
+      },
+      {
+        "input": "head = [1,1,2,3,3]",
+        "expected_output": "[1,2,3]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Largest Rectangle in Histogram",
+    "difficulty": "hard",
+    "description": "Given an array of integers heights representing the histogram's bar height where the width of each bar is 1, return the area of the largest rectangle in the histogram.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= heights.length <= 105\n0 <= heights[i] <= 104",
+    "sample_input": "heights = [2,1,5,6,2,3]",
+    "sample_output": "10",
+    "test_cases": [
+      {
+        "input": "heights = [2,1,5,6,2,3]",
+        "expected_output": "10"
+      },
+      {
+        "input": "heights = [2,4]",
+        "expected_output": "4"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Maximal Rectangle",
+    "difficulty": "hard",
+    "description": "Given a rows x cols binary matrix filled with 0's and 1's, find the largest rectangle containing only 1's and return its area.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "rows == matrix.length\ncols == matrix[i].length\n1 <= row, cols <= 200\nmatrix[i][j] is '0' or '1'.",
+    "sample_input": "matrix = [[\"1\",\"0\",\"1\",\"0\",\"0\"],[\"1\",\"0\",\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\",\"1\",\"1\"],[\"1\",\"0\",\"0\",\"1\",\"0\"]]",
+    "sample_output": "6",
+    "test_cases": [
+      {
+        "input": "matrix = [[\"1\",\"0\",\"1\",\"0\",\"0\"],[\"1\",\"0\",\"1\",\"1\",\"1\"],[\"1\",\"1\",\"1\",\"1\",\"1\"],[\"1\",\"0\",\"0\",\"1\",\"0\"]]",
+        "expected_output": "6"
+      },
+      {
+        "input": "matrix = [[\"0\"]]",
+        "expected_output": "0"
+      },
+      {
+        "input": "matrix = [[\"1\"]]",
+        "expected_output": "1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Partition List",
+    "difficulty": "medium",
+    "description": "Given the head of a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x.\nYou should preserve the original relative order of the nodes in each of the two partitions.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is in the range [0, 200].\n-100 <= Node.val <= 100\n-200 <= x <= 200",
+    "sample_input": "head = [1,4,3,2,5,2], x = 3",
+    "sample_output": "[1,2,2,4,3,5]",
+    "test_cases": [
+      {
+        "input": "head = [1,4,3,2,5,2], x = 3",
+        "expected_output": "[1,2,2,4,3,5]"
+      },
+      {
+        "input": "head = [2,1], x = 2",
+        "expected_output": "[1,2]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Scramble String",
+    "difficulty": "hard",
+    "description": "We can scramble a string s to get a string t using the following algorithm:\nGiven two strings s1 and s2 of the same length, return true if s2 is a scrambled string of s1, otherwise, return false.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "s1.length == s2.length\n1 <= s1.length <= 30\ns1 and s2 consist of lowercase English letters.",
+    "sample_input": "s1 = \"great\", s2 = \"rgeat\"",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "s1 = \"great\", s2 = \"rgeat\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s1 = \"abcde\", s2 = \"caebd\"",
+        "expected_output": "false"
+      },
+      {
+        "input": "s1 = \"a\", s2 = \"a\"",
+        "expected_output": "true"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Merge Sorted Array",
+    "difficulty": "easy",
+    "description": "You are given two integer arrays nums1 and nums2, sorted in non-decreasing order, and two integers m and n, representing the number of elements in nums1 and nums2 respectively.\nMerge nums1 and nums2 into a single array sorted in non-decreasing order.\nThe final sorted array should not be returned by the function, but instead be stored inside the array nums1. To accommodate this, nums1 has a length of m + n, where the first m elements denote the elements that should be merged, and the last n elements are set to 0 and should be ignored. nums2 has a length of n.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\nFollow up: Can you come up with an algorithm that runs in O(m + n) time?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "nums1.length == m + n\nnums2.length == n\n0 <= m, n <= 200\n1 <= m + n <= 200\n-109 <= nums1[i], nums2[j] <= 109",
+    "sample_input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
+    "sample_output": "[1,2,2,3,5,6]",
+    "test_cases": [
+      {
+        "input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
+        "expected_output": "[1,2,2,3,5,6]"
+      },
+      {
+        "input": "nums1 = [1], m = 1, nums2 = [], n = 0",
+        "expected_output": "[1]"
+      },
+      {
+        "input": "nums1 = [0], m = 0, nums2 = [1], n = 1",
+        "expected_output": "[1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Gray Code",
+    "difficulty": "medium",
+    "description": "An n-bit gray code sequence is a sequence of 2n integers where:\nGiven an integer n, return any valid n-bit gray code sequence.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 16",
+    "sample_input": "n = 2",
+    "sample_output": "[0,1,3,2]",
+    "test_cases": [
+      {
+        "input": "n = 2",
+        "expected_output": "[0,1,3,2]"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "[0,1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Subsets II",
+    "difficulty": "medium",
+    "description": "Given an integer array nums that may contain duplicates, return all possible subsets (the power set).\nThe solution set must not contain duplicate subsets. Return the solution in any order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= nums.length <= 10\n-10 <= nums[i] <= 10",
+    "sample_input": "nums = [1,2,2]",
+    "sample_output": "[[],[1],[1,2],[1,2,2],[2],[2,2]]",
+    "test_cases": [
+      {
+        "input": "nums = [1,2,2]",
+        "expected_output": "[[],[1],[1,2],[1,2,2],[2],[2,2]]"
+      },
+      {
+        "input": "nums = [0]",
+        "expected_output": "[[],[0]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Decode Ways",
+    "difficulty": "medium",
+    "description": "You have intercepted a secret message encoded as a string of numbers. The message is decoded via the following mapping:\n\"1\" -> 'A'\n\"2\" -> 'B'\n...\n\"25\" -> 'Y'\n\"26\" -> 'Z'\nHowever, while decoding the message, you realize that there are many different ways you can decode the message because some codes are contained in other codes (\"2\" and \"5\" vs \"25\").\nFor example, \"11106\" can be decoded into:\nNote: there may be strings that are impossible to decode.\n\nGiven a string s containing only digits, return the number of ways to decode it. If the entire string cannot be decoded in any valid way, return 0.\nThe test cases are generated so that the answer fits in a 32-bit integer.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 100\ns contains only digits and may contain leading zero(s).",
+    "sample_input": "s = \"12\"",
+    "sample_output": "2",
+    "test_cases": [
+      {
+        "input": "s = \"12\"",
+        "expected_output": "2"
+      },
+      {
+        "input": "s = \"226\"",
+        "expected_output": "3"
+      },
+      {
+        "input": "s = \"06\"",
+        "expected_output": "0"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Reverse Linked List II",
+    "difficulty": "medium",
+    "description": "Given the head of a singly linked list and two integers left and right where left <= right, reverse the nodes of the list from position left to position right, and return the reversed list.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the list is n.\n1 <= n <= 500\n-500 <= Node.val <= 500\n1 <= left <= right <= n",
+    "sample_input": "head = [1,2,3,4,5], left = 2, right = 4",
+    "sample_output": "[1,4,3,2,5]",
+    "test_cases": [
+      {
+        "input": "head = [1,2,3,4,5], left = 2, right = 4",
+        "expected_output": "[1,4,3,2,5]"
+      },
+      {
+        "input": "head = [5], left = 1, right = 1",
+        "expected_output": "[5]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Restore IP Addresses",
+    "difficulty": "medium",
+    "description": "A valid IP address consists of exactly four integers separated by single dots. Each integer is between 0 and 255 (inclusive) and cannot have leading zeros.\nGiven a string s containing only digits, return all possible valid IP addresses that can be formed by inserting dots into s. You are not allowed to reorder or remove any digits in s. You may return the valid IP addresses in any order.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= s.length <= 20\ns consists of digits only.",
+    "sample_input": "s = \"25525511135\"",
+    "sample_output": "[\"255.255.11.135\",\"255.255.111.35\"]",
+    "test_cases": [
+      {
+        "input": "s = \"25525511135\"",
+        "expected_output": "[\"255.255.11.135\",\"255.255.111.35\"]"
+      },
+      {
+        "input": "s = \"0000\"",
+        "expected_output": "[\"0.0.0.0\"]"
+      },
+      {
+        "input": "s = \"101023\"",
+        "expected_output": "[\"1.0.10.23\",\"1.0.102.3\",\"10.1.0.23\",\"10.10.2.3\",\"101.0.2.3\"]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Binary Tree Inorder Traversal",
+    "difficulty": "easy",
+    "description": "Given the root of a binary tree, return the inorder traversal of its nodes' values.\nExample 1:\nExample 2:\nExample 3:\nExample 4:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the tree is in the range [0, 100].\n-100 <= Node.val <= 100",
+    "sample_input": "root = [1,null,2,3]",
+    "sample_output": "[1,3,2]",
+    "test_cases": [
+      {
+        "input": "root = [1,null,2,3]",
+        "expected_output": "[1,3,2]"
+      },
+      {
+        "input": "root = [1,2,3,4,5,null,8,null,null,6,7,9]",
+        "expected_output": "[4,2,6,5,7,1,3,9,8]"
+      },
+      {
+        "input": "root = []",
+        "expected_output": "[]"
+      },
+      {
+        "input": "root = [1]",
+        "expected_output": "[1]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Unique Binary Search Trees II",
+    "difficulty": "medium",
+    "description": "Given an integer n, return all the structurally unique BST's (binary search trees), which has exactly n nodes of unique values from 1 to n. Return the answer in any order.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 8",
+    "sample_input": "n = 3",
+    "sample_output": "[[1,null,2,null,3],[1,null,3,2],[2,1,3],[3,1,null,null,2],[3,2,null,1]]",
+    "test_cases": [
+      {
+        "input": "n = 3",
+        "expected_output": "[[1,null,2,null,3],[1,null,3,2],[2,1,3],[3,1,null,null,2],[3,2,null,1]]"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "[[1]]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Unique Binary Search Trees",
+    "difficulty": "medium",
+    "description": "Given an integer n, return the number of structurally unique BST's (binary search trees) which has exactly n nodes of unique values from 1 to n.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "1 <= n <= 19",
+    "sample_input": "n = 3",
+    "sample_output": "5",
+    "test_cases": [
+      {
+        "input": "n = 3",
+        "expected_output": "5"
+      },
+      {
+        "input": "n = 1",
+        "expected_output": "1"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Interleaving String",
+    "difficulty": "medium",
+    "description": "Given strings s1, s2, and s3, find whether s3 is formed by an interleaving of s1 and s2.\nAn interleaving of two strings s and t is a configuration where s and t are divided into n and m substrings respectively, such that:\nNote: a + b is the concatenation of strings a and b.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\nFollow up: Could you solve it using only O(s2.length) additional memory space?\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "0 <= s1.length, s2.length <= 100\n0 <= s3.length <= 200\ns1, s2, and s3 consist of lowercase English letters.",
+    "sample_input": "s1 = \"aabcc\", s2 = \"dbbca\", s3 = \"aadbbcbcac\"",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "s1 = \"aabcc\", s2 = \"dbbca\", s3 = \"aadbbcbcac\"",
+        "expected_output": "true"
+      },
+      {
+        "input": "s1 = \"aabcc\", s2 = \"dbbca\", s3 = \"aadbbbaccc\"",
+        "expected_output": "false"
+      },
+      {
+        "input": "s1 = \"\", s2 = \"\", s3 = \"\"",
+        "expected_output": "true"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Validate Binary Search Tree",
+    "difficulty": "medium",
+    "description": "Given the root of a binary tree, determine if it is a valid binary search tree (BST).\nA valid BST is defined as follows:\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the tree is in the range [1, 104].\n-231 <= Node.val <= 231 - 1",
+    "sample_input": "root = [2,1,3]",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "root = [2,1,3]",
+        "expected_output": "true"
+      },
+      {
+        "input": "root = [5,1,4,null,null,3,6]",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Recover Binary Search Tree",
+    "difficulty": "medium",
+    "description": "You are given the root of a binary search tree (BST), where the values of exactly two nodes of the tree were swapped by mistake. Recover the tree without changing its structure.\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the tree is in the range [2, 1000].\n-231 <= Node.val <= 231 - 1",
+    "sample_input": "root = [1,3,null,null,2]",
+    "sample_output": "[3,1,null,null,2]",
+    "test_cases": [
+      {
+        "input": "root = [1,3,null,null,2]",
+        "expected_output": "[3,1,null,null,2]"
+      },
+      {
+        "input": "root = [3,1,4,null,null,2]",
+        "expected_output": "[2,1,4,null,null,3]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Same Tree",
+    "difficulty": "easy",
+    "description": "Given the roots of two binary trees p and q, write a function to check if they are the same or not.\nTwo binary trees are considered the same if they are structurally identical, and the nodes have the same value.\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in both trees is in the range [0, 100].\n-104 <= Node.val <= 104",
+    "sample_input": "p = [1,2,3], q = [1,2,3]",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "p = [1,2,3], q = [1,2,3]",
+        "expected_output": "true"
+      },
+      {
+        "input": "p = [1,2], q = [1,null,2]",
+        "expected_output": "false"
+      },
+      {
+        "input": "p = [1,2,1], q = [1,1,2]",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Symmetric Tree",
+    "difficulty": "easy",
+    "description": "Given the root of a binary tree, check whether it is a mirror of itself (i.e., symmetric around its center).\nExample 1:\nExample 2:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the tree is in the range [1, 1000].\n-100 <= Node.val <= 100",
+    "sample_input": "root = [1,2,2,3,4,4,3]",
+    "sample_output": "true",
+    "test_cases": [
+      {
+        "input": "root = [1,2,2,3,4,4,3]",
+        "expected_output": "true"
+      },
+      {
+        "input": "root = [1,2,2,null,3,null,3]",
+        "expected_output": "false"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Binary Tree Level Order Traversal",
+    "difficulty": "medium",
+    "description": "Given the root of a binary tree, return the level order traversal of its nodes' values. (i.e., from left to right, level by level).\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the tree is in the range [0, 2000].\n-1000 <= Node.val <= 1000",
+    "sample_input": "root = [3,9,20,null,null,15,7]",
+    "sample_output": "[[3],[9,20],[15,7]]",
+    "test_cases": [
+      {
+        "input": "root = [3,9,20,null,null,15,7]",
+        "expected_output": "[[3],[9,20],[15,7]]"
+      },
+      {
+        "input": "root = [1]",
+        "expected_output": "[[1]]"
+      },
+      {
+        "input": "root = []",
+        "expected_output": "[]"
+      }
+    ],
+    "is_active": true
+  },
+  {
+    "title": "Binary Tree Zigzag Level Order Traversal",
+    "difficulty": "medium",
+    "description": "Given the root of a binary tree, return the zigzag level order traversal of its nodes' values. (i.e., from left to right, then right to left for the next level and alternate between).\nExample 1:\nExample 2:\nExample 3:\nConstraints:\n\n---\n**Arena judging:** Read the problem input from **standard input** (stdin). The input format matches the first example's `Input:` line (values only, one logical testcase per submission). Write the answer to **standard output** (stdout) matching the `Output:` format in the examples.",
+    "input_format": "Provided via stdin; same structure as the official examples' Input (see sample).",
+    "output_format": "Write to stdout; same structure as the official examples' Output.",
+    "constraints": "The number of nodes in the tree is in the range [0, 2000].\n-100 <= Node.val <= 100",
+    "sample_input": "root = [3,9,20,null,null,15,7]",
+    "sample_output": "[[3],[20,9],[15,7]]",
+    "test_cases": [
+      {
+        "input": "root = [3,9,20,null,null,15,7]",
+        "expected_output": "[[3],[20,9],[15,7]]"
+      },
+      {
+        "input": "root = [1]",
+        "expected_output": "[[1]]"
+      },
+      {
+        "input": "root = []",
+        "expected_output": "[]"
+      }
+    ],
+    "is_active": true
+  }
+]

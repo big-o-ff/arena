@@ -1,19 +1,19 @@
 from urllib.parse import parse_qs
+
 import jwt
 from django.contrib.auth.models import AnonymousUser
 from channels.db import database_sync_to_async
-from accounts.models import User
+
+from accounts.authentication import resolve_user_from_clerk_jwt_payload
+
 
 @database_sync_to_async
 def get_user_from_token(token):
+    """Match REST ClerkAuthentication — create user on first WS connect if needed."""
     try:
         payload = jwt.decode(token, options={"verify_signature": False})
-        clerk_id = payload.get('sub')
-        if not clerk_id:
-            return AnonymousUser()
-        return User.objects.get(clerk_id=clerk_id)
-    except User.DoesNotExist:
-        return AnonymousUser()
+        user = resolve_user_from_clerk_jwt_payload(payload)
+        return user if user is not None else AnonymousUser()
     except Exception:
         return AnonymousUser()
 

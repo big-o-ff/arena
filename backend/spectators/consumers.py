@@ -1,4 +1,16 @@
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.db.models import F
+
+
+@database_sync_to_async
+def _increment_spectator_likes(battle_id: int) -> int:
+    from battles.models import Battle
+
+    Battle.objects.filter(id=battle_id).update(
+        spectator_likes=F("spectator_likes") + 1
+    )
+    return Battle.objects.get(id=battle_id).spectator_likes
 
 
 class SpectatorConsumer(AsyncJsonWebsocketConsumer):
@@ -23,6 +35,16 @@ class SpectatorConsumer(AsyncJsonWebsocketConsumer):
                     "type": "broadcast.event",
                     "event": "SPECTATOR_EMOTE",
                     "payload": payload,
+                },
+            )
+        elif event_type == "SPECTATOR_LIKE":
+            count = await _increment_spectator_likes(int(self.battle_id))
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "broadcast.event",
+                    "event": "SPECTATOR_LIKE_COUNT",
+                    "payload": {"count": count, "battle_id": int(self.battle_id)},
                 },
             )
 

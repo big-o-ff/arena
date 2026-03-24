@@ -7,6 +7,9 @@ import axios, { type AxiosInstance } from "axios";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
+/** Avoid hanging forever when the API host/port is wrong or unreachable (default axios has no timeout). */
+const API_TIMEOUT_MS = 20_000;
+
 /**
  * React hook that returns an Axios instance pre-configured to attach
  * the current Clerk JWT as a Bearer token on every request.
@@ -19,7 +22,10 @@ export function useApiClient(): AxiosInstance {
   const { getToken } = useAuth();
 
   const client = useMemo(() => {
-    const instance = axios.create({ baseURL: API_BASE_URL });
+    const instance = axios.create({
+      baseURL: API_BASE_URL,
+      timeout: API_TIMEOUT_MS,
+    });
 
     instance.interceptors.request.use(async (config) => {
       const token = await getToken();

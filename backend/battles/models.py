@@ -37,6 +37,25 @@ class Battle(models.Model):
     )
     player1_hp = models.PositiveSmallIntegerField(default=100)
     player2_hp = models.PositiveSmallIntegerField(default=100)
+    spectator_likes = models.PositiveIntegerField(default=0)
+    ends_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the match auto-ends (typically 30 minutes after going active).",
+    )
+    ended_reason = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        help_text="How the battle ended: resign, hp_zero, timeout, etc.",
+    )
+    resigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="battles_resigned",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -110,6 +129,38 @@ class Submission(models.Model):
         return f"{self.player.username} -> {self.problem.title} ({self.passed_cases}/{self.total_cases})"
 
 
+class BattleReward(models.Model):
+    """Persisted reward when a player wins a round (first to pass all tests)."""
+
+    class RewardType(models.TextChoices):
+        ROUND_FIRST_SOLVE = "round_first_solve", "Round first solve"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="battle_rewards",
+    )
+    battle = models.ForeignKey(
+        Battle,
+        on_delete=models.CASCADE,
+        related_name="rewards",
+    )
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    reward_type = models.CharField(
+        max_length=32,
+        choices=RewardType.choices,
+        default=RewardType.ROUND_FIRST_SOLVE,
+    )
+    hp_damage_dealt = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.user} +{self.hp_damage_dealt} HP vs opp ({self.battle_id})"
+
+
 class BattleRequest(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
@@ -140,7 +191,7 @@ class BattleRequest(models.Model):
         if not self.pk:  # only on creation
             from django.utils import timezone
             from datetime import timedelta
-            self.expires_at = timezone.now() + timedelta(minutes=5)
+            self.expires_at = timezone.now() + timedelta(minutes=30)
         super().save(*args, **kwargs)
 
     class Meta:

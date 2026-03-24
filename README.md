@@ -1,112 +1,163 @@
-# Bigoff – Real-time DSA Battle Platform
+# Arena
 
-Bigoff is a full-stack arena for real-time DSA battles with HP-based combat, sabotage moves, and live spectators.
+Real-time coding battle platform with:
+- **Frontend:** Next.js (`frontend`)
+- **Backend API + WebSockets:** Django + Channels (`backend`)
+- **Async workers:** Celery
+- **Broker / channel layer:** Redis
 
-## Stack
+---
 
-- **Backend**: Django 5 + Django REST Framework + Django Channels (Redis)
-- **Database**: MySQL
-- **Frontend**: Next.js 14 (App Router) + Tailwind CSS + Monaco editor
+## Project Structure
 
-## Project layout
+- `frontend` - Next.js app (battle UI, spectate UI, auth flows)
+- `backend` - Django REST API, Channels consumers, Celery tasks
+- `problems` - Problem dataset and related assets
 
-- `backend/` – Django project (`config`) and apps: `accounts`, `problems`, `battles`, `sabotage`, `spectators`, `dashboard`
-- `frontend/` – Next.js 14 app with noir terminal UI and battle views
+---
 
-## Arena — local dev setup
+## Prerequisites
 
-### System dependencies (one-time, macOS)
-```bash
-brew install mysql-client pkg-config redis
-export PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig"
-```
+- Python 3.12+ (project currently runs on 3.14 as well)
+- Node.js 18+ and npm
+- Redis running on `127.0.0.1:6379`
+- MySQL (or matching DB settings in `backend/config/settings.py`)
+- Clerk keys for frontend auth
 
-### Services — start before anything else
+---
 
-Open DBngin and start both:
-- MySQL 8 — `bigofff` on port 3306
-- Redis — port 6379
+## One-Time Setup
 
-### Backend setup (one-time)
+### 1) Backend
+
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-export PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig"
 pip install -r requirements.txt
-pip install svix
-python3 manage.py migrate
-python3 manage.py seed_problems
+python manage.py migrate
 ```
 
-### Run (4 terminals, all from backend/ with venv active)
+To import the full problem set into DB (supports `problems/merged_problems.json`):
+
 ```bash
-# Terminal 1
-source .venv/bin/activate
-daphne -p 8000 config.asgi:application
-
-# Terminal 2
-source .venv/bin/activate
-celery -A config worker -Q execution -c 4 --loglevel=info
-
-# Terminal 3
-source .venv/bin/activate
-celery -A config worker -Q events -c 10 --loglevel=info
-
-# Terminal 4
-cd ../frontend && npm install && npm run dev
+python manage.py import_problems ../problems/merged_problems.json
 ```
 
-Open `http://localhost:3000`
+If needed, create and update backend env vars:
 
-### Adding problems to the bank
 ```bash
-python3 manage.py import_problems path/to/problems.json
+cp ../.env.example .env
 ```
 
-JSON format:
-```json
-[
-  {
-    "title": "Problem Title",
-    "difficulty": "easy|medium|hard",
-    "description": "...",
-    "input_format": "...",
-    "output_format": "...",
-    "constraints": "...",
-    "sample_input": "...",
-    "sample_output": "...",
-    "test_cases": [
-      {"input": "...", "output": "..."}
-    ]
-  }
-]
+### 2) Frontend
+
+```bash
+cd frontend
+npm install
 ```
 
-### Environment variables
+Create `frontend/.env.local` with at least:
 
-Backend `.env`:
-```
-DJANGO_SECRET_KEY=any-random-string-for-local-dev
-DJANGO_DEBUG=True
-REDIS_URL=redis://127.0.0.1:6379/0
-CLERK_WEBHOOK_SECRET=from-clerk-dashboard
+```env
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_WS_BASE_URL=ws://127.0.0.1:8000
+# plus NEXT_PUBLIC_CLERK_* values
 ```
 
-Frontend `.env.local`:
-```
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-NEXT_PUBLIC_WS_BASE_URL=ws://localhost:8000
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=from-clerk-dashboard
-CLERK_SECRET_KEY=from-clerk-dashboard
+---
+
+## Run Locally (4 Terminals)
+
+### Terminal A - Backend API + WebSockets
+
+```bash
+cd backend
+source .venv/bin/activate
+daphne -b 127.0.0.1 -p 8000 config.asgi:application
 ```
 
-## Key URLs
+### Terminal B - Celery Worker
 
-- Landing: `http://localhost:3000/`
-- Register / Login: `/register`, `/login`
-- Lobby: `/lobby`
-- Battle: `/battle/:id`
-- Spectate: `/spectate/:id`
-- Profile: `/profile/:username`
-- Admin dashboard: `/admin` (admin / superadmin only) 
+```bash
+cd backend
+source .venv/bin/activate
+celery -A config worker -l info -Q execution,events --without-heartbeat
+```
+
+### Terminal C - Redis
+
+```bash
+redis-server
+```
+
+### Terminal D - Frontend
+
+```bash
+cd frontend
+npm run dev -- --hostname 0.0.0.0 --port 3000
+```
+
+Open: `http://localhost:3000`
+
+---
+
+## Quick Health Checks
+
+- Backend API:
+  ```bash
+  curl -I http://127.0.0.1:8000/api/problems/
+  ```
+- Frontend:
+  - Visit `http://localhost:3000`
+- Redis:
+  ```bash
+  redis-cli ping
+  ```
+  Expect `PONG`.
+
+---
+
+## Common Issues
+
+- **`Address already in use` (8000/3000/6379):**
+  Another process is already running on that port. Stop it first.
+
+- **Spectate/live updates not working:**
+  Ensure you are running **Daphne** (ASGI), not only `runserver`.
+
+- **`Could not connect to Redis at 127.0.0.1:6379`:**
+  Start Redis in another terminal.
+
+- **`Unknown or unexpected option: --host` (Next.js):**
+  Use `--hostname` instead:
+  ```bash
+  npm run dev -- --hostname 0.0.0.0 --port 3000
+  ```
+
+- **Celery heartbeat errors on macOS:**
+  Keep `--without-heartbeat` in the worker command.
+
+---
+
+## Notes
+
+- Battles are time-bound; server-side state finalization is handled via API/task flow.
+- WebSocket routes are served via Django Channels and Redis channel layer.
+- For spectator mode and live typing, all four services should be up.
+
+---
+
+## Deploy Checklist (Recommended)
+
+On a fresh host, run these in order:
+
+```bash
+cd backend
+source .venv/bin/activate
+python manage.py migrate
+python manage.py import_problems ../problems/merged_problems.json
+```
+
+This ensures schema + full questions dataset are present after deploy.
+

@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import resource
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import dataclass
@@ -46,17 +47,32 @@ class ExecutionResult:
 
 
 def _make_limiter(timeout: int):
-    """Return a preexec_fn that applies resource limits to the child process."""
+    """Return a preexec_fn that applies resource limits to the child process.
+
+    macOS (Darwin) often rejects RLIMIT_AS / RLIMIT_NPROC in ways Linux does not;
+    each limit is applied best-effort so subprocess does not crash in preexec_fn.
+    """
 
     def _limit():
-        # 128 MB address space
-        resource.setrlimit(resource.RLIMIT_AS, (128 * 1024 * 1024, 128 * 1024 * 1024))
-        # CPU time limit
-        resource.setrlimit(resource.RLIMIT_CPU, (timeout, timeout))
-        # 1 MB max file size
-        resource.setrlimit(resource.RLIMIT_FSIZE, (1 * 1024 * 1024, 1 * 1024 * 1024))
-        # Max 32 child processes
-        resource.setrlimit(resource.RLIMIT_NPROC, (32, 32))
+        def _try_set(which: int, pair: tuple[int, int]) -> None:
+            try:
+                resource.setrlimit(which, pair)
+            except (ValueError, OSError):
+                pass
+
+        # CPU wall — works on macOS/Linux
+        _try_set(resource.RLIMIT_CPU, (timeout, timeout))
+        # Output / temp file size cap
+        _try_set(resource.RLIMIT_FSIZE, (1 * 1024 * 1024, 1 * 1024 * 1024))
+        # Virtual memory — Linux jails; Darwin frequently raises here, so optional
+        if sys.platform != "darwin":
+            _try_set(
+                resource.RLIMIT_AS,
+                (128 * 1024 * 1024, 128 * 1024 * 1024),
+            )
+        # NPROC — can fail on macOS with strict caps; skip on darwin
+        if sys.platform != "darwin":
+            _try_set(resource.RLIMIT_NPROC, (32, 32))
 
     return _limit
 

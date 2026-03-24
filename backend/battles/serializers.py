@@ -39,3 +39,30 @@ class BattleRequestSerializer(serializers.ModelSerializer):
         fields = ("id", "from_user", "to_user", "status", "created_at")
         read_only_fields = ("from_user", "to_user", "status", "created_at")
 
+
+class BattleRequestHistorySerializer(serializers.ModelSerializer):
+    """Sent + received battle requests for the notification center."""
+
+    from_user = UserProfileSerializer(read_only=True)
+    to_user = UserProfileSerializer(read_only=True)
+    direction = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BattleRequest
+        fields = (
+            "id",
+            "from_user",
+            "to_user",
+            "status",
+            "created_at",
+            "expires_at",
+            "direction",
+        )
+
+    def get_direction(self, obj: BattleRequest) -> str:
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            if request.user.id == obj.from_user_id:
+                return "sent"
+        return "received"
+
