@@ -7,7 +7,7 @@ django-cors-headers==4.3.1
 channels==4.0.0
 channels-redis==4.1.0
 daphne==4.2.1
-mysqlclient==2.2.4
+# mysqlclient optional — needs MySQL headers (brew install mysql-client). This app uses PyMySQL as MySQLdb.
 Pillow==11.2.1
 celery==5.4.0
 redis==5.0.7
