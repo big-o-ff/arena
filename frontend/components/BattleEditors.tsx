@@ -116,6 +116,11 @@ export function BattleEditors({
   const [runResult, setRunResult] = useState<RunResult | null>(null);
   const [runCooldown, setRunCooldown] = useState(false);
 
+  const handleClearTerminal = useCallback(() => {
+    setRunResult(null);
+    // Keep cooldown behavior; user can still run again after cooldown window.
+  }, []);
+
   // ---- GC confirmation ----
   const [gcConfirm, setGcConfirm] = useState(false);
 
@@ -272,46 +277,105 @@ export function BattleEditors({
           />
         </div>
 
-        {/* Run result inline display */}
-        {runResult !== null && (
+        {/* Terminal view (sandboxed stdout/stderr) */}
+        <div
+          style={{
+            padding: "8px 12px",
+            borderTop: "1px solid rgba(0,255,136,0.1)",
+            fontSize: "11px",
+            fontFamily: "monospace",
+            flexShrink: 0,
+            background: "rgba(8,10,14,0.6)",
+          }}
+        >
           <div
             style={{
-              padding: "8px 12px",
-              borderTop: "1px solid rgba(0,255,136,0.1)",
-              fontSize: "11px",
-              fontFamily: "monospace",
-              flexShrink: 0,
-              background: runResult.passed
-                ? "rgba(0,255,136,0.05)"
-                : "rgba(255,68,68,0.05)",
-              borderLeft: `3px solid ${runResult.passed ? "#00ff88" : "#ff4444"}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "10px",
+              marginBottom: "8px",
             }}
           >
-            {runResult.passed ? (
-              <span style={{ color: "#00ff88" }}>
-                ✓ Sample passed — 1/1 &nbsp;
-                <span style={{ color: "rgba(200,211,224,0.4)" }}>
-                  ({runResult.execution_time_ms}ms)
-                </span>
-              </span>
-            ) : (
-              <div style={{ color: "#ff4444" }}>
-                <div>✗ Sample failed</div>
-                <div style={{ marginTop: "4px", color: "rgba(200,211,224,0.7)" }}>
-                  Got: <code>{runResult.output || "(empty)"}</code>
+            <div style={{ color: "#00ff88", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              Terminal (sandbox)
+            </div>
+            <button
+              type="button"
+              onClick={handleClearTerminal}
+              disabled={isRunning}
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(200,211,224,0.18)",
+                borderRadius: "4px",
+                color: isRunning ? "rgba(200,211,224,0.25)" : "rgba(200,211,224,0.6)",
+                fontSize: "10px",
+                padding: "4px 8px",
+                cursor: isRunning ? "not-allowed" : "pointer",
+                fontFamily: "monospace",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+
+          <div
+            style={{
+              maxHeight: 160,
+              overflowY: "auto",
+              border: "1px solid rgba(200,211,224,0.08)",
+              borderRadius: "6px",
+              background: "rgba(0,0,0,0.35)",
+              padding: "10px 10px",
+              color: "rgba(200,211,224,0.9)",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              lineHeight: 1.45,
+            }}
+          >
+            {isRunning ? (
+              <span style={{ color: "rgba(200,211,224,0.55)" }}>Running in sandbox...</span>
+            ) : runResult ? (
+              <>
+                <div style={{ marginBottom: 8, color: "rgba(0,255,136,0.7)" }}>
+                  $ run sample
                 </div>
-                <div style={{ color: "rgba(200,211,224,0.7)" }}>
-                  Expected: <code>{runResult.expected}</code>
+                <div style={{ marginBottom: 8, color: "rgba(200,211,224,0.65)" }}>
+                  stdin:
+                  {"\n"}
+                  {selectedProblem?.sample_input || "(empty)"}
                 </div>
-                {runResult.stderr && (
-                  <div style={{ color: "#ffa500", marginTop: "4px" }}>
-                    Err: {runResult.stderr.slice(0, 120)}
+                <div style={{ marginBottom: 8 }}>
+                  stdout:
+                  {"\n"}
+                  {runResult.output || "(empty)"}
+                </div>
+                {runResult.stderr ? (
+                  <div style={{ marginBottom: 8, color: "rgba(255,165,0,0.9)" }}>
+                    stderr:
+                    {"\n"}
+                    {runResult.stderr}
                   </div>
-                )}
-              </div>
+                ) : null}
+                <div
+                  style={{
+                    marginTop: 10,
+                    color: runResult.passed ? "#00ff88" : "#ff4444",
+                    fontWeight: 700,
+                  }}
+                >
+                  {runResult.passed ? "PASS" : "FAIL"} · {runResult.execution_time_ms}ms
+                  {"  "}
+                  <span style={{ color: "rgba(200,211,224,0.45)", fontWeight: 500 }}>
+                    (expected: {runResult.expected})
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span style={{ color: "rgba(200,211,224,0.35)" }}>No terminal output yet. Click “▷ Run (sample)”.</span>
             )}
           </div>
-        )}
+        </div>
 
         {/* Bottom action bar */}
         <div
@@ -327,7 +391,7 @@ export function BattleEditors({
           {/* RUN button */}
           <button
             onClick={handleRun}
-            disabled={isRunning || runCooldown || !selectedProblem}
+            disabled={isRunning || runCooldown || battleComplete || !selectedProblem}
             style={{
               background: "transparent",
               border: "1px solid rgba(200,211,224,0.3)",

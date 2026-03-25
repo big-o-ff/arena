@@ -693,7 +693,7 @@ export default function BattlePage() {
   return (
     <div
       style={{
-        flex: 1,
+        flex: "1 1 0%",
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
@@ -815,10 +815,11 @@ export default function BattlePage() {
           display: "grid",
           gridTemplateColumns: "40% 35% 25%",
           gridTemplateRows: "minmax(0, 1fr)",
-          flex: 1,
+          flex: "1 1 0%",
           gap: "8px",
           minHeight: 0,
           alignItems: "stretch",
+          overflow: "hidden",
         }}
       >
         {/* ---- LEFT: Code Editor ---- */}
@@ -902,13 +903,23 @@ export default function BattlePage() {
         </div>
 
         {/* ---- MIDDLE: Problem/Opponent ---- */}
-        <MiddlePanel
-          problems={problems}
-          selectedProblemIdx={selectedProblemIdx}
-          onSelectProblem={setSelectedProblemIdx}
-          solvedProblems={solvedProblems}
-          opponentCode={opponentCode}
-        />
+        <div
+          style={{
+            minHeight: 0,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <MiddlePanel
+            problems={problems}
+            selectedProblemIdx={selectedProblemIdx}
+            onSelectProblem={setSelectedProblemIdx}
+            solvedProblems={solvedProblems}
+            opponentCode={opponentCode}
+          />
+        </div>
 
         {/* ---- RIGHT: Game State ---- */}
         <div
@@ -1471,11 +1482,11 @@ function MiddlePanel({
       style={{
         display: "flex",
         flexDirection: "column",
+        flex: 1,
         background: "rgba(10,12,16,0.95)",
         border: "1px solid rgba(0,255,136,0.15)",
         borderRadius: "8px",
         minHeight: 0,
-        height: "100%",
         overflow: "hidden",
       }}
     >
