@@ -138,6 +138,9 @@ Open: `http://localhost:3000`
 - **Celery heartbeat errors on macOS:**
   Keep `--without-heartbeat` in the worker command.
 
+- **`mysqlclient` / `pkg-config` errors when `pip install` on macOS:**
+  This repo uses **PyMySQL** as the MySQL driver (`pymysql.install_as_MySQLdb()`), so `mysqlclient` is not in `requirements.txt`. If you still have an old checkout, remove the `mysqlclient` line or `git pull` the latest `requirements.txt`.
+
 ---
 
 ## Notes

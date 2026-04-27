@@ -18,6 +18,14 @@ type BattleState = {
   spectator_likes: number;
 };
 
+type SampleRunPayload = {
+  passed: boolean;
+  output: string;
+  expected: string;
+  execution_time_ms: number;
+  stderr?: string | null;
+};
+
 const EMOTES = ["🔥", "🤖", "💀", "⚔️", "🚀", "🐍"];
 
 export default function SpectateBattlePage() {
@@ -29,6 +37,10 @@ export default function SpectateBattlePage() {
   const [messageLog, setMessageLog] = useState<string[]>([]);
   /** Latest editor buffer per participant user id (from OPPONENT_CODE). */
   const [liveCodeByPlayerId, setLiveCodeByPlayerId] = useState<Record<number, string>>({});
+  /** Last sample run (▷ Run) per player — from PLAYER_SAMPLE_RUN (server broadcast). */
+  const [sampleRunByPlayerId, setSampleRunByPlayerId] = useState<
+    Record<number, SampleRunPayload>
+  >({});
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -84,6 +96,26 @@ export default function SpectateBattlePage() {
               : Number(raw);
           if (pid != null && Number.isFinite(pid)) {
             setLiveCodeByPlayerId((prev) => ({ ...prev, [pid]: code }));
+          }
+        }
+        if (msg.event === "PLAYER_SAMPLE_RUN") {
+          const p = msg.payload ?? {};
+          const raw = p.player_id;
+          const pid =
+            raw === null || raw === undefined || raw === ""
+              ? null
+              : Number(raw);
+          if (pid != null && Number.isFinite(pid)) {
+            setSampleRunByPlayerId((prev) => ({
+              ...prev,
+              [pid]: {
+                passed: Boolean(p.passed),
+                output: typeof p.output === "string" ? p.output : "",
+                expected: typeof p.expected === "string" ? p.expected : "",
+                execution_time_ms: Number(p.execution_time_ms) || 0,
+                stderr: p.stderr ?? null,
+              },
+            }));
           }
         }
         if (msg.event === "ROUND_RESULT" || msg.event === "BATTLE_END") {
@@ -271,6 +303,7 @@ export default function SpectateBattlePage() {
                 Number.isFinite(uid) &&
                 Object.prototype.hasOwnProperty.call(liveCodeByPlayerId, uid);
               const cell = hasLive ? liveCodeByPlayerId[uid] : undefined;
+              const run = Number.isFinite(uid) ? sampleRunByPlayerId[uid] : undefined;
               return (
               <div
                 key={p.id}
@@ -310,10 +343,74 @@ export default function SpectateBattlePage() {
                       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
+                    minHeight: "120px",
                   }}
                 >
                   {hasLive ? String(cell ?? "") : "Waiting for editor activity…"}
                 </pre>
+                <div
+                  style={{
+                    borderTop: "1px solid rgba(0,255,136,0.12)",
+                    padding: "8px 10px",
+                    background: "rgba(0,0,0,0.55)",
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                    fontSize: "10px",
+                    lineHeight: 1.5,
+                    color: "rgba(180,195,210,0.95)",
+                    maxHeight: "min(28vh, 220px)",
+                    overflow: "auto",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "rgba(0,255,136,0.65)",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      marginBottom: "6px",
+                      fontSize: "9px",
+                    }}
+                  >
+                    Sample run output
+                  </div>
+                  {run ? (
+                    <>
+                      <div style={{ color: run.passed ? "#00ff88" : "#ff6666" }}>
+                        {run.passed ? "PASS" : "FAIL"} · {run.execution_time_ms}ms
+                      </div>
+                      <div style={{ color: "rgba(200,211,224,0.55)", marginTop: "4px" }}>
+                        stdout:
+                      </div>
+                      <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                        {run.output || "(empty)"}
+                      </div>
+                      {!run.passed && (
+                        <>
+                          <div style={{ color: "rgba(200,211,224,0.45)", marginTop: "6px" }}>
+                            expected:
+                          </div>
+                          <div style={{ color: "#99ff99", whiteSpace: "pre-wrap" }}>
+                            {run.expected}
+                          </div>
+                        </>
+                      )}
+                      {run.stderr ? (
+                        <>
+                          <div style={{ color: "rgba(255,170,100,0.85)", marginTop: "6px" }}>
+                            stderr:
+                          </div>
+                          <div style={{ color: "#ffaa88", whiteSpace: "pre-wrap" }}>
+                            {run.stderr}
+                          </div>
+                        </>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span style={{ color: "rgba(200,211,224,0.35)" }}>
+                      Waiting for ▷ Run (sample)…
+                    </span>
+                  )}
+                </div>
               </div>
             );
             })}

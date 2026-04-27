@@ -790,6 +790,30 @@ class RunSolutionView(views.APIView):
         expected = problem.sample_output.strip()
         passed = actual == expected
 
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                stderr = result.stderr or None
+                if stderr and len(stderr) > 4000:
+                    stderr = stderr[:4000] + "…"
+                async_to_sync(channel_layer.group_send)(
+                    f"battle_{battle.id}",
+                    {
+                        "type": "broadcast.event",
+                        "event": "PLAYER_SAMPLE_RUN",
+                        "payload": {
+                            "player_id": request.user.id,
+                            "passed": passed,
+                            "output": actual,
+                            "expected": expected,
+                            "execution_time_ms": result.elapsed_ms,
+                            "stderr": stderr,
+                        },
+                    },
+                )
+        except Exception:
+            pass
+
         return Response(
             {
                 "passed": passed,
