@@ -11,6 +11,8 @@
   --terminal-green: #39FF14;
   --noir-surface: #0a0a0a;
   --noir-border: #1a1a1a;
+  --logo-size: clamp(10rem, 20vw, 17.5rem);
+  --logo-depth: calc(var(--logo-size) / 2);
 }
 
 /* 2. CORE RESET & BASE STYLES */
@@ -41,6 +43,7 @@ body {
   inset: 0;
   z-index: 1;
   opacity: 0.15;
+  pointer-events: none;
 }
 
 .scanline,
@@ -89,10 +92,10 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 2rem;
-  gap: 7rem;
-  /* Restored original spacing */
+  padding: clamp(1rem, 5vw, 2rem);
+  gap: clamp(3rem, 10vw, 7rem);
   width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -104,8 +107,8 @@ body {
 }
 
 .logo-3d {
-  width: 280px;
-  height: 280px;
+  width: var(--logo-size);
+  height: var(--logo-size);
   position: relative;
   transform-style: preserve-3d;
   animation: float 6s ease-in-out infinite, rotate3d 20s linear infinite;
@@ -115,11 +118,11 @@ body {
 
   0%,
   100% {
-    transform: translateY(0px) rotateX(0deg);
+    transform: translateY(0) rotateX(0deg);
   }
 
   50% {
-    transform: translateY(-20px) rotateX(5deg);
+    transform: translateY(-1.25rem) rotateX(5deg);
   }
 }
 
@@ -141,15 +144,15 @@ body {
   align-items: center;
   justify-content: center;
   font-family: 'Orbitron', sans-serif;
-  font-size: 4rem;
+  font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 900;
 
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 255, 65, 0.05));
 
   border: 2px solid var(--terminal-green);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(60px);
+  box-shadow: 0 0 1.25rem rgba(0, 255, 65, 0.3), inset 0 0 1.25rem rgba(0, 255, 65, 0.1);
+  backdrop-filter: blur(1.5rem);
+  -webkit-backdrop-filter: blur(3.75rem);
   transform: translateZ(0);
   will-change: backdrop-filter;
 }
@@ -176,27 +179,27 @@ body {
 
 /* Original 3D Face Transforms */
 .logo-face.front {
-  transform: translateZ(140px);
+  transform: translateZ(var(--logo-depth));
 }
 
 .logo-face.back {
-  transform: rotateY(180deg) translateZ(140px);
+  transform: rotateY(180deg) translateZ(var(--logo-depth));
 }
 
 .logo-face.left {
-  transform: rotateY(-90deg) translateZ(140px);
+  transform: rotateY(-90deg) translateZ(var(--logo-depth));
 }
 
 .logo-face.right {
-  transform: rotateY(90deg) translateZ(140px);
+  transform: rotateY(90deg) translateZ(var(--logo-depth));
 }
 
 .logo-face.top {
-  transform: rotateX(90deg) translateZ(140px);
+  transform: rotateX(90deg) translateZ(var(--logo-depth));
 }
 
 .logo-face.bottom {
-  transform: rotateX(-90deg) translateZ(140px);
+  transform: rotateX(-90deg) translateZ(var(--logo-depth));
 }
 
 .logo-face img {
@@ -205,7 +208,7 @@ body {
   width: 80%;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.5));
+  filter: drop-shadow(0 0 0.625rem rgba(0, 255, 65, 0.5));
 }
 
 /* 7. TEXT & TAGLINE */
@@ -216,24 +219,24 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+  text-shadow: 0 0 1.875rem rgba(0, 255, 65, 0.5);
 }
 
 .tagline {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 3vw, 1.5rem);
   text-align: center;
   color: var(--terminal-green);
-  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  text-shadow: 0 0 0.625rem rgba(0, 255, 65, 0.5);
   opacity: 0;
   animation: fadeInUp 1s ease-out 0.5s forwards;
-  max-width: 600px;
+  max-width: 37.5rem;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(1.25rem);
   }
 
   to {
@@ -245,6 +248,8 @@ body {
 /* 8. CYBER BUTTONS (RIPPLE + GLITCH) */
 .button-container {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 2rem;
   opacity: 0;
   animation: fadeInUp 1s ease-out 1s forwards;
@@ -257,13 +262,13 @@ body {
   font-size: 1.1rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 0.125rem;
   background: transparent;
   border: 2px solid;
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s ease;
-  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+  clip-path: polygon(0 0, calc(100% - 1em) 0, 100% 1em, 100% 100%, 1em 100%, 0 calc(100% - 1em));
 }
 
 /* Hover Shimmer */
@@ -298,34 +303,34 @@ body {
 .btn-initiate {
   color: var(--terminal-green);
   border-color: var(--terminal-green);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 1.25rem rgba(0, 255, 65, 0.3), inset 0 0 1.25rem rgba(0, 255, 65, 0.1);
 }
 
 .btn-initiate:hover {
   background: rgba(0, 255, 65, 0.1);
-  transform: translateY(-3px);
+  transform: translateY(-0.1875rem);
 }
 
 .btn-initiate:hover::after {
-  width: 300px;
-  height: 300px;
+  width: 20rem;
+  height: 20rem;
   background: rgba(0, 255, 65, 0.3);
 }
 
 .btn-spectate {
   color: var(--secondary-glow);
   border-color: var(--secondary-glow);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 1.25rem rgba(0, 255, 255, 0.3), inset 0 0 1.25rem rgba(0, 255, 255, 0.1);
 }
 
 .btn-spectate:hover {
   background: rgba(0, 255, 255, 0.1);
-  transform: translateY(-3px);
+  transform: translateY(-0.1875rem);
 }
 
 .btn-spectate:hover::after {
-  width: 300px;
-  height: 300px;
+  width: 20rem;
+  height: 20rem;
   background: rgba(0, 255, 255, 0.3);
 }
 
@@ -372,69 +377,31 @@ body {
 }
 
 .corner-decor.top-left {
-  top: 20px;
-  left: 20px;
+  top: 1.25rem;
+  left: 1.25rem;
 }
 
 .corner-decor.top-right {
-  top: 20px;
-  right: 20px;
+  top: 1.25rem;
+  right: 1.25rem;
   text-align: right;
 }
 
 .corner-decor.bottom-left {
-  bottom: 20px;
-  left: 20px;
+  bottom: 1.25rem;
+  left: 1.25rem;
 }
 
 .corner-decor.bottom-right {
-  bottom: 20px;
-  right: 20px;
+  bottom: 1.25rem;
+  right: 1.25rem;
   text-align: right;
 }
 
 /* 10. RESPONSIVE DESIGN */
 @media (max-width: 768px) {
-  .container {
-    gap: 2rem;
-  }
-
-  .logo-3d {
-    width: 200px;
-    height: 200px;
-  }
-
-  .logo-face {
-    font-size: 2.5rem;
-  }
-
-  .logo-face.front {
-    transform: translateZ(100px);
-  }
-
-  .logo-face.back {
-    transform: rotateY(180deg) translateZ(100px);
-  }
-
-  .logo-face.left {
-    transform: rotateY(-90deg) translateZ(100px);
-  }
-
-  .logo-face.right {
-    transform: rotateY(90deg) translateZ(100px);
-  }
-
-  .logo-face.top {
-    transform: rotateX(90deg) translateZ(100px);
-  }
-
-  .logo-face.bottom {
-    transform: rotateX(-90deg) translateZ(100px);
-  }
-
-  .button-container {
-    flex-direction: column;
-    gap: 1rem;
+  .corner-decor {
+    display: none;
   }
 }
 

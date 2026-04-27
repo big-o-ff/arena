@@ -7,6 +7,7 @@ import { useUser, useClerk, useAuth } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../lib/fetchWithAuth";
 import TetrisLoading from "@/components/tetris-loader";
 import { lobbySocketUrl } from "../../lib/ws";
+import { ProfileHoverCard } from "@/components/ProfileHoverCard";
 
 type LeaderboardEntry = {
   username: string;
@@ -366,12 +367,11 @@ export default function LobbyPage() {
             </p>
           </div>
           <div className="flex gap-4">
-            <Link
-              href={`/profile/${djangoUser.username}`}
-              className="text-xs text-noir-accent hover:underline"
-            >
-              Profile
-            </Link>
+            <ProfileHoverCard username={djangoUser.username}>
+              <span className="text-xs text-noir-accent hover:underline cursor-pointer">
+                Profile
+              </span>
+            </ProfileHoverCard>
             <button
               onClick={() => signOut({ redirectUrl: "/" })}
               className="text-xs text-noir-danger hover:underline"
@@ -484,7 +484,9 @@ export default function LobbyPage() {
                 >
                   <span className="text-noir-terminal/80">
                     {String(idx + 1).padStart(2, "0")}.{" "}
-                    <span className="font-medium text-noir-accent">{entry.display_name}</span>
+                    <ProfileHoverCard username={entry.username} wins={entry.total_wins} losses={entry.total_losses}>
+                      <span className="font-medium text-noir-accent hover:underline cursor-pointer">{entry.display_name}</span>
+                    </ProfileHoverCard>
                   </span>
                   <span className="text-noir-terminal/60">
                     {entry.total_wins}W / {entry.total_losses}L
@@ -542,7 +544,9 @@ export default function LobbyPage() {
                         >
                           {row.direction === "sent" ? "→" : "←"}
                         </span>{" "}
-                        @{peer.username}
+                        <ProfileHoverCard username={peer.username}>
+                          <span className="hover:underline cursor-pointer">@{peer.username}</span>
+                        </ProfileHoverCard>
                       </span>
                       <span
                         className={`shrink-0 uppercase tracking-tighter ${statusStyle(row.status)}`}

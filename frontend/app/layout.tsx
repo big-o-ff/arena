@@ -3,6 +3,22 @@ import type { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import ClientShell from "./ClientShell";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+export const metadata: Metadata = {
+  title: "Big O'ff",
+  description: "gamified dsa platform",
+  other: {
+    rel: "stylesheet",
+    url: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap",
+  },
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -24,12 +40,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       }}
     >
       <html lang="en">
-        <head>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
-          />
-        </head>
         <body className="relative min-h-screen bg-noir-bg font-mono text-noir-terminal">
           <ClientShell>{children}</ClientShell>
         </body>

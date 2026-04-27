@@ -30,4 +30,4 @@ Thumbs.db
 
 .next/
 node_modules/
-dump.rdb
+*.rdb
