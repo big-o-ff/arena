@@ -62,7 +62,8 @@ export function ProfileHoverCard({ username, wins, losses, daily_activity, child
       <Popover.Portal>
         <Popover.Content 
           side="top"
-          sideOffset={5} 
+          sideOffset={5}
+          collisionPadding={16}
           className="z-50 w-[320px] rounded-xl overflow-hidden shadow-2xl relative outline-none font-mono"
           style={{
             background: "linear-gradient(135deg, #e0e0e0 0%, #ffffff 45%, #b0b0b0 50%, #ffffff 55%, #d1d1d1 100%)",

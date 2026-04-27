@@ -152,7 +152,7 @@ body {
   border: 2px solid var(--terminal-green);
   box-shadow: 0 0 1.25rem rgba(0, 255, 65, 0.3), inset 0 0 1.25rem rgba(0, 255, 65, 0.1);
   backdrop-filter: blur(1.5rem);
-  -webkit-backdrop-filter: blur(3.75rem);
+  -webkit-backdrop-filter: blur(1.5rem);
   transform: translateZ(0);
   will-change: backdrop-filter;
 }

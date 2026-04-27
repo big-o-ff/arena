@@ -46,112 +46,146 @@ export default function SpectateLobbyPage() {
   }, []);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0a0c10",
-        color: "#c8d3e0",
-        padding: "24px",
-        maxWidth: "900px",
-        margin: "0 auto",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "24px",
-          flexWrap: "wrap",
-          gap: "12px",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              color: "#00ff88",
-              fontSize: "11px",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-            }}
-          >
-            Spectate lobby
+    <div className="min-h-screen bg-black text-white font-mono flex flex-col">
+      {/* Top Bar Area */}
+      <div className="p-6 md:p-8 max-w-7xl mx-auto w-full flex-1">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-10">
+          <div>
+            <div className="text-noir-terminal/50 text-[10px] uppercase tracking-widest mb-2">Spectate Lobby</div>
+            <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              Live battles <span className="text-noir-accent opacity-50 text-xl">//</span>
+            </h1>
+            <p className="text-xs text-noir-terminal/60">
+              Watch real players in action. Every match is live.
+            </p>
           </div>
-          <h1 style={{ margin: "8px 0 0", fontSize: "22px", fontWeight: 600 }}>
-            Live battles
-          </h1>
+
+          <div className="flex items-center gap-4 text-xs">
+            <button className="flex items-center gap-2 border border-noir-accent/30 text-noir-accent px-4 py-2 hover:bg-noir-accent/10 transition-colors">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+              Filter
+            </button>
+            <button className="flex items-center gap-2 border border-noir-border/50 text-white px-4 py-2 hover:bg-white/5 transition-colors">
+              Newest
+              <svg className="w-3 h-3 text-noir-terminal/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <Link href="/" className="flex items-center gap-2 text-noir-accent hover:underline ml-4">
+              &larr; Home
+            </Link>
+            <div className="w-10 h-10 border border-noir-accent/30 rounded flex items-center justify-center overflow-hidden ml-2">
+              <svg className="w-6 h-6 text-noir-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+          </div>
         </div>
-        <Link
-          href="/"
-          style={{
-            color: "#00ff88",
-            fontSize: "12px",
-            fontFamily: "monospace",
-            textDecoration: "none",
-            borderBottom: "1px solid rgba(0,255,136,0.35)",
-          }}
-        >
-          ← Home
-        </Link>
+
+        {err && <p className="text-red-500 text-xs">{err}</p>}
+        {rows === null && !err && (
+          <p className="text-noir-terminal/40 text-xs animate-pulse">Scanning frequencies...</p>
+        )}
+        {rows && rows.length === 0 && !err && (
+          <p className="text-noir-terminal/50 text-xs">No active battles right now. Check back soon.</p>
+        )}
+        {rows && rows.length > 0 && (
+          <ul className="flex flex-col gap-4">
+            {rows.map((b) => (
+              <li key={b.id} className="relative group">
+                {/* Corner decors for the row */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-noir-accent/40 group-hover:border-noir-accent transition-colors"></div>
+                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-noir-accent/40 group-hover:border-noir-accent transition-colors"></div>
+                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-noir-accent/40 group-hover:border-noir-accent transition-colors"></div>
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-noir-accent/40 group-hover:border-noir-accent transition-colors"></div>
+
+                <Link
+                  href={`/spectate/${b.id}`}
+                  className="block p-5 border border-noir-border/30 bg-noir-surface/40 hover:bg-noir-surface/80 hover:border-noir-accent/30 transition-all duration-300"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    {/* Battle ID & Live */}
+                    <div className="flex-shrink-0 w-24">
+                      <div className="font-mono text-[10px] text-white/80 tracking-widest mb-1.5">
+                        BATTLE #{b.id}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-noir-accent font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-noir-accent animate-pulse shadow-[0_0_5px_#39FF14]"></span>
+                        LIVE
+                      </div>
+                    </div>
+
+                    {/* Players */}
+                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center border border-noir-accent/30 text-noir-accent font-bold text-sm relative">
+                          <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-noir-accent"></div>
+                          <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-noir-accent"></div>
+                          {b.player1.display_name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-sm text-white">{b.player1.display_name}</span>
+                      </div>
+                      <span className="text-[10px] text-noir-terminal/40 mx-2 hidden sm:block">vs</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center border border-noir-accent/30 text-noir-accent font-bold text-sm relative">
+                           <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-noir-accent"></div>
+                           <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-noir-accent"></div>
+                           {b.player2.display_name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-sm text-white">{b.player2.display_name}</span>
+                      </div>
+                    </div>
+
+                    {/* HP Bars */}
+                    <div className="flex-shrink-0 w-full lg:w-48 text-[10px] space-y-2 mt-4 lg:mt-0">
+                      <div className="text-noir-terminal/40 hidden lg:block">HP</div>
+                      <div className="flex items-center gap-3">
+                        <span className="w-16 text-white text-right">{Math.max(0, b.player1_hp)} / 100</span>
+                        <div className="flex-1 h-1.5 bg-noir-border/50 rounded-full overflow-hidden">
+                          <div className="h-full bg-noir-accent shadow-[0_0_8px_#39FF14]" style={{ width: `${Math.max(0, b.player1_hp)}%` }}></div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="w-16 text-white text-right">{Math.max(0, b.player2_hp)} / 100</span>
+                        <div className="flex-1 h-1.5 bg-noir-border/50 rounded-full overflow-hidden">
+                          <div className="h-full bg-noir-accent shadow-[0_0_8px_#39FF14]" style={{ width: `${Math.max(0, b.player2_hp)}%` }}></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Round & Spectators */}
+                    <div className="flex-shrink-0 w-28 text-xs space-y-1.5 hidden md:block">
+                      <div className="text-noir-terminal/70">Round {b.current_round}</div>
+                      <div className="flex items-center gap-1.5 text-noir-terminal/50 text-[10px]">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        {b.spectator_likes} watching
+                      </div>
+                    </div>
+
+                    {/* Watch Button */}
+                    <div className="flex-shrink-0 mt-4 lg:mt-0">
+                      <button className="w-full lg:w-auto px-6 py-2.5 border border-noir-accent text-noir-accent text-xs uppercase tracking-widest hover:bg-noir-accent/10 transition-colors flex items-center justify-center gap-2">
+                        WATCH <span className="text-[10px]">&gt;</span>
+                      </button>
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {err && <p style={{ color: "#ff6666", fontSize: "13px" }}>{err}</p>}
-      {rows === null && !err && (
-        <p style={{ color: "rgba(200,211,224,0.45)" }}>Loading…</p>
-      )}
-      {rows && rows.length === 0 && !err && (
-        <p style={{ color: "rgba(200,211,224,0.5)", fontSize: "14px" }}>
-          No active battles right now. Check back soon.
-        </p>
-      )}
-      {rows && rows.length > 0 && (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-          {rows.map((b) => (
-            <li key={b.id}>
-              <Link
-                href={`/spectate/${b.id}`}
-                style={{
-                  display: "block",
-                  padding: "16px 18px",
-                  borderRadius: "8px",
-                  border: "1px solid rgba(0,255,136,0.2)",
-                  background: "rgba(8,10,14,0.95)",
-                  textDecoration: "none",
-                  color: "inherit",
-                  transition: "border-color 0.15s",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: "12px",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div>
-                    <span style={{ color: "#00ff88", fontFamily: "monospace", fontSize: "12px" }}>
-                      BATTLE #{b.id}
-                    </span>
-                    <div style={{ marginTop: "6px", fontSize: "14px" }}>
-                      <span style={{ color: "#c8d3e0" }}>{b.player1.display_name}</span>
-                      <span style={{ color: "rgba(200,211,224,0.35)", margin: "0 8px" }}>vs</span>
-                      <span style={{ color: "#c8d3e0" }}>{b.player2.display_name}</span>
-                    </div>
-                    <div style={{ marginTop: "8px", fontSize: "11px", color: "rgba(200,211,224,0.45)" }}>
-                      Round {b.current_round} · ♥ {b.spectator_likes} likes
-                    </div>
-                  </div>
-                  <div style={{ fontSize: "11px", fontFamily: "monospace", color: "rgba(200,211,224,0.5)" }}>
-                    HP {b.player1_hp} — {b.player2_hp}
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Footer Bar */}
+      <div className="border-t border-noir-border/40 p-4 text-[10px] text-noir-terminal/40 flex justify-between items-center px-8">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-noir-accent shadow-[0_0_5px_#39FF14]"></span>
+          SYSTEM ONLINE
+        </div>
+        <div className="flex items-center gap-4">
+          <span>v2.4.0</span>
+          <span className="flex items-center gap-1">
+            SECURE
+            <svg className="w-3 h-3 text-noir-terminal/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
