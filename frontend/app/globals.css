@@ -518,6 +518,45 @@ body {
   }
 }
 
+/* 13. CUSTOM SCROLLBARS — kill the white bar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(57, 255, 20, 0.15); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(57, 255, 20, 0.3); }
+* { scrollbar-width: thin; scrollbar-color: rgba(57, 255, 20, 0.15) transparent; }
+
+/* 14. LOBBY CARD SYSTEM */
+.lobby-card {
+  background: #0d1117;
+  border: 1px solid #1a1f2b;
+  border-radius: 0.5rem;
+  position: relative;
+  transition: border-color 0.25s ease;
+}
+.lobby-card:hover { border-color: #2a3040; }
+.lobby-cta {
+  border: 1.5px solid var(--terminal-green);
+  background: rgba(57, 255, 20, 0.04);
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.08), inset 0 1px 0 rgba(57, 255, 20, 0.1);
+  transition: all 0.3s ease;
+}
+.lobby-cta:hover {
+  background: rgba(57, 255, 20, 0.08);
+  box-shadow: 0 0 30px rgba(57, 255, 20, 0.15), inset 0 1px 0 rgba(57, 255, 20, 0.15);
+}
+.lobby-cta:disabled { opacity: 0.4; box-shadow: none; }
+
+/* 15. LOBBY SCROLL — force dark scrollbar on Safari */
+.lobby-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(57, 255, 20, 0.12) transparent;
+}
+.lobby-scroll::-webkit-scrollbar { width: 4px; }
+.lobby-scroll::-webkit-scrollbar-track { background: transparent; }
+.lobby-scroll::-webkit-scrollbar-thumb { background: rgba(57, 255, 20, 0.15); border-radius: 4px; }
+.lobby-scroll::-webkit-scrollbar-thumb:hover { background: rgba(57, 255, 20, 0.3); }
+
 /* Target the main Clerk card */
 .cl-card {
   -webkit-backdrop-filter: blur(20px) !important;

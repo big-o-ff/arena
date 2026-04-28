@@ -699,8 +699,8 @@ export default function BattlePage() {
         flexDirection: "column",
         overflow: "hidden",
         background: "#0a0c10",
-        padding: "8px",
-        gap: "8px",
+        padding: "24px",
+        gap: "16px",
         boxSizing: "border-box",
         fontFamily: "monospace",
       }}

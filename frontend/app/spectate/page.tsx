@@ -62,19 +62,14 @@ export default function SpectateLobbyPage() {
 
           <div className="flex items-center gap-4 text-xs">
             <button className="flex items-center gap-2 border border-noir-accent/30 text-noir-accent px-4 py-2 hover:bg-noir-accent/10 transition-colors">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
               Filter
             </button>
             <button className="flex items-center gap-2 border border-noir-border/50 text-white px-4 py-2 hover:bg-white/5 transition-colors">
-              Newest
-              <svg className="w-3 h-3 text-noir-terminal/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              Newest &#9660;
             </button>
             <Link href="/" className="flex items-center gap-2 text-noir-accent hover:underline ml-4">
               &larr; Home
             </Link>
-            <div className="w-10 h-10 border border-noir-accent/30 rounded flex items-center justify-center overflow-hidden ml-2">
-              <svg className="w-6 h-6 text-noir-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            </div>
           </div>
         </div>
 
@@ -152,8 +147,7 @@ export default function SpectateLobbyPage() {
                     {/* Round & Spectators */}
                     <div className="flex-shrink-0 w-28 text-xs space-y-1.5 hidden md:block">
                       <div className="text-noir-terminal/70">Round {b.current_round}</div>
-                      <div className="flex items-center gap-1.5 text-noir-terminal/50 text-[10px]">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                      <div className="text-noir-terminal/50 text-[10px]">
                         {b.spectator_likes} watching
                       </div>
                     </div>
@@ -182,7 +176,6 @@ export default function SpectateLobbyPage() {
           <span>v2.4.0</span>
           <span className="flex items-center gap-1">
             SECURE
-            <svg className="w-3 h-3 text-noir-terminal/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
           </span>
         </div>
       </div>

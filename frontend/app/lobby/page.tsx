@@ -87,7 +87,7 @@ export default function LobbyPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isLeaderboardLoading, setIsLeaderboardLoading] = useState<boolean>(true);
-  
+
   const [incomingInvite, setIncomingInvite] = useState<WSInvite | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [historyBusyId, setHistoryBusyId] = useState<number | null>(null);
@@ -168,7 +168,7 @@ export default function LobbyPage() {
           }
           setActiveBattleBanner({ id });
         })
-        .catch(() => {});
+        .catch(() => { });
     };
     checkActive();
     const interval = setInterval(checkActive, 5000);
@@ -186,13 +186,13 @@ export default function LobbyPage() {
       if (!token) return;
 
       ws = new WebSocket(lobbySocketUrl(token));
-      
+
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           const type = data.type || data.event;
           const payload = data.payload || data;
-          
+
           if (type === "battle_invite") {
             setIncomingInvite({
               id: payload.battle_request_id,
@@ -218,7 +218,7 @@ export default function LobbyPage() {
           ) {
             void loadRequestHistory();
           }
-        } catch (e) {}
+        } catch (e) { }
       };
     };
 
@@ -334,7 +334,7 @@ export default function LobbyPage() {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-black text-noir-danger space-y-4">
         <p className="font-mono text-xs uppercase tracking-widest">{error}</p>
-        <button 
+        <button
           className="px-4 py-2 border border-noir-danger text-noir-danger hover:bg-noir-danger/10 text-xs uppercase tracking-widest"
           onClick={() => window.location.reload()}
         >
@@ -352,255 +352,237 @@ export default function LobbyPage() {
     );
   }
 
+  const pendingReceived = requestHistory.filter(r => r.status === "pending" && r.direction === "received");
+
   return (
-    <div className="flex flex-1 flex-col md:flex-row gap-6 px-4 py-6 bg-black text-white min-h-screen">
-      <section className="terminal-panel flex-1 p-5 space-y-4 border border-noir-border/40 relative">
-        <header className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-lg font-semibold uppercase tracking-widest text-noir-accent">
-              Lobby // Matchmaking
-            </h1>
-            <p className="text-xs text-noir-terminal/60">
-              Authenticated as{" "}
-              <span className="text-noir-accent">{djangoUser.display_name}</span>{" "}
-              [{djangoUser.role}]
-            </p>
+    <div style={{ height: "100vh", background: "#000", color: "#eaeaea", fontFamily: "'Share Tech Mono', monospace", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* ═══ INCOMING INVITE OVERLAY ═══ */}
+      {incomingInvite && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)" }}>
+          <div style={{ border: "1.5px solid #39FF14", background: "#000", padding: "32px", width: 340, textAlign: "center" }}>
+            <h3 style={{ color: "#39FF14", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", fontSize: 13, marginBottom: 12 }}>Incoming Challenge</h3>
+            <p style={{ fontSize: 12, color: "#999", marginBottom: 4 }}><strong style={{ color: "#fff" }}>{incomingInvite.from_username}</strong> wants to battle you!</p>
+            <p style={{ fontSize: 10, color: "#555", marginBottom: 16 }}>Time remaining: {timeLeft}s</p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button onClick={() => handleRequestAction(incomingInvite.id, "accept")} style={{ padding: "8px 20px", border: "1px solid #39FF14", background: "transparent", color: "#39FF14", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Accept</button>
+              <button onClick={() => handleRequestAction(incomingInvite.id, "decline")} style={{ padding: "8px 20px", border: "1px solid #ff4444", background: "transparent", color: "#ff4444", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Decline</button>
+            </div>
           </div>
-          <div className="flex gap-4">
-            <ProfileHoverCard username={djangoUser.username}>
-              <span className="text-xs text-noir-accent hover:underline cursor-pointer">
-                Profile
-              </span>
-            </ProfileHoverCard>
-            <button
-              onClick={() => signOut({ redirectUrl: "/" })}
-              className="text-xs text-noir-danger hover:underline"
-            >
-              Logout
-            </button>
-          </div>
-        </header>
+        </div>
+      )}
 
-        {activeBattleBanner && (
-          <div
-            role="status"
-            className="flex flex-col gap-3 rounded border border-noir-accent/50 bg-noir-accent/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p className="text-xs text-noir-terminal">
-              <span className="font-semibold text-noir-accent">Active battle</span>{" "}
-              — you have a match in progress (#{activeBattleBanner.id}).
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  router.push(`/battle/${activeBattleBanner.id}`)
-                }
-                className="rounded border border-noir-accent bg-noir-accent/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-noir-accent hover:bg-noir-accent/25"
-              >
-                Resume battle
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  sessionStorage.setItem(
-                    "arena-lobby-dismiss-active",
-                    String(activeBattleBanner.id)
+      {/* ═══ TOP HEADER ═══ */}
+      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+        <div>
+          <h1 style={{ fontSize: 18, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", margin: 0 }}>
+            Lobby <span style={{ color: "#39FF14" }}>//</span> <span style={{ color: "#39FF14" }}>Matchmaking</span>
+          </h1>
+          <p style={{ fontSize: 11, color: "#555", marginTop: 4 }}>are you the best?</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <ProfileHoverCard username={djangoUser.username}>
+            <button style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", padding: "8px 16px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "#eaeaea", cursor: "pointer" }}>Profile</button>
+          </ProfileHoverCard>
+          <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 10, color: "#555", background: "transparent", border: "none", textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Logout</button>
+        </div>
+      </header>
+
+      {/* ═══ ACTIVE BATTLE BANNER ═══ */}
+      {activeBattleBanner && (
+        <div style={{ margin: "16px 28px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, border: "1px solid rgba(57,255,20,0.3)", background: "rgba(57,255,20,0.03)", padding: "12px 20px", flexWrap: "wrap" }}>
+          <p style={{ fontSize: 12, color: "#999", margin: 0 }}><span style={{ fontWeight: 600, color: "#39FF14" }}>Active battle</span> — match in progress (#{activeBattleBanner.id}).</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={() => router.push(`/battle/${activeBattleBanner.id}`)} style={{ border: "1px solid #39FF14", background: "rgba(57,255,20,0.08)", padding: "6px 14px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#39FF14", cursor: "pointer" }}>Resume battle</button>
+            <button type="button" onClick={() => { sessionStorage.setItem("arena-lobby-dismiss-active", String(activeBattleBanner.id)); setActiveBattleBanner(null); }} style={{ border: "1px solid rgba(255,255,255,0.1)", background: "transparent", padding: "6px 14px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "#777", cursor: "pointer" }}>Stay in lobby</button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ MAIN 3-COLUMN LAYOUT ═══ */}
+      <div style={{ flex: 1, display: "flex", gap: 20, padding: "16px 28px", overflow: "hidden", minHeight: 0 }}>
+
+        {/* ── LEFT COLUMN ── */}
+        <div style={{ flex: "0 0 240px", display: "flex", flexDirection: "column", gap: 12, overflow: "hidden" }}>
+          {/* Pending Requests */}
+          <div className="lobby-card" style={{ padding: "16px 20px", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0, color: "#eaeaea" }}>Pending Requests</h2>
+              {pendingReceived.length > 0 && (
+                <span style={{ border: "1px solid #39FF14", color: "#39FF14", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 10 }}>{pendingReceived.length}</span>
+              )}
+            </div>
+            {pendingReceived.length === 0 ? (
+              <p style={{ fontSize: 11, color: "#555", textAlign: "center", padding: "20px 0" }}>No pending invites.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {pendingReceived.map(row => {
+                  const peer = row.from_user;
+                  const expiresIn = row.expires_at ? Math.max(0, Math.floor((new Date(row.expires_at).getTime() - Date.now()) / 1000)) : null;
+                  return (
+                    <div key={row.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: 16 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div>
+                          <ProfileHoverCard username={peer.username}>
+                            <span style={{ color: "#39FF14", cursor: "pointer", fontWeight: 500, fontSize: 12 }}>@{peer.username}</span>
+                          </ProfileHoverCard>
+                          <p style={{ fontSize: 10, color: "#555", marginTop: 2 }}>wants to battle you</p>
+                        </div>
+                        <div style={{ textAlign: "right", fontSize: 10 }}>
+                          <div style={{ color: "#555" }}>{formatRequestWhen(row.created_at)}</div>
+                          {expiresIn !== null && <div style={{ color: "#00E5FF", fontWeight: 700 }}>Expires in {expiresIn}s</div>}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                        <button type="button" disabled={historyBusyId !== null} onClick={() => void handleRequestAction(row.id, "accept")} style={{ flex: 1, border: "1px solid #39FF14", background: "transparent", color: "#39FF14", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "7px 0", cursor: "pointer", opacity: historyBusyId !== null ? 0.4 : 1 }}>{historyBusyId === row.id ? "…" : "Accept"}</button>
+                        <button type="button" disabled={historyBusyId !== null} onClick={() => void handleRequestAction(row.id, "decline")} style={{ flex: 1, border: "1px solid #ff4444", background: "transparent", color: "#ff4444", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "7px 0", cursor: "pointer", opacity: historyBusyId !== null ? 0.4 : 1 }}>{historyBusyId === row.id ? "…" : "Decline"}</button>
+                      </div>
+                    </div>
                   );
-                  setActiveBattleBanner(null);
-                }}
-                className="rounded border border-noir-border px-3 py-1.5 text-xs uppercase tracking-wider text-noir-terminal/70 hover:bg-white/5"
-              >
-                Stay in lobby
-              </button>
-            </div>
+                })}
+              </div>
+            )}
           </div>
-        )}
 
-        <form onSubmit={handleCreateBattle} className="space-y-3 text-sm">
-          <p className="text-[10px] text-noir-terminal/50 leading-relaxed">
-            Opponent must leave Lobby open to receive the invite (WebSocket). Ensure Redis is running on the API server.
-          </p>
-          <input
-            className="w-full rounded border border-noir-border bg-black/70 px-3 py-2 text-noir-terminal focus:outline-none focus:ring-1 focus:ring-noir-accent"
-            value={opponentUsername}
-            onChange={(e) => setOpponentUsername(e.target.value)}
-            placeholder="opponent username (exact match)"
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="cyber-btn w-full border-noir-terminal text-noir-terminal hover:bg-noir-terminal/10 disabled:opacity-60"
-          >
-            {loading ? "Allocating resources..." : "Initiate Battle"}
-          </button>
-        </form>
-
-        {error && <p className="text-xs text-noir-danger">{error}</p>}
-        {info && <p className="text-xs text-noir-accent">{info}</p>}
-
-        {incomingInvite && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black border-2 border-noir-accent p-6 shadow-2xl z-50 w-80 text-center space-y-4 animate-pulse">
-            <h3 className="text-noir-accent font-bold uppercase tracking-widest text-sm">Incoming Challenge</h3>
-            <p className="text-xs text-noir-terminal">
-              <strong className="text-white">{incomingInvite.from_username}</strong> wants to battle you!
-            </p>
-            <p className="text-[10px] text-noir-terminal/60">
-              Time remaining: {timeLeft}s
-            </p>
-            <div className="flex gap-4 justify-center mt-4">
-              <button
-                onClick={() => handleRequestAction(incomingInvite.id, "accept")}
-                className="px-4 py-2 border border-noir-accent text-noir-accent hover:bg-noir-accent/20 text-xs font-bold uppercase"
-              >
-                Accept
-              </button>
-              <button
-                onClick={() => handleRequestAction(incomingInvite.id, "decline")}
-                className="px-4 py-2 border border-noir-danger text-noir-danger hover:bg-noir-danger/20 text-xs font-bold uppercase"
-              >
-                Decline
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <aside className="flex w-full flex-col gap-4 md:w-80">
-        <section className="terminal-panel space-y-3 border border-noir-border/40 p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-noir-accent">
-            Leaderboard // Top 10
-          </h2>
-          {isLeaderboardLoading ? (
-            <div className="flex flex-col items-center py-10">
-              <TetrisLoading size="sm" speed="fast" loadingText="Syncing rankings..." />
-            </div>
-          ) : (
-            <div className="max-h-80 space-y-1 overflow-y-auto text-xs">
-              {leaderboard.slice(0, 10).map((entry: LeaderboardEntry, idx: number) => (
-                <div
-                  key={entry.username}
-                  className="flex items-center justify-between border-b border-noir-border/20 py-2"
-                >
-                  <span className="text-noir-terminal/80">
-                    {String(idx + 1).padStart(2, "0")}.{" "}
-                    <ProfileHoverCard username={entry.username} wins={entry.total_wins} losses={entry.total_losses}>
-                      <span className="font-medium text-noir-accent hover:underline cursor-pointer">{entry.display_name}</span>
-                    </ProfileHoverCard>
-                  </span>
-                  <span className="text-noir-terminal/60">
-                    {entry.total_wins}W / {entry.total_losses}L
-                  </span>
+          {/* How It Works — BLUE zone */}
+          <div className="lobby-card" style={{ padding: "16px 20px", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8, flex: 1, minHeight: 0 }}>
+            <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: "0 0 14px", color: "#eaeaea" }}>How It Works</h2>
+            {[
+              { step: "01", title: "Send Challenge", desc: "Search and send a battle request to your opponent." },
+              { step: "02", title: "Accept Battle", desc: "Your opponent accepts — the arena is ready." },
+              { step: "03", title: "Victory", desc: "Win the battle and climb the leaderboard." },
+            ].map((s, i) => (
+              <div key={s.step} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: i < 2 ? 18 : 0 }}>
+                <div style={{ width: 32, height: 32, border: "1px solid rgba(0,229,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#00E5FF", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{s.step}</div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#00E5FF", textTransform: "uppercase", letterSpacing: "0.1em" }}>{s.title}</div>
+                  <div style={{ fontSize: 10, color: "#555", marginTop: 3, lineHeight: 1.5 }}>{s.desc}</div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── CENTER COLUMN — PRIMARY FOCUS ── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, alignItems: "center", justifyContent: "center", minWidth: 0, overflow: "hidden" }}>
+          {/* Challenge Form */}
+          <div className="lobby-card" style={{ padding: "28px", width: "100%", maxWidth: 480, textAlign: "center", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 6px" }}>
+              <span style={{ color: "#39FF14" }}>//</span> Challenge a Player
+            </h2>
+            <p style={{ fontSize: 11, color: "#555", marginBottom: 24 }}>Enter your opponent&apos;s exact username.</p>
+            <form onSubmit={handleCreateBattle}>
+              <input
+                style={{ width: "100%", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.6)", padding: "14px 16px", fontSize: 13, color: "#eaeaea", outline: "none", marginBottom: 16, fontFamily: "inherit", boxSizing: "border-box" }}
+                value={opponentUsername}
+                onChange={(e) => setOpponentUsername(e.target.value)}
+                placeholder="username"
+              />
+              <button type="submit" disabled={loading} className="lobby-cta" style={{ width: "100%", padding: "14px 0", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#39FF14", cursor: "pointer", fontFamily: "inherit" }}>
+                {loading ? "Allocating resources..." : "Initiate Battle"}
+              </button>
+            </form>
+            {error && <p style={{ fontSize: 11, color: "#ff4444", marginTop: 12 }}>{error}</p>}
+            {info && <p style={{ fontSize: 11, color: "#39FF14", marginTop: 12 }}>{info}</p>}
+            <p style={{ fontSize: 10, color: "#444", marginTop: 16 }}>TIP: Usernames are case-sensitive</p>
+          </div>
+
+          {/* Quote */}
+          <div className="lobby-card" style={{ padding: "20px", width: "100%", maxWidth: 480, textAlign: "center", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8 }}>
+            <span style={{ color: "rgba(255,255,255,0.12)", fontSize: 22 }}>&ldquo;</span>
+            <p style={{ fontSize: 12, color: "#777", textTransform: "uppercase", letterSpacing: "0.15em", lineHeight: 1.8, margin: "8px 0" }}>Nothing worth having<br />comes easy.</p>
+            <span style={{ color: "rgba(255,255,255,0.12)", fontSize: 22 }}>&rdquo;</span>
+            <div style={{ display: "flex", justifyContent: "center", gap: 4, marginTop: 14 }}>
+              {["#ff0050", "#ff6600", "#ffcc00", "#39FF14", "#00E5FF"].map((c, i) => (
+                <div key={i} style={{ width: 16, height: 5, borderRadius: 3, background: c, opacity: 0.7 }} />
               ))}
             </div>
-          )}
-        </section>
-
-        <section className="terminal-panel flex max-h-[min(420px,50vh)] flex-col border border-noir-border/40 p-5">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-noir-accent">
-              Requests // History
-            </h2>
-            <button
-              type="button"
-              onClick={() => void loadRequestHistory()}
-              className="text-[10px] uppercase tracking-widest text-noir-terminal/60 hover:text-noir-accent"
-            >
-              Refresh
-            </button>
           </div>
-          <p className="mb-2 text-[10px] text-noir-terminal/45">
-            Newest first. For <span className="text-fuchsia-400/80">incoming</span> pending invites,
-            use Accept / Decline here if the center popup did not appear (e.g. Redis off). For your
-            own pending sends, use Cancel to withdraw and send again.
-          </p>
-          {historyLoading && requestHistory.length === 0 ? (
-            <div className="flex justify-center py-6">
-              <TetrisLoading size="sm" speed="fast" loadingText="Loading…" />
+        </div>
+
+        {/* ── RIGHT COLUMN ── */}
+        <div style={{ flex: "0 0 260px", display: "flex", flexDirection: "column", gap: 12, overflow: "hidden" }}>
+          {/* Leaderboard */}
+          <div className="lobby-card" style={{ padding: "16px 20px", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8 }}>
+            <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: "0 0 16px", color: "#eaeaea" }}>Leaderboard <span style={{ color: "#39FF14" }}>// Top 5</span></h2>
+            {isLeaderboardLoading ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "30px 0" }}><TetrisLoading size="sm" speed="fast" loadingText="Syncing rankings..." /></div>
+            ) : (
+              <div>
+                {leaderboard.slice(0, 5).map((entry: LeaderboardEntry, idx: number) => (
+                  <div key={entry.username} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "10px 0" }}>
+                    <span style={{ fontSize: 12, color: "#777" }}>
+                      {String(idx + 1).padStart(2, "0")}.{" "}
+                      <ProfileHoverCard username={entry.username} wins={entry.total_wins} losses={entry.total_losses}>
+                        <span style={{ color: "#39FF14", cursor: "pointer", fontWeight: 500 }}>{entry.display_name}</span>
+                      </ProfileHoverCard>
+                    </span>
+                    <span style={{ fontSize: 11, color: "#555" }}>{entry.total_wins} W / {entry.total_losses} L</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Request History */}
+          <div className="lobby-card" style={{ padding: "16px 20px", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8, flex: 1, minHeight: 0, overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0, color: "#eaeaea" }}>Requests <span style={{ color: "#39FF14" }}>// History</span></h2>
+              <button type="button" onClick={() => void loadRequestHistory()} style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "#555", background: "transparent", border: "none", cursor: "pointer" }}>Refresh ↻</button>
             </div>
-          ) : requestHistory.length === 0 ? (
-            <p className="py-4 text-center text-[11px] text-noir-terminal/40">
-              No requests yet.
+            <p style={{ fontSize: 10, color: "#444", lineHeight: 1.6, marginBottom: 12 }}>
+              <span style={{ color: "#b366ff" }}>newest first</span>
             </p>
-          ) : (
-            <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-[11px]">
-              {requestHistory.map((row) => {
-                const peer =
-                  row.direction === "sent" ? row.to_user : row.from_user;
-                return (
-                  <li
-                    key={row.id}
-                    className="border-b border-noir-border/25 pb-2 last:border-0"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-noir-terminal/70">
-                        <span
-                          className={
-                            row.direction === "sent"
-                              ? "text-cyan-500/90"
-                              : "text-fuchsia-400/90"
-                          }
-                        >
-                          {row.direction === "sent" ? "→" : "←"}
-                        </span>{" "}
+            {historyLoading && requestHistory.length === 0 ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "24px 0" }}><TetrisLoading size="sm" speed="fast" loadingText="Loading…" /></div>
+            ) : requestHistory.length === 0 ? (
+              <p style={{ padding: "16px 0", textAlign: "center", fontSize: 11, color: "#444" }}>No requests yet.</p>
+            ) : (
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {requestHistory.slice(0, 7).map((row) => {
+                  const peer = row.direction === "sent" ? row.to_user : row.from_user;
+                  const stColor = row.status === "accepted" ? "#39FF14" : row.status === "pending" ? "#ffcc00" : "#555";
+                  return (
+                    <li key={row.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "10px 0", lineHeight: 1.6 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                         <ProfileHoverCard username={peer.username}>
-                          <span className="hover:underline cursor-pointer">@{peer.username}</span>
+                          <span style={{ color: "#39FF14", cursor: "pointer", fontSize: 11 }}>@{peer.username}</span>
                         </ProfileHoverCard>
-                      </span>
-                      <span
-                        className={`shrink-0 uppercase tracking-tighter ${statusStyle(row.status)}`}
-                      >
-                        {row.status}
-                      </span>
-                    </div>
-                    <div className="mt-0.5 text-[10px] text-noir-terminal/45">
-                      {formatRequestWhen(row.created_at)}
-                      {row.status === "pending" && row.expires_at && (
-                        <span className="block text-noir-terminal/35">
-                          Expires {formatRequestWhen(row.expires_at)}
-                        </span>
+                        <span style={{ fontSize: 10, color: "#444", flexShrink: 0 }}>{formatRequestWhen(row.created_at)}</span>
+                        <span style={{ fontSize: 10, color: stColor, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600, flexShrink: 0 }}>{row.status}</span>
+                      </div>
+                      {row.status === "pending" && row.direction === "received" && (
+                        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                          <button type="button" disabled={historyBusyId !== null} onClick={() => void handleRequestAction(row.id, "accept")} style={{ border: "1px solid #39FF14", background: "transparent", color: "#39FF14", fontSize: 10, fontWeight: 700, textTransform: "uppercase", padding: "4px 10px", cursor: "pointer", opacity: historyBusyId !== null ? 0.4 : 1 }}>{historyBusyId === row.id ? "…" : "Accept"}</button>
+                          <button type="button" disabled={historyBusyId !== null} onClick={() => void handleRequestAction(row.id, "decline")} style={{ border: "1px solid #ff4444", background: "transparent", color: "#ff4444", fontSize: 10, fontWeight: 700, textTransform: "uppercase", padding: "4px 10px", cursor: "pointer", opacity: historyBusyId !== null ? 0.4 : 1 }}>{historyBusyId === row.id ? "…" : "Decline"}</button>
+                        </div>
                       )}
-                    </div>
-                    {row.status === "pending" && row.direction === "received" && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          disabled={historyBusyId !== null}
-                          onClick={() => void handleRequestAction(row.id, "accept")}
-                          className="rounded border border-noir-accent px-2 py-1 text-[10px] uppercase tracking-wide text-noir-accent hover:bg-noir-accent/15 disabled:opacity-40"
-                        >
-                          {historyBusyId === row.id ? "…" : "Accept"}
-                        </button>
-                        <button
-                          type="button"
-                          disabled={historyBusyId !== null}
-                          onClick={() => void handleRequestAction(row.id, "decline")}
-                          className="rounded border border-noir-danger px-2 py-1 text-[10px] uppercase tracking-wide text-noir-danger hover:bg-noir-danger/10 disabled:opacity-40"
-                        >
-                          {historyBusyId === row.id ? "…" : "Decline"}
-                        </button>
-                      </div>
-                    )}
-                    {row.status === "pending" && row.direction === "sent" && (
-                      <div className="mt-2">
-                        <button
-                          type="button"
-                          disabled={historyBusyId !== null}
-                          onClick={() => void handleCancelRequest(row.id)}
-                          className="rounded border border-noir-terminal/40 px-2 py-1 text-[10px] uppercase tracking-wide text-noir-terminal/70 hover:bg-white/5 disabled:opacity-40"
-                        >
-                          {historyBusyId === row.id ? "…" : "Cancel invite"}
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      </aside>
+                      {row.status === "pending" && row.direction === "sent" && (
+                        <div style={{ marginTop: 8 }}>
+                          <button type="button" disabled={historyBusyId !== null} onClick={() => void handleCancelRequest(row.id)} style={{ border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "#777", fontSize: 10, fontWeight: 700, textTransform: "uppercase", padding: "4px 10px", cursor: "pointer", opacity: historyBusyId !== null ? 0.4 : 1 }}>{historyBusyId === row.id ? "…" : "Cancel invite"}</button>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ FOOTER ═══ */}
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "12px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 10, color: "#444", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#39FF14", boxShadow: "0 0 6px #39FF14" }}></span>
+          SYSTEM ONLINE
+        </div>
+        <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.4)", fontSize: 13, letterSpacing: "0.2em" }}>BIG OFF</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span>v2.4.0</span>
+          <span>SECURE</span>
+        </div>
+      </footer>
     </div>
   );
+
 }
