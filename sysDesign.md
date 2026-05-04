@@ -1,10 +1,4 @@
-# ⚔️ THE SYSTEM DESIGN SENSEI'S CINEMATIC AUDIT
-## *BigOff Arena — From Vibecoded Chaos to Battle-Tested Architecture*
-
----
-
-> *"I've looked inside your Arena. I've read every model, every consumer, every Celery task. I've traced every packet from keystroke to scoreboard. Now sit down, grab a protein shake, and let me tell you the STORY of what you've built — and how to make it LEGENDARY."*
-> — **System Design Sensei** 🥋
+# SYSTEM DESIGN breakdown of BigOff
 
 ---
 
