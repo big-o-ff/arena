@@ -1,21 +1,21 @@
-# SYSTEM DESIGN breakdown of BigOff
+# System Design of BigOff
 
 ---
 
-## 🗺️ TABLE OF CONTENTS
+## Table of contents
 
 | Act | Quest | Description |
 |-----|-------|-------------|
-| I | **The Origin Story** | The Battle of the Protocols — why HTTP failed and WebSockets won |
-| II | **Anatomy of the Beast** | Your folder map: Brain, Muscle, Nervous System |
+| I | **The Origin Story** | The Battle of the Protocols |
+| II | **Anatomy of the Beast** | Folder map |
 | III | **The Packet's Sprint** | The 100m Olympic dash of a code submission |
 | IV | **The Boss Fight** | Redis catches fire at 10,000 users |
 | V | **The Forbidden Technique** | From local gym to global stadium |
 
 ---
 
-# ACT I: THE ORIGIN STORY 📜
-## *The Battle of the Protocols*
+# ACT I: THE ORIGIN STORY
+> The Battle of the Protocols
 
 ### The Old World: HTTP — "Letter-Writing" in a Sword Fight
 

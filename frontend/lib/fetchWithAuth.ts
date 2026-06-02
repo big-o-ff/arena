@@ -51,9 +51,21 @@ export function useFetchMe() {
   
   return useCallback(() => {
     if (!user) return Promise.reject("No user state");
+
+    // Clerk doesn't set a username for Google OAuth accounts, so derive one
+    // from their name or email rather than letting it fall back to the Clerk ID.
+    const email = user.primaryEmailAddress?.emailAddress ?? "";
+    const derivedUsername =
+      user.username ||
+      (user.firstName && user.lastName
+        ? `${user.firstName}${user.lastName}`.toLowerCase().replace(/[^a-z0-9_]/g, "")
+        : user.firstName?.toLowerCase().replace(/[^a-z0-9_]/g, "")) ||
+      email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "") ||
+      undefined;
+
     return api.post("/api/auth/me/", {
-        username: user.username,
-        email: user.primaryEmailAddress?.emailAddress,
+        username: derivedUsername,
+        email,
         first_name: user.firstName,
         last_name: user.lastName,
     }).then((r) => r.data);

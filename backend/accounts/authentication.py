@@ -22,7 +22,7 @@ def resolve_user_from_clerk_jwt_payload(payload: dict) -> User | None:
     from django.db import IntegrityError
 
     try:
-        user, _ = User.objects.update_or_create(
+        user, created = User.objects.get_or_create(
             clerk_id=clerk_id,
             defaults={
                 "username": username,
@@ -32,7 +32,7 @@ def resolve_user_from_clerk_jwt_payload(payload: dict) -> User | None:
         )
         return user
     except IntegrityError:
-        user, _ = User.objects.update_or_create(
+        user, created = User.objects.get_or_create(
             clerk_id=clerk_id,
             defaults={
                 "username": f"{username}_{clerk_id[-4:]}",
