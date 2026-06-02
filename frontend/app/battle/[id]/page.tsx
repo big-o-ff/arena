@@ -554,7 +554,16 @@ export default function BattlePage() {
           /* ignore quota */
         }
       }
-      addToast("Code evaluated — opening review.", "success");
+      if (evaluation?.status === "error") {
+        addToast("Evaluation error — check review for details.", "warning");
+      } else if (evaluation?.all_passed) {
+        addToast("All test cases passed! Opening review.", "success");
+      } else {
+        addToast(
+          `${evaluation?.passed_cases ?? 0}/${evaluation?.total_cases ?? 0} test cases passed — opening review.`,
+          "info"
+        );
+      }
       router.push(`/battle/${battleId}/review/${round.problem.id}`);
     } catch (err: any) {
       const detail = err?.response?.data?.detail ?? "Submission error";

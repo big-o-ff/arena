@@ -9,13 +9,22 @@ def resolve_user_from_clerk_jwt_payload(payload: dict) -> User | None:
     Create or update the Django user from Clerk JWT claims.
     Same rules as ClerkAuthentication — used by REST and WebSocket auth.
     """
+    import re as _re
+
     clerk_id = payload.get("sub")
     if not clerk_id:
         return None
 
+    # Prefer a human-readable username over the Clerk ID.
+    first_name = (payload.get("first_name") or payload.get("given_name") or "").strip()
+    last_name = (payload.get("last_name") or payload.get("family_name") or "").strip()
+    display_name = f"{first_name} {last_name}".strip()
+
+    name_slug = _re.sub(r"[^a-z0-9]", "", display_name.lower().replace(" ", ""))
     username = (
         payload.get("username")
         or payload.get("preferred_username")
+        or name_slug
         or clerk_id
     )
 
@@ -26,7 +35,7 @@ def resolve_user_from_clerk_jwt_payload(payload: dict) -> User | None:
             clerk_id=clerk_id,
             defaults={
                 "username": username,
-                "display_name": f"Player_{username[:8]}",
+                "display_name": display_name or f"Player_{clerk_id[:8]}",
                 "role": "player",
             },
         )
@@ -36,7 +45,7 @@ def resolve_user_from_clerk_jwt_payload(payload: dict) -> User | None:
             clerk_id=clerk_id,
             defaults={
                 "username": f"{username}_{clerk_id[-4:]}",
-                "display_name": f"Player_{username[:8]}",
+                "display_name": display_name or f"Player_{clerk_id[:8]}",
                 "role": "player",
             },
         )

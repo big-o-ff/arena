@@ -67,6 +67,7 @@ function statusColor(st: string) {
   if (st === "passed") return "#00ff88";
   if (st === "pending") return "#ffa500";
   if (st === "failed") return "#ff6666";
+  if (st === "error")  return "#ff8888";
   return "rgba(200,211,224,0.6)";
 }
 
@@ -150,11 +151,13 @@ function CodeBlock({
             <span style={{ color: "rgba(200,211,224,0.5)" }}>
               {sub.language}
             </span>
-            {sub.total_cases > 0 && (
+            {sub.total_cases > 0 ? (
               <span style={{ color: "rgba(200,211,224,0.55)" }}>
                 {sub.passed_cases}/{sub.total_cases} cases
               </span>
-            )}
+            ) : sub.status === "error" ? (
+              <span style={{ color: "#ff8888" }}>no test cases</span>
+            ) : null}
             {sub.execution_time_ms != null && (
               <span style={{ color: "rgba(200,211,224,0.45)" }}>
                 {sub.execution_time_ms}ms
@@ -369,19 +372,30 @@ export default function BattleProblemReviewPage() {
           </div>
           {evalSummary && (
             <>
-              <div>
-                Tests:{" "}
-                <span style={{ color: "#c8d3e0" }}>
-                  {evalSummary.passed_cases ?? 0}/{evalSummary.total_cases ?? 0} passed
-                </span>
-                {evalSummary.all_passed ? (
-                  <span style={{ color: "#00ff88", marginLeft: "8px" }}>✓ All correct</span>
-                ) : (
-                  <span style={{ color: "#ff6666", marginLeft: "8px" }}>✗ Wrong output</span>
-                )}
-              </div>
-              {evalSummary.error && evalSummary.error !== "battle_not_active" && (
-                <div style={{ color: "#ff8888", marginTop: "6px" }}>{evalSummary.error}</div>
+              {evalSummary.status === "error" ? (
+                <div>
+                  <span style={{ color: "#ff8888" }}>✗ Evaluation error</span>
+                  {evalSummary.error && (
+                    <div style={{ color: "#ff8888", marginTop: "6px" }}>
+                      {evalSummary.error}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  Tests:{" "}
+                  <span style={{ color: "#c8d3e0" }}>
+                    {evalSummary.passed_cases ?? 0}/{evalSummary.total_cases ?? 0} passed
+                  </span>
+                  {evalSummary.all_passed ? (
+                    <span style={{ color: "#00ff88", marginLeft: "8px" }}>✓ All correct</span>
+                  ) : (
+                    <span style={{ color: "#ff6666", marginLeft: "8px" }}>✗ Wrong answer</span>
+                  )}
+                  {evalSummary.error && evalSummary.error !== "battle_not_active" && (
+                    <div style={{ color: "#ff8888", marginTop: "6px" }}>{evalSummary.error}</div>
+                  )}
+                </div>
               )}
               {evalSummary.round_won && evalSummary.reward_saved && (
                 <div style={{ color: "#00ff88", marginTop: "8px" }}>

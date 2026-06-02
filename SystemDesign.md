@@ -601,3 +601,24 @@ STEP 5: Next.js → Vercel / CloudFront
 | **Code Organization** | ⭐⭐⭐ | Clean app separation, but `battles/views.py` (859 lines) is doing too much heavy lifting |
 
 Now go run `redis-server` and get back to shipping.
+
+
+## Submission Flow (healthy path)
+User clicks Submit
+    → POST /api/battles/{id}/submit/ (fetchWithAuth.ts)
+      → SubmitSolutionView.post (views.py:635)
+        → Submission created with total_cases = len(problem.test_cases)
+        → evaluate_submission_sync(submission.id) (evaluation.py:35)
+          → run_code_safe() per test case (execution.py)
+          → passed/failed count computed
+          → Submission saved → status=PASSED or FAILED
+          → _broadcast() → WebSocket → battle room
+        → Response: {submission_id, evaluation}
+    → sessionStorage.setItem(evaluation)
+    → router.push /battle/{id}/review/{problemId}
+
+  Review page loads
+    → GET /api/battles/{id}/problems/{problemId}/review/
+    → BattleProblemReviewView.get (views.py:559)
+    → Returns both players' submission payloads (passed_cases, total_cases, code, status)
+    → sessionStorage eval used for instant display before API returns

@@ -72,11 +72,12 @@ def _create_battle(player1: User, player2: User) -> Battle:
     for diff in difficulties:
         candidate_ids = list(
             Problem.objects.filter(difficulty=diff, is_active=True)
+            .exclude(test_cases=[])
             .exclude(id__in=selected_problem_ids)
             .values_list("id", flat=True)
         )
         if not candidate_ids:
-            raise ValueError(f"No active {diff} problems available.")
+            raise ValueError(f"No active {diff} problems with test cases available.")
         selected_problem_ids.append(random.choice(candidate_ids))
 
     selected_by_id = Problem.objects.in_bulk(selected_problem_ids)
@@ -186,7 +187,7 @@ class BattleRequestListCreateView(views.APIView):
                         "type": "battle_invite",
                         "battle_request_id": battle_request.id,
                         "from_id": request.user.id,
-                        "from_username": request.user.username,
+                        "from_username": request.user.display_name or request.user.username,
                         "expires_at": battle_request.expires_at.isoformat() if battle_request.expires_at else None,
                     },
                 )
@@ -316,7 +317,7 @@ class BattleRequestDeclineView(views.APIView):
                     f"user_{battle_request.from_user_id}",
                     {
                         "type": "invite_declined",
-                        "by_username": request.user.username,
+                        "by_username": request.user.display_name or request.user.username,
                     },
                 )
         except Exception:

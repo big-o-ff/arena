@@ -72,37 +72,63 @@ class AuthMeView(APIView):
         })
 
     def post(self, request, *args, **kwargs):
+        import re
         user = request.user
-        
-        username = request.data.get("username")
-        email = request.data.get("email")
-        first_name = request.data.get("first_name", "")
-        last_name = request.data.get("last_name", "")
+
+        email = request.data.get("email") or ""
+        first_name = (request.data.get("first_name") or "").strip()
+        last_name = (request.data.get("last_name") or "").strip()
 
         changed = False
 
         from django.db import IntegrityError, transaction
+
+        # Build the real display name from Google name fields.
+        real_display = f"{first_name} {last_name}".strip() or email.split("@")[0]
+
+        # Build a slug username from the real name (or email prefix as fallback).
+        name_slug = re.sub(r"[^a-z0-9]", "", real_display.lower().replace(" ", ""))
+        if not name_slug:
+            name_slug = re.sub(r"[^a-z0-9]", "", email.split("@")[0].lower())
+
+        # Detect whether the current username is still the auto-generated Clerk ID.
+        username_is_clerk_id = user.username == getattr(user, "clerk_id", None)
+        # Detect whether display_name is still an auto-generated placeholder.
+        display_name_is_placeholder = (
+            not user.display_name
+            or str(user.display_name).startswith("Player_")
+            or user.display_name == user.clerk_id
+        )
+
         try:
             with transaction.atomic():
-                if username and user.username != username:
-                    user.username = username
-                    if not user.display_name or str(user.display_name).startswith("Player_"):
-                        user.display_name = username
+                if username_is_clerk_id and name_slug:
+                    candidate = name_slug
+                    suffix = 1
+                    while User.objects.exclude(pk=user.pk).filter(username=candidate).exists():
+                        candidate = f"{name_slug}{suffix}"
+                        suffix += 1
+                    user.username = candidate
                     changed = True
-                if email and getattr(user, 'email', '') != email:
+
+                if display_name_is_placeholder and real_display:
+                    user.display_name = real_display
+                    changed = True
+
+                if email and getattr(user, "email", "") != email:
                     user.email = email
                     changed = True
-                if getattr(user, 'first_name', '') != first_name:
+                if getattr(user, "first_name", "") != first_name:
                     user.first_name = first_name
                     changed = True
-                if getattr(user, 'last_name', '') != last_name:
+                if getattr(user, "last_name", "") != last_name:
                     user.last_name = last_name
                     changed = True
 
                 if changed:
                     user.save(update_fields=["username", "email", "first_name", "last_name", "display_name"])
         except IntegrityError:
-            pass # ignore if username is duplicate
+            pass
 
         return Response({
             "id": user.id,

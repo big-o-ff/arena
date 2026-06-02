@@ -421,7 +421,7 @@ export default function LobbyPage() {
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                         <div>
                           <ProfileHoverCard username={peer.username}>
-                            <span style={{ color: "#39FF14", cursor: "pointer", fontWeight: 500, fontSize: 12 }}>@{peer.username}</span>
+                            <span style={{ color: "#39FF14", cursor: "pointer", fontWeight: 500, fontSize: 12 }}>{peer.display_name || peer.username}</span>
                           </ProfileHoverCard>
                           <p style={{ fontSize: 10, color: "#555", marginTop: 2 }}>wants to battle you</p>
                         </div>
@@ -543,7 +543,7 @@ export default function LobbyPage() {
                     <li key={row.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "10px 0", lineHeight: 1.6 }}>
                       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                         <ProfileHoverCard username={peer.username}>
-                          <span style={{ color: "#39FF14", cursor: "pointer", fontSize: 11 }}>@{peer.username}</span>
+                          <span style={{ color: "#39FF14", cursor: "pointer", fontSize: 11 }}>{peer.display_name || peer.username}</span>
                         </ProfileHoverCard>
                         <span style={{ fontSize: 10, color: "#444", flexShrink: 0 }}>{formatRequestWhen(row.created_at)}</span>
                         <span style={{ fontSize: 10, color: stColor, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600, flexShrink: 0 }}>{row.status}</span>
