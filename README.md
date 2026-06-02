@@ -82,7 +82,7 @@ daphne -b 127.0.0.1 -p 8000 config.asgi:application
 ```bash
 cd backend
 source .venv/bin/activate
-celery -A config worker -l info -Q execution,events --without-heartbeat
+celery -A config worker -l info -Q execution,events
 ```
 
 ### Terminal C - Redis
@@ -158,8 +158,8 @@ On a fresh host, run these in order:
 ```bash
 cd backend
 source .venv/bin/activate
-python manage.py migrate
-python manage.py import_problems ../problems/merged_problems.json
+python3 manage.py migrate
+python3 manage.py import_problems ../problems/merged_problems.json
 ```
 
 This ensures schema + full questions dataset are present after deploy.
