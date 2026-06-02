@@ -28,14 +28,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         baseTheme: dark,
         variables: {
           colorPrimary: "#00FF00",
-          colorBackground: "#000000",
+          colorBackground: "#0d0d0d",
+          colorText: "#eaeaea",
+          colorTextSecondary: "#888888",
+          colorInputBackground: "#1a1a1a",
+          colorInputText: "#eaeaea",
           fontFamily: "JetBrains Mono, monospace",
         },
         elements: {
           headerSubtitle: "hidden",
           footerActionLink: "text-noir-terminal hover:text-noir-accent font-bold",
-          card: "border border-noir-terminal bg-black shadow-[0_0_15px_rgba(0,255,0,0.1)]",
+          card: "border border-noir-terminal shadow-[0_0_15px_rgba(0,255,0,0.1)]",
           headerTitle: "text-noir-terminal uppercase tracking-widest text-xl",
+          socialButtonsBlockButton: "border border-white/20 bg-white/5 hover:bg-white/10 text-white",
+          socialButtonsBlockButtonText: "text-white font-medium",
+          dividerLine: "bg-white/10",
+          dividerText: "text-white/40",
         },
       }}
     >

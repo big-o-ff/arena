@@ -42,9 +42,23 @@ body {
 }
 
 /* Restore expected cursors that crosshair on body would otherwise clobber */
-a, button, [role="button"], select, label[for] { cursor: pointer; }
-input, textarea { cursor: text; }
-input[type="checkbox"], input[type="radio"] { cursor: pointer; }
+a,
+button,
+[role="button"],
+select,
+label[for] {
+  cursor: pointer;
+}
+
+input,
+textarea {
+  cursor: text;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
 
 /* 3. ATMOSPHERIC & SYSTEM OVERLAYS */
 #binary-canvas,
@@ -581,7 +595,8 @@ html {
 }
 
 .lobby-card:hover {
-  border-color: #2a3040; /* intentionally lighter than --lobby-border for hover lift */
+  border-color: #2a3040;
+  /* intentionally lighter than --lobby-border for hover lift */
 }
 
 .lobby-cta {
