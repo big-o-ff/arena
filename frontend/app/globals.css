@@ -4,13 +4,15 @@
 
 /* 1. VARIABLE MANAGEMENT */
 :root {
-  --primary-glow: #39FF14;
+  --terminal-green: #39FF14;
   --secondary-glow: #0ff;
   --danger-glow: #ff0050;
+  --warning-glow: #ffb800;
   --bg-dark: #000000;
-  --terminal-green: #39FF14;
   --noir-surface: #0a0a0a;
   --noir-border: #1a1a1a;
+  --lobby-surface: #0d1117;
+  --lobby-border: #1a1f2b;
   --logo-size: clamp(10rem, 20vw, 17.5rem);
   --logo-depth: calc(var(--logo-size) / 2);
 }
@@ -24,17 +26,25 @@
 
 html,
 body {
-  margin: 0;
-  padding: 0;
   min-height: 100%;
-  @apply antialiased;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-family: 'Share Tech Mono', monospace;
   background: var(--bg-dark);
   color: var(--terminal-green);
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
   cursor: crosshair;
 }
+
+body {
+  /* overflow-x on html breaks position:sticky — apply only to body */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Restore expected cursors that crosshair on body would otherwise clobber */
+a, button, [role="button"], select, label[for] { cursor: pointer; }
+input, textarea { cursor: text; }
+input[type="checkbox"], input[type="radio"] { cursor: pointer; }
 
 /* 3. ATMOSPHERIC & SYSTEM OVERLAYS */
 #binary-canvas,
@@ -52,7 +62,7 @@ body {
   inset: 0;
   background: linear-gradient(to bottom,
       transparent 50%,
-      rgba(0, 255, 65, 0.02) 51%);
+      rgba(57, 255, 20, 0.02) 51%);
   background-size: 100% 4px;
   z-index: 2;
   pointer-events: none;
@@ -76,7 +86,7 @@ body {
 
 .hp-bar-inner {
   @apply h-full transition-all duration-300 ease-out;
-  background: linear-gradient(90deg, #39ff14, #ffb800, #ff0050);
+  background: linear-gradient(90deg, var(--terminal-green), var(--warning-glow), var(--danger-glow));
 }
 
 .terminal-panel {
@@ -84,7 +94,7 @@ body {
 }
 
 /* 5. LANDING LAYOUT (RE-CENTERED) */
-.container {
+.landing-container {
   position: relative;
   z-index: 3;
   display: flex;
@@ -111,28 +121,32 @@ body {
   height: var(--logo-size);
   position: relative;
   transform-style: preserve-3d;
-  animation: float 6s ease-in-out infinite, rotate3d 20s linear infinite;
+  /* Static base tilt — individual properties (translate, rotate) are
+     post-multiplied after transform, so they animate independently
+     without conflicting with each other. */
+  transform: rotateX(15deg);
+  animation: logo-float 6s ease-in-out infinite, logo-spin 20s linear infinite;
 }
 
-@keyframes float {
+@keyframes logo-float {
 
   0%,
   100% {
-    transform: translateY(0) rotateX(0deg);
+    translate: 0 0 0;
   }
 
   50% {
-    transform: translateY(-1.25rem) rotateX(5deg);
+    translate: 0 -1.25rem 0;
   }
 }
 
-@keyframes rotate3d {
-  0% {
-    transform: rotateY(0deg) rotateX(15deg);
+@keyframes logo-spin {
+  from {
+    rotate: 0 1 0 0deg;
   }
 
-  100% {
-    transform: rotateY(360deg) rotateX(15deg);
+  to {
+    rotate: 0 1 0 360deg;
   }
 }
 
@@ -147,21 +161,22 @@ body {
   font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 900;
 
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 255, 65, 0.05));
+  /* Opaque background: backdrop-filter on preserve-3d children breaks
+     Chromium's depth sorting, causing back faces to composite over front
+     faces. A solid fill ensures correct occlusion without that bug. */
+  background: linear-gradient(135deg, #060e06, #0a150a);
 
   border: 2px solid var(--terminal-green);
-  box-shadow: 0 0 1.25rem rgba(0, 255, 65, 0.3), inset 0 0 1.25rem rgba(0, 255, 65, 0.1);
-  backdrop-filter: blur(1.5rem);
-  -webkit-backdrop-filter: blur(1.5rem);
-  transform: translateZ(0);
-  will-change: backdrop-filter;
+  box-shadow: 0 0 1.25rem rgba(57, 255, 20, 0.3), inset 0 0 1.25rem rgba(57, 255, 20, 0.1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .logo-face::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(45deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+  background: linear-gradient(45deg, transparent, rgba(57, 255, 20, 0.1), transparent);
   animation: shimmer 3s infinite;
 }
 
@@ -204,11 +219,12 @@ body {
 
 .logo-face img {
   position: relative;
+  /* required for z-index to take effect */
   z-index: 1;
   width: 80%;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 0.625rem rgba(0, 255, 65, 0.5));
+  filter: drop-shadow(0 0 0.625rem rgba(57, 255, 20, 0.5));
 }
 
 /* 7. TEXT & TAGLINE */
@@ -219,7 +235,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 1.875rem rgba(0, 255, 65, 0.5);
+  /* text-shadow has no visible effect when text-fill-color is transparent */
 }
 
 .tagline {
@@ -227,7 +243,7 @@ body {
   font-size: clamp(1rem, 3vw, 1.5rem);
   text-align: center;
   color: var(--terminal-green);
-  text-shadow: 0 0 0.625rem rgba(0, 255, 65, 0.5);
+  text-shadow: 0 0 0.625rem rgba(57, 255, 20, 0.5);
   opacity: 0;
   animation: fadeInUp 1s ease-out 0.5s forwards;
   max-width: 37.5rem;
@@ -267,7 +283,7 @@ body {
   border: 2px solid;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   clip-path: polygon(0 0, calc(100% - 1em) 0, 100% 1em, 100% 100%, 1em 100%, 0 calc(100% - 1em));
 }
 
@@ -303,18 +319,18 @@ body {
 .btn-initiate {
   color: var(--terminal-green);
   border-color: var(--terminal-green);
-  box-shadow: 0 0 1.25rem rgba(0, 255, 65, 0.3), inset 0 0 1.25rem rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 1.25rem rgba(57, 255, 20, 0.3), inset 0 0 1.25rem rgba(57, 255, 20, 0.1);
 }
 
 .btn-initiate:hover {
-  background: rgba(0, 255, 65, 0.1);
+  background: rgba(57, 255, 20, 0.1);
   transform: translateY(-0.1875rem);
 }
 
 .btn-initiate:hover::after {
   width: 20rem;
   height: 20rem;
-  background: rgba(0, 255, 65, 0.3);
+  background: rgba(57, 255, 20, 0.3);
 }
 
 .btn-spectate {
@@ -446,13 +462,25 @@ body {
 }
 
 @keyframes fog-drift {
-  0%   { transform: translate3d(0, 0, 0);        opacity: 0.9; }
-  50%  { transform: translate3d(-8px, 8px, 0);    opacity: 1;   }
-  100% { transform: translate3d(0, 0, 0);          opacity: 0.9; }
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: translate3d(-8px, 8px, 0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.9;
+  }
 }
 
 /* Legacy sabotage-overlay (kept for backwards compat) */
-.sabotage-overlay {
+.sabotage-overlay,
+.sabotage-fog {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -488,8 +516,8 @@ body {
 
 .battle-toast--success {
   background: rgba(0, 20, 0, 0.9);
-  border-color: #39ff14;
-  color: #39ff14;
+  border-color: var(--terminal-green);
+  color: var(--terminal-green);
   box-shadow: 0 0 15px rgba(57, 255, 20, 0.25);
 }
 
@@ -502,8 +530,8 @@ body {
 
 .battle-toast--warning {
   background: rgba(20, 15, 0, 0.9);
-  border-color: #ffb800;
-  color: #ffb800;
+  border-color: var(--warning-glow);
+  color: var(--warning-glow);
   box-shadow: 0 0 12px rgba(255, 184, 0, 0.2);
 }
 
@@ -512,6 +540,7 @@ body {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -519,32 +548,58 @@ body {
 }
 
 /* 13. CUSTOM SCROLLBARS — kill the white bar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(57, 255, 20, 0.15); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(57, 255, 20, 0.3); }
-* { scrollbar-width: thin; scrollbar-color: rgba(57, 255, 20, 0.15) transparent; }
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(57, 255, 20, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(57, 255, 20, 0.3);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(57, 255, 20, 0.15) transparent;
+}
 
 /* 14. LOBBY CARD SYSTEM */
 .lobby-card {
-  background: #0d1117;
-  border: 1px solid #1a1f2b;
+  background: var(--lobby-surface);
+  border: 1px solid var(--lobby-border);
   border-radius: 0.5rem;
   position: relative;
   transition: border-color 0.25s ease;
 }
-.lobby-card:hover { border-color: #2a3040; }
+
+.lobby-card:hover {
+  border-color: #2a3040; /* intentionally lighter than --lobby-border for hover lift */
+}
+
 .lobby-cta {
   border: 1.5px solid var(--terminal-green);
   background: rgba(57, 255, 20, 0.04);
   box-shadow: 0 0 20px rgba(57, 255, 20, 0.08), inset 0 1px 0 rgba(57, 255, 20, 0.1);
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
+
 .lobby-cta:hover {
   background: rgba(57, 255, 20, 0.08);
   box-shadow: 0 0 30px rgba(57, 255, 20, 0.15), inset 0 1px 0 rgba(57, 255, 20, 0.15);
 }
-.lobby-cta:disabled { opacity: 0.4; box-shadow: none; }
+
+.lobby-cta:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+}
 
 /* 15. LOBBY SCROLL — force dark scrollbar on Safari */
 .lobby-scroll {
@@ -552,14 +607,30 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(57, 255, 20, 0.12) transparent;
 }
-.lobby-scroll::-webkit-scrollbar { width: 4px; }
-.lobby-scroll::-webkit-scrollbar-track { background: transparent; }
-.lobby-scroll::-webkit-scrollbar-thumb { background: rgba(57, 255, 20, 0.15); border-radius: 4px; }
-.lobby-scroll::-webkit-scrollbar-thumb:hover { background: rgba(57, 255, 20, 0.3); }
+
+.lobby-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lobby-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lobby-scroll::-webkit-scrollbar-thumb {
+  background: rgba(57, 255, 20, 0.15);
+  border-radius: 4px;
+}
+
+.lobby-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(57, 255, 20, 0.3);
+}
 
 /* 16. REDUCED MOTION ACCESSIBILITY (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -577,7 +648,19 @@ body {
 }
 
 .cl-formButtonPrimary {
-  background-color: #39FF14 !important;
+  background-color: var(--terminal-green) !important;
   box-shadow: 0 0 15px rgba(57, 255, 20, 0.4) !important;
-  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Hide Clerk dev-mode overlays (watermark, dev badge, hosted-UI iframe) */
+.cl-devMode,
+.cl-devMode__bubble,
+.cl-developmentMode,
+.cl-poweredBy,
+[class*="cl-devMode"],
+[class*="developmentMode"],
+[id^="clerk-dev"],
+iframe[src*="clerk.accounts.dev"] {
+  display: none !important;
 }

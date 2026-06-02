@@ -29,7 +29,7 @@ export default function LandingPage() {
         [ AES-256 ]
       </div>
 
-      <div className="container">
+      <div className="landing-container">
         {/* 3D Logo Cube */}
         <div className="logo-container">
           <div className="logo-3d">
