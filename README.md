@@ -35,13 +35,13 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python manage.py migrate
+python3 manage.py migrate
 ```
 
 To import the full problem set into DB (supports `problems/merged_problems.json`):
 
 ```bash
-python manage.py import_problems ../problems/merged_problems.json
+python3 manage.py import_problems ../problems/merged_problems.json
 ```
 
 If needed, create and update backend env vars:
