@@ -1019,6 +1019,7 @@ export default function BattlePage() {
                   : "#ff4444";
               return (
                 <button
+                  type="button"
                   key={r.id}
                   onClick={() => setSelectedProblemIdx(idx)}
                   style={{
@@ -1500,6 +1501,7 @@ function MiddlePanel({
       >
         {(["problem", "opponent"] as const).map((t) => (
           <button
+            type="button"
             key={t}
             onClick={() => setTab(t)}
             style={{
@@ -1539,6 +1541,7 @@ function MiddlePanel({
             const isActive = idx === selectedProblemIdx;
             return (
               <button
+                type="button"
                 key={p.id}
                 onClick={() => onSelectProblem(idx)}
                 style={{

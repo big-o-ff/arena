@@ -19,7 +19,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
       <header className="relative z-20 flex shrink-0 items-center justify-end gap-3 px-4 py-2 min-h-[3rem]">
         {isLoaded && !userId && (
           <SignInButton mode="modal">
-            <button className="cyber-btn border-noir-terminal text-noir-terminal hover:bg-noir-terminal/10 text-xs px-4 py-2 uppercase tracking-widest">
+            <button type="button" className="cyber-btn border-noir-terminal text-noir-terminal hover:bg-noir-terminal/10 text-xs px-4 py-2 uppercase tracking-widest">
               Login / Access System
             </button>
           </SignInButton>

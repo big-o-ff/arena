@@ -557,6 +557,16 @@ body {
 .lobby-scroll::-webkit-scrollbar-thumb { background: rgba(57, 255, 20, 0.15); border-radius: 4px; }
 .lobby-scroll::-webkit-scrollbar-thumb:hover { background: rgba(57, 255, 20, 0.3); }
 
+/* 16. REDUCED MOTION ACCESSIBILITY (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Target the main Clerk card */
 .cl-card {
   -webkit-backdrop-filter: blur(20px) !important;

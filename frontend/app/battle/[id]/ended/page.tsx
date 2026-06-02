@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../../../lib/fetchWithAuth";
 
@@ -46,7 +46,6 @@ function reasonLabel(
 export default function BattleEndedPage() {
   const params = useParams<{ id: string }>();
   const battleId = params.id;
-  const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
   const api = useApiClient();
   const fetchMe = useFetchMe();
@@ -77,12 +76,6 @@ export default function BattleEndedPage() {
       cancelled = true;
     };
   }, [isLoaded, isSignedIn, battleId, api, fetchMe]);
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.replace("/");
-    }
-  }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded || !isSignedIn) {
     return null;

@@ -57,13 +57,14 @@ export default function LandingPage() {
               /* --- STATE: UNAUTHENTICATED --- */
               <div className="w-full flex flex-col items-center">
                 <SignInButton mode="modal" forceRedirectUrl="/lobby">
-                  <button className="cyber-button btn-initiate hidden md:block">
+                  <button type="button" className="cyber-button btn-initiate hidden md:block">
                     <span className="button-text">Initiate Battle</span>
                   </button>
                 </SignInButton>
 
                 {/* Mobile Ghost Version */}
                 <button
+                  type="button"
                   className="cyber-button opacity-50 cursor-not-allowed md:hidden w-full"
                   disabled
                 >
@@ -76,6 +77,7 @@ export default function LandingPage() {
               /* --- STATE: AUTHENTICATED --- */
               <div className="w-full flex flex-col items-center">
                 <button
+                  type="button"
                   className="cyber-button btn-initiate hidden md:block"
                   onClick={() => router.push("/lobby")}
                 >
@@ -84,6 +86,7 @@ export default function LandingPage() {
 
                 {/* Mobile Ghost Version */}
                 <button
+                  type="button"
                   className="cyber-button opacity-50 cursor-not-allowed md:hidden w-full"
                   disabled
                 >
@@ -100,7 +103,7 @@ export default function LandingPage() {
 
           {/* SHARED ACTION: spectate (active for all) */}
           <Link href="/spectate" className="w-full md:w-auto mt-4">
-            <button className="cyber-button btn-spectate w-full">
+            <button type="button" className="cyber-button btn-spectate w-full">
               <span className="button-text">Spectate Arena</span>
             </button>
           </Link>

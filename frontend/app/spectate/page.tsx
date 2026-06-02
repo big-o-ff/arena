@@ -61,10 +61,10 @@ export default function SpectateLobbyPage() {
           </div>
 
           <div className="flex items-center gap-4 text-xs">
-            <button className="flex items-center gap-2 border border-noir-accent/30 text-noir-accent px-4 py-2 hover:bg-noir-accent/10 transition-colors">
+            <button type="button" className="flex items-center gap-2 border border-noir-accent/30 text-noir-accent px-4 py-2 hover:bg-noir-accent/10 transition-colors">
               Filter
             </button>
-            <button className="flex items-center gap-2 border border-noir-border/50 text-white px-4 py-2 hover:bg-white/5 transition-colors">
+            <button type="button" className="flex items-center gap-2 border border-noir-border/50 text-white px-4 py-2 hover:bg-white/5 transition-colors">
               Newest &#9660;
             </button>
             <Link href="/" className="flex items-center gap-2 text-noir-accent hover:underline ml-4">
@@ -154,7 +154,7 @@ export default function SpectateLobbyPage() {
 
                     {/* Watch Button */}
                     <div className="flex-shrink-0 mt-4 lg:mt-0">
-                      <button className="w-full lg:w-auto px-6 py-2.5 border border-noir-accent text-noir-accent text-xs uppercase tracking-widest hover:bg-noir-accent/10 transition-colors flex items-center justify-center gap-2">
+                      <button type="button" className="w-full lg:w-auto px-6 py-2.5 border border-noir-accent text-noir-accent text-xs uppercase tracking-widest hover:bg-noir-accent/10 transition-colors flex items-center justify-center gap-2">
                         WATCH <span className="text-[10px]">&gt;</span>
                       </button>
                     </div>

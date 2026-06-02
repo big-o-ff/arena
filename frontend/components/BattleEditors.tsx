@@ -390,6 +390,7 @@ export function BattleEditors({
         >
           {/* RUN button */}
           <button
+            type="button"
             onClick={handleRun}
             disabled={isRunning || runCooldown || battleComplete || !selectedProblem}
             style={{
@@ -422,6 +423,7 @@ export function BattleEditors({
 
           {/* SUBMIT button */}
           <button
+            type="button"
             onClick={onSubmit}
             disabled={
               isSubmitting ||
@@ -486,6 +488,7 @@ export function BattleEditors({
         >
           {(["problem", "opponent"] as const).map((tab) => (
             <button
+              type="button"
               key={tab}
               onClick={() => setMiddleTab(tab)}
               style={{
@@ -745,6 +748,7 @@ export function GCButton({
         </p>
         <div style={{ display: "flex", gap: "6px" }}>
           <button
+            type="button"
             onClick={() => { setConfirming(false); onConfirm(); }}
             style={{
               flex: 1,
@@ -761,6 +765,7 @@ export function GCButton({
             YES — ACTIVATE
           </button>
           <button
+            type="button"
             onClick={() => setConfirming(false)}
             style={{
               background: "transparent",
@@ -783,6 +788,7 @@ export function GCButton({
   return (
     <div>
       <button
+        type="button"
         onClick={() => !disabled && setConfirming(true)}
         disabled={disabled}
         style={{

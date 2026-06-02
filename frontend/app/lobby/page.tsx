@@ -100,11 +100,6 @@ export default function LobbyPage() {
     null
   );
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/");
-    }
-  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -336,6 +331,7 @@ export default function LobbyPage() {
         <p className="font-mono text-xs uppercase tracking-widest">{error}</p>
         <button
           className="px-4 py-2 border border-noir-danger text-noir-danger hover:bg-noir-danger/10 text-xs uppercase tracking-widest"
+          type="button"
           onClick={() => window.location.reload()}
         >
           [ REBOOT LINK ]
@@ -364,8 +360,8 @@ export default function LobbyPage() {
             <p style={{ fontSize: 12, color: "#999", marginBottom: 4 }}><strong style={{ color: "#fff" }}>{incomingInvite.from_username}</strong> wants to battle you!</p>
             <p style={{ fontSize: 10, color: "#555", marginBottom: 16 }}>Time remaining: {timeLeft}s</p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              <button onClick={() => handleRequestAction(incomingInvite.id, "accept")} style={{ padding: "8px 20px", border: "1px solid #39FF14", background: "transparent", color: "#39FF14", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Accept</button>
-              <button onClick={() => handleRequestAction(incomingInvite.id, "decline")} style={{ padding: "8px 20px", border: "1px solid #ff4444", background: "transparent", color: "#ff4444", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Decline</button>
+              <button type="button" onClick={() => handleRequestAction(incomingInvite.id, "accept")} style={{ padding: "8px 20px", border: "1px solid #39FF14", background: "transparent", color: "#39FF14", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Accept</button>
+              <button type="button" onClick={() => handleRequestAction(incomingInvite.id, "decline")} style={{ padding: "8px 20px", border: "1px solid #ff4444", background: "transparent", color: "#ff4444", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Decline</button>
             </div>
           </div>
         </div>
@@ -381,9 +377,9 @@ export default function LobbyPage() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <ProfileHoverCard username={djangoUser.username}>
-            <button style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", padding: "8px 16px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "#eaeaea", cursor: "pointer" }}>Profile</button>
+            <button type="button" style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", padding: "8px 16px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "#eaeaea", cursor: "pointer" }}>Profile</button>
           </ProfileHoverCard>
-          <button onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 10, color: "#555", background: "transparent", border: "none", textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Logout</button>
+          <button type="button" onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 10, color: "#555", background: "transparent", border: "none", textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Logout</button>
         </div>
       </header>
 
