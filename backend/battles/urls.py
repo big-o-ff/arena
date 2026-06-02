@@ -17,7 +17,6 @@ from .views import (
     RunSolutionView,
     SimpleLeaderboardView,
     SubmitSolutionView,
-    ShareCardView,
 )
 
 urlpatterns = [
@@ -61,6 +60,5 @@ urlpatterns = [
     path("<int:pk>/submit/", SubmitSolutionView.as_view(), name="battle-submit"),
     path("<int:pk>/run/", RunSolutionView.as_view(), name="battle-run"),
     path("leaderboard/", SimpleLeaderboardView.as_view(), name="battle-leaderboard"),
-    path("share/<uuid:share_uuid>/", ShareCardView.as_view(), name="share-card"),
 ]
 

@@ -21,6 +21,8 @@ type DjangoUser = {
   username: string;
   display_name: string;
   role: "superadmin" | "admin" | "player" | "spectator";
+  total_wins: number;
+  total_losses: number;
 };
 
 type WSInvite = {
@@ -376,7 +378,7 @@ export default function LobbyPage() {
           <p style={{ fontSize: 11, color: "#555", marginTop: 4 }}>are you the best?</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <ProfileHoverCard username={djangoUser.username}>
+          <ProfileHoverCard username={djangoUser.username} wins={djangoUser.total_wins} losses={djangoUser.total_losses}>
             <button type="button" style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", padding: "8px 16px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "#eaeaea", cursor: "pointer" }}>Profile</button>
           </ProfileHoverCard>
           <button type="button" onClick={() => signOut({ redirectUrl: "/" })} style={{ fontSize: 10, color: "#555", background: "transparent", border: "none", textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>Logout</button>

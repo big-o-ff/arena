@@ -813,7 +813,7 @@ export default function BattlePage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "40% 35% 25%",
+          gridTemplateColumns: "8fr 7fr 5fr",
           gridTemplateRows: "minmax(0, 1fr)",
           flex: "1 1 0%",
           gap: "8px",

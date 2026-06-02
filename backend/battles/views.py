@@ -428,8 +428,6 @@ class BattleResignView(views.APIView):
         )
         data = BattleSerializer(battle).data
         result = BattleResult.objects.filter(battle=battle).first()
-        if result:
-            data["share_url"] = f"/api/battles/share/{result.share_uuid}"
         return Response(data)
 
 
@@ -477,7 +475,6 @@ class BattleEndedSummaryView(views.APIView):
                 "player2_rating_change": result.player2_rating_change,
                 "problems_solved": result.problems_solved,
                 "fastest_solve_time_ms": result.fastest_solve_time_ms,
-                "share_url": f"/api/battles/share/{result.share_uuid}",
             }
         )
 
@@ -838,21 +835,3 @@ class SimpleLeaderboardView(views.APIView):
         return Response(list(users))
 
 
-class ShareCardView(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request, share_uuid: str, *args, **kwargs):
-        from .models import BattleResult
-        result = get_object_or_404(BattleResult.objects.select_related("battle__player1", "battle__player2"), share_uuid=share_uuid)
-        battle = result.battle
-        
-        return Response({
-            "battle_id": battle.id,
-            "player1": battle.player1.username,
-            "player2": battle.player2.username,
-            "winner": battle.winner.username if battle.winner else None,
-            "player1_rating_change": result.player1_rating_change,
-            "player2_rating_change": result.player2_rating_change,
-            "fastest_solve_ms": result.fastest_solve_time_ms,
-            "problems_solved": result.problems_solved,
-        })

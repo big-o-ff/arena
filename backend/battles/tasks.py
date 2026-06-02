@@ -202,7 +202,6 @@ def finalize_battle_if_active(
         "reason": reason_str,
         "player1_final_hp": battle.player1_hp,
         "player2_final_hp": battle.player2_hp,
-        "share_url": f"/api/battles/share/{result.share_uuid}",
     }
     if resigned_user_id is not None:
         end_payload["resigned_user_id"] = resigned_user_id

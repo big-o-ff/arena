@@ -144,7 +144,7 @@ export default function BattleEndedPage() {
         minHeight: "100vh",
         background: "#0a0c10",
         color: "#c8d3e0",
-        padding: "24px 16px",
+        padding: "24px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

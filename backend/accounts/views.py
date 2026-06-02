@@ -67,6 +67,8 @@ class AuthMeView(APIView):
             "rank_name": getattr(user, "rank_name", "Newbie"),
             "clerk_id": getattr(user, "clerk_id", None),
             "role": getattr(user, "role", "player"),
+            "total_wins": getattr(user, "total_wins", 0),
+            "total_losses": getattr(user, "total_losses", 0),
         })
 
     def post(self, request, *args, **kwargs):
@@ -110,6 +112,8 @@ class AuthMeView(APIView):
             "rank_name": getattr(user, "rank_name", "Newbie"),
             "clerk_id": getattr(user, "clerk_id", None),
             "role": getattr(user, "role", "player"),
+            "total_wins": getattr(user, "total_wins", 0),
+            "total_losses": getattr(user, "total_losses", 0),
         })
 
 import svix
