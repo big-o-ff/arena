@@ -1,52 +1,9 @@
+"""Rating maths for battle settlement."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from .models import Battle, Round
-
-
-@dataclass
-class DamageResult:
-    player1_hp: int
-    player2_hp: int
-    winner_id: int | None
-
-
-def calculate_round_damage(
-    battle: Battle,
-    round_obj: Round,
-) -> DamageResult:
-    base_damage = 25
-
-    if round_obj.player1_time_ms is None or round_obj.player2_time_ms is None:
-        return DamageResult(battle.player1_hp, battle.player2_hp, None)
-
-    diff = round_obj.player2_time_ms - round_obj.player1_time_ms
-    faster_player = None
-
-    if diff > 0:
-        faster_player = 1
-    elif diff < 0:
-        faster_player = 2
-
-    if faster_player is None:
-        return DamageResult(battle.player1_hp, battle.player2_hp, None)
-
-    time_factor = min(abs(diff) / 10_000, 2)
-    damage = int(base_damage * (1 + time_factor))
-
-    if faster_player == 1:
-        player2_hp = max(0, battle.player2_hp - damage)
-        player1_hp = battle.player1_hp
-    else:
-        player1_hp = max(0, battle.player1_hp - damage)
-        player2_hp = battle.player2_hp
-
-    winner_id = None
-    if player1_hp == 0 or player2_hp == 0:
-        winner_id = battle.player1_id if player2_hp == 0 else battle.player2_id
-
-    return DamageResult(player1_hp=player1_hp, player2_hp=player2_hp, winner_id=winner_id)
+# `calculate_round_damage` used to live here. Nothing ever called it, and the
+# Round.player{1,2}_time_ms fields it read are never written — damage is applied
+# in battles.evaluation when a player is first to pass every test case.
 
 
 def get_k_factor(rating: int) -> int:

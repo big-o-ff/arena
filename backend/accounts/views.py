@@ -1,208 +1,223 @@
-from django.contrib.auth import login, logout
-from django.shortcuts import get_object_or_404
+"""
+Account endpoints.
+
+Identity is owned entirely by Clerk. The password-based register/login/token
+views that used to live here were unreachable from the UI and provided a second,
+weaker way into the same username namespace, so they have been removed.
+"""
+from __future__ import annotations
+
+import logging
+import re
+
+import svix
+from django.conf import settings
+from django.db import IntegrityError, transaction
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, permissions, status
-from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import User
-from .serializers import LoginSerializer, RegisterSerializer, UserProfileSerializer
+from .serializers import UserProfileSerializer
 
-
-class RegisterView(generics.CreateAPIView):
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class LoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
-        token, _ = Token.objects.get_or_create(user=user)
-        login(request, user)
-        return Response(
-            {
-                "token": token.key,
-                "user": UserProfileSerializer(user).data,
-            }
-        )
-
-
-class LogoutView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        Token.objects.filter(user=request.user).delete()
-        logout(request)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+logger = logging.getLogger(__name__)
 
 
 class ProfileView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.filter(is_active=True)
     serializer_class = UserProfileSerializer
     lookup_field = "username"
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class LeaderboardView(generics.ListAPIView):
-    queryset = User.objects.filter(role__in=["player", "spectator"]).order_by(
-        "-total_wins", "total_losses"
+    queryset = (
+        User.objects.filter(is_active=True, role__in=["player", "spectator"])
+        .order_by("-total_wins", "total_losses", "id")
     )
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.AllowAny]
 
+
+def _user_payload(user: User) -> dict:
+    return {
+        "id": user.id,
+        "username": user.username,
+        "display_name": user.display_name,
+        "rating": user.rating,
+        "rank_name": user.rank_name,
+        "clerk_id": user.clerk_id,
+        "role": user.role,
+        "total_wins": user.total_wins,
+        "total_losses": user.total_losses,
+    }
+
+
 class AuthMeView(APIView):
+    """
+    GET  — the caller's profile.
+    POST — backfill profile fields Clerk holds but the session JWT may omit.
+
+    POST only ever fills in placeholders: it will not rename a user who already
+    has a real username, and it cannot be used to take someone else's.
+    """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "display_name": user.display_name,
-            "rating": getattr(user, "rating", 800),
-            "rank_name": getattr(user, "rank_name", "Newbie"),
-            "clerk_id": getattr(user, "clerk_id", None),
-            "role": getattr(user, "role", "player"),
-            "total_wins": getattr(user, "total_wins", 0),
-            "total_losses": getattr(user, "total_losses", 0),
-        })
+        return Response(_user_payload(request.user))
 
     def post(self, request, *args, **kwargs):
-        import re
         user = request.user
 
-        email = request.data.get("email") or ""
+        email = (request.data.get("email") or "").strip()
         first_name = (request.data.get("first_name") or "").strip()
         last_name = (request.data.get("last_name") or "").strip()
 
-        changed = False
-
-        from django.db import IntegrityError, transaction
-
-        # Build the real display name from Google name fields.
-        real_display = f"{first_name} {last_name}".strip() or email.split("@")[0]
-
-        # Build a slug username from the real name (or email prefix as fallback).
-        name_slug = re.sub(r"[^a-z0-9]", "", real_display.lower().replace(" ", ""))
-        if not name_slug:
+        real_display = f"{first_name} {last_name}".strip() or (
+            email.split("@")[0] if email else ""
+        )
+        name_slug = re.sub(r"[^a-z0-9]", "", real_display.lower())
+        if not name_slug and email:
             name_slug = re.sub(r"[^a-z0-9]", "", email.split("@")[0].lower())
 
-        # Detect whether the current username is still the auto-generated Clerk ID.
-        username_is_clerk_id = user.username == getattr(user, "clerk_id", None)
-        # Detect whether display_name is still an auto-generated placeholder.
-        display_name_is_placeholder = (
+        username_is_placeholder = user.username == user.clerk_id
+        display_is_placeholder = (
             not user.display_name
             or str(user.display_name).startswith("Player_")
             or user.display_name == user.clerk_id
         )
 
+        updates: list[str] = []
         try:
             with transaction.atomic():
-                if username_is_clerk_id and name_slug:
+                if username_is_placeholder and name_slug:
                     candidate = name_slug
                     suffix = 1
-                    while User.objects.exclude(pk=user.pk).filter(username=candidate).exists():
+                    while (
+                        User.objects.exclude(pk=user.pk)
+                        .filter(username=candidate)
+                        .exists()
+                    ):
                         candidate = f"{name_slug}{suffix}"
                         suffix += 1
                     user.username = candidate
-                    changed = True
+                    updates.append("username")
 
-                if display_name_is_placeholder and real_display:
+                if display_is_placeholder and real_display:
                     user.display_name = real_display
-                    changed = True
+                    updates.append("display_name")
 
-                if email and getattr(user, "email", "") != email:
+                if email and user.email != email:
                     user.email = email
-                    changed = True
-                if getattr(user, "first_name", "") != first_name:
+                    updates.append("email")
+                if first_name and user.first_name != first_name:
                     user.first_name = first_name
-                    changed = True
-                if getattr(user, "last_name", "") != last_name:
+                    updates.append("first_name")
+                if last_name and user.last_name != last_name:
                     user.last_name = last_name
-                    changed = True
+                    updates.append("last_name")
 
-                if changed:
-                    user.save(update_fields=["username", "email", "first_name", "last_name", "display_name"])
+                if updates:
+                    user.save(update_fields=updates)
         except IntegrityError:
-            pass
+            logger.warning("Profile backfill collided for user %s", user.pk)
+            user.refresh_from_db()
 
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "display_name": user.display_name,
-            "rating": getattr(user, "rating", 800),
-            "rank_name": getattr(user, "rank_name", "Newbie"),
-            "clerk_id": getattr(user, "clerk_id", None),
-            "role": getattr(user, "role", "player"),
-            "total_wins": getattr(user, "total_wins", 0),
-            "total_losses": getattr(user, "total_losses", 0),
-        })
+        return Response(_user_payload(user))
 
-import svix
-from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class ClerkWebhookView(APIView):
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        secret = getattr(settings, 'CLERK_WEBHOOK_SECRET', '')
+        secret = getattr(settings, "CLERK_WEBHOOK_SECRET", "")
         if not secret:
-            # Avoid HTTP 500 so Clerk does not retry; sync still works via JWT + /api/auth/me/
+            # Returning 200 stops Clerk retrying; profile sync still happens via
+            # the verified JWT + /api/auth/me/.
             return Response({"detail": "webhook_disabled"}, status=status.HTTP_200_OK)
 
-        headers = request.headers
         try:
-            wh = svix.Webhook(secret)
-            evt = wh.verify(request.body, headers)
-        except Exception as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            evt = svix.Webhook(secret).verify(request.body, request.headers)
+        except Exception as exc:
+            logger.warning("Rejected Clerk webhook: %s", exc)
+            return Response(
+                {"detail": "invalid signature"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        evt_type = evt.get('type')
-        data = evt.get('data', {})
-        clerk_id = data.get('id')
-
+        evt_type = evt.get("type")
+        data = evt.get("data", {})
+        clerk_id = data.get("id")
         if not clerk_id:
-            return Response("Missing ID", status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "missing id"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if evt_type == 'user.created':
-            username = data.get('username') or ''
-            email = ''
-            if data.get('email_addresses'):
-                email = data['email_addresses'][0].get('email_address', '')
-            
-            first_name = data.get('first_name', '')
-            last_name = data.get('last_name', '')
-            
+        email = ""
+        if data.get("email_addresses"):
+            email = data["email_addresses"][0].get("email_address", "") or ""
+        clerk_username = (data.get("username") or "").strip()
+        first_name = data.get("first_name") or ""
+        last_name = data.get("last_name") or ""
+        display = (
+            clerk_username
+            or f"{first_name} {last_name}".strip()
+            or (email.split("@")[0] if email else "")
+        )
+
+        if evt_type == "user.created":
             User.objects.update_or_create(
                 clerk_id=clerk_id,
                 defaults={
-                    'username': username or clerk_id,
-                    'email': email,
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'display_name': username or first_name or clerk_id,
-                }
+                    "username": clerk_username or clerk_id,
+                    "email": email,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "display_name": display or clerk_id,
+                },
             )
-        elif evt_type == 'user.updated':
-            username = data.get('username') or ''
-            email = ''
-            if data.get('email_addresses'):
-                email = data['email_addresses'][0].get('email_address', '')
-                
-            User.objects.filter(clerk_id=clerk_id).update(
-                username=username or clerk_id,
-                email=email,
-            )
-        elif evt_type == 'user.deleted':
+
+        elif evt_type == "user.updated":
+            user = User.objects.filter(clerk_id=clerk_id).first()
+            if user is None:
+                return Response(status=status.HTTP_200_OK)
+
+            changed: list[str] = []
+            # Only adopt a username Clerk actually has. Writing `username or
+            # clerk_id` here reset every OAuth user's readable name back to their
+            # raw Clerk ID on each update event.
+            if clerk_username and clerk_username != user.username:
+                if not User.objects.exclude(pk=user.pk).filter(
+                    username=clerk_username
+                ).exists():
+                    user.username = clerk_username
+                    changed.append("username")
+            if email and user.email != email:
+                user.email = email
+                changed.append("email")
+            if first_name and user.first_name != first_name:
+                user.first_name = first_name
+                changed.append("first_name")
+            if last_name and user.last_name != last_name:
+                user.last_name = last_name
+                changed.append("last_name")
+            if display and (
+                not user.display_name or user.display_name == user.clerk_id
+            ):
+                user.display_name = display
+                changed.append("display_name")
+
+            if changed:
+                try:
+                    user.save(update_fields=changed)
+                except IntegrityError:
+                    logger.warning("Clerk update collided for %s", clerk_id)
+
+        elif evt_type == "user.deleted":
             User.objects.filter(clerk_id=clerk_id).update(is_active=False)
 
         return Response(status=status.HTTP_200_OK)
-

@@ -2,8 +2,8 @@
 Celery tasks for battle code execution and game events.
 
 Queue routing:
-  - 'execution' queue: evaluate_submission, complexity_analysis
-  - 'events'    queue: fog, gc, battle timeout, battle end
+  - 'execution' queue: evaluate_submission
+  - 'events'    queue: fog, gc, battle timeout, battle end, invite expiry
 """
 from __future__ import annotations
 
@@ -12,50 +12,31 @@ import logging
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
+from django.db import OperationalError, transaction
+
 from .evaluation import evaluate_submission_sync
 
 logger = logging.getLogger(__name__)
 
 
-def _broadcast(battle_id: int, event: str, payload: dict) -> None:
-    """Helper: send a WS event to everyone in a battle room."""
-    channel_layer = get_channel_layer()
-    if channel_layer is None:
-        logger.warning("No channel layer available — skipping broadcast")
-        return
-    async_to_sync(channel_layer.group_send)(
-        f"battle_{battle_id}",
-        {
-            "type": "broadcast.event",
-            "event": event,
-            "payload": payload,
-        },
-    )
+from .events import broadcast_battle_event as _broadcast
 
 
 # ---------------------------------------------------------------------------
-# Phase 1: Code execution
+# Code execution
 # ---------------------------------------------------------------------------
 
-@shared_task(queue="execution", name="battles.evaluate_submission")
+@shared_task(
+    queue="execution",
+    name="battles.evaluate_submission",
+    autoretry_for=(OperationalError,),
+    retry_backoff=True,
+    max_retries=3,
+)
 def evaluate_submission(submission_id: int) -> None:
-    """Async wrapper — same logic as synchronous HTTP submit path."""
+    """Judge a submission off the request path."""
     evaluate_submission_sync(submission_id)
 
-
-# ---------------------------------------------------------------------------
-# Phase 5 stub: Complexity analysis
-# ---------------------------------------------------------------------------
-
-@shared_task(queue="execution", name="battles.complexity_analysis")
-def complexity_analysis(submission_id: int) -> None:
-    """
-    Classify the Big-O complexity of a submission by running it at
-    increasing input sizes and comparing runtime ratios.
-
-    Placeholder — will be fully implemented in Phase 5.
-    """
-    logger.info("complexity_analysis for submission %s — not yet implemented", submission_id)
 
 # ---------------------------------------------------------------------------
 # Phase 3: Sabotage (Garbage Collection)
@@ -100,7 +81,7 @@ def end_fog(battle_id: int) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Phase 6 stub: Battle end processing
+# Battle end processing
 # ---------------------------------------------------------------------------
 
 BATTLE_DURATION_MINUTES = 30
@@ -125,76 +106,84 @@ def finalize_battle_if_active(
     from .models import Battle, BattleResult, Submission
     from .utils import calculate_elo_deltas
 
-    updated = Battle.objects.filter(
-        id=battle_id, status=Battle.Status.ACTIVE,
-    ).update(status=Battle.Status.COMPLETED)
+    # The whole settlement is one transaction: previously a failure partway
+    # through could leave ratings applied with no BattleResult row, which the
+    # summary endpoint then 404s on forever.
+    with transaction.atomic():
+        # Idempotent claim — only one caller can flip ACTIVE → COMPLETED.
+        updated = Battle.objects.filter(
+            id=battle_id, status=Battle.Status.ACTIVE
+        ).update(status=Battle.Status.COMPLETED)
 
-    if updated == 0:
-        return  # Already ended by another trigger — exit.
+        if updated == 0:
+            return  # Already ended by another trigger.
 
-    battle = Battle.objects.select_related("player1", "player2").get(id=battle_id)
+        battle = Battle.objects.select_related("player1", "player2").get(id=battle_id)
 
-    # Determine winner by HP
-    if battle.player1_hp > battle.player2_hp:
-        winner_id = battle.player1_id
-    elif battle.player2_hp > battle.player1_hp:
-        winner_id = battle.player2_id
-    else:
-        winner_id = None  # draw
+        if battle.player1_hp > battle.player2_hp:
+            winner_id = battle.player1_id
+        elif battle.player2_hp > battle.player1_hp:
+            winner_id = battle.player2_id
+        else:
+            winner_id = None  # draw
 
-    hp_reason = battle.player1_hp == 0 or battle.player2_hp == 0
-    if end_reason:
-        reason_str = end_reason
-    elif hp_reason:
-        reason_str = "hp_zero"
-    else:
-        reason_str = "timeout"
+        if end_reason:
+            reason_str = end_reason
+        elif battle.player1_hp == 0 or battle.player2_hp == 0:
+            reason_str = "hp_zero"
+        else:
+            reason_str = "timeout"
 
-    battle.winner_id = winner_id
-    battle.ended_reason = reason_str
-    if resigned_user_id is not None:
-        battle.resigned_by_id = resigned_user_id
-    battle.save(update_fields=["winner", "ended_reason", "resigned_by"])
+        battle.winner_id = winner_id
+        battle.ended_reason = reason_str
+        if resigned_user_id is not None:
+            battle.resigned_by_id = resigned_user_id
+        battle.save(update_fields=["winner", "ended_reason", "resigned_by"])
 
-    player1 = battle.player1
-    player2 = battle.player2
+        player1 = battle.player1
+        player2 = battle.player2
 
-    # Calculate ELO deltas
-    delta1, delta2 = calculate_elo_deltas(
-        player1.rating, player2.rating, winner_id, player1.id, player2.id
-    )
+        delta1, delta2 = calculate_elo_deltas(
+            player1.rating, player2.rating, winner_id, player1.id, player2.id
+        )
 
-    # Update Users
-    player1.rating += delta1
-    player2.rating += delta2
-    if winner_id == player1.id:
-        player1.total_wins += 1
-        player2.total_losses += 1
-    elif winner_id == player2.id:
-        player2.total_wins += 1
-        player1.total_losses += 1
+        player1.rating += delta1
+        player2.rating += delta2
+        if winner_id == player1.id:
+            player1.total_wins += 1
+            player2.total_losses += 1
+        elif winner_id == player2.id:
+            player2.total_wins += 1
+            player1.total_losses += 1
 
-    player1.save(update_fields=["rating", "total_wins", "total_losses"])
-    player2.save(update_fields=["rating", "total_wins", "total_losses"])
+        player1.save(update_fields=["rating", "total_wins", "total_losses"])
+        player2.save(update_fields=["rating", "total_wins", "total_losses"])
 
-    # Aggregate stats for Result object
-    problems_solved = Submission.objects.filter(
-        battle=battle, status=Submission.Status.PASSED
-    ).values("problem").distinct().count()
+        problems_solved = (
+            Submission.objects.filter(battle=battle, status=Submission.Status.PASSED)
+            .values("problem")
+            .distinct()
+            .count()
+        )
+        fastest_submission = (
+            Submission.objects.filter(
+                battle=battle,
+                status=Submission.Status.PASSED,
+                execution_time_ms__isnull=False,
+            )
+            .order_by("execution_time_ms")
+            .first()
+        )
 
-    fastest_submission = Submission.objects.filter(
-        battle=battle, status=Submission.Status.PASSED, execution_time_ms__isnull=False
-    ).order_by("execution_time_ms").first()
-    fastest_solve_time = fastest_submission.execution_time_ms if fastest_submission else None
-
-    # Create BattleResult
-    result = BattleResult.objects.create(
-        battle=battle,
-        player1_rating_change=delta1,
-        player2_rating_change=delta2,
-        fastest_solve_time_ms=fastest_solve_time,
-        problems_solved=problems_solved,
-    )
+        BattleResult.objects.create(
+            battle=battle,
+            player1_rating_change=delta1,
+            player2_rating_change=delta2,
+            fastest_solve_time_ms=(
+                fastest_submission.execution_time_ms if fastest_submission else None
+            ),
+            problems_solved=problems_solved,
+        )
 
     end_payload = {
         "battle_id": battle.id,
@@ -243,8 +232,15 @@ def maybe_finalize_expired_battle(battle_id: int) -> bool:
 
 @shared_task(queue="events", name="battles.process_battle_end")
 def process_battle_end(battle_id: int) -> None:
-    """Celery entrypoint — same as finalize_battle_if_active (scheduled at match start)."""
-    finalize_battle_if_active(battle_id)
+    """
+    Scheduled at match start to end the battle when the clock runs out.
+
+    Goes through `maybe_finalize_expired_battle` so it re-checks `ends_at` before
+    acting. Finalising unconditionally meant that anything which ran this task
+    early — a redelivery, a misconfigured countdown, an eager worker — would cut
+    a live match short.
+    """
+    maybe_finalize_expired_battle(battle_id)
 
 @shared_task(queue="events", name="battles.expire_battle_request")
 def expire_battle_request(battle_request_id: int) -> None:

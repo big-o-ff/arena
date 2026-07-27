@@ -1,26 +1,27 @@
 from django.urls import path
 
 from .views import (
+    BattleEndedSummaryView,
     BattleProblemReviewView,
     BattleRequestAcceptView,
     BattleRequestCancelView,
     BattleRequestDeclineView,
     BattleRequestHistoryView,
     BattleRequestListCreateView,
-    BattleEndedSummaryView,
     BattleResignView,
     BattleStateView,
-    CreateBattleView,
     LiveBattlesListView,
     MyActiveBattleView,
     PublicBattleStateView,
     RunSolutionView,
-    SimpleLeaderboardView,
+    SubmissionStatusView,
     SubmitSolutionView,
 )
 
+# Note: there is no "create battle" route. Battles are only created by accepting
+# a BattleRequest — the old /create/ endpoint let any authenticated user force an
+# unwilling opponent (or themselves) into a rated match.
 urlpatterns = [
-    path("create/", CreateBattleView.as_view(), name="battle-create"),
     path("live/", LiveBattlesListView.as_view(), name="battle-live-list"),
     path(
         "public/<int:pk>/state/",
@@ -58,7 +59,10 @@ urlpatterns = [
         name="battle-problem-review",
     ),
     path("<int:pk>/submit/", SubmitSolutionView.as_view(), name="battle-submit"),
+    path(
+        "<int:pk>/submissions/<int:submission_id>/",
+        SubmissionStatusView.as_view(),
+        name="battle-submission-status",
+    ),
     path("<int:pk>/run/", RunSolutionView.as_view(), name="battle-run"),
-    path("leaderboard/", SimpleLeaderboardView.as_view(), name="battle-leaderboard"),
 ]
-

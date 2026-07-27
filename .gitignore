@@ -31,3 +31,7 @@ Thumbs.db
 .next/
 node_modules/
 *.rdb
+# Build artifacts
+*.tsbuildinfo
+staticfiles/
+.pytest_cache/

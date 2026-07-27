@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { spectatorSocketUrl } from "../../../lib/ws";
+import {
+  useReconnectingSocket,
+  type SocketStatus,
+} from "../../../lib/useReconnectingSocket";
 import { api } from "../../../lib/api";
 
 type BattleState = {
@@ -32,6 +36,7 @@ export default function SpectateBattlePage() {
   const params = useParams<{ id: string }>();
   const battleId = params.id;
   const { getToken } = useAuth();
+  const { isLoaded, isSignedIn } = useUser();
 
   const [battle, setBattle] = useState<BattleState | null>(null);
   const [messageLog, setMessageLog] = useState<string[]>([]);
@@ -41,7 +46,7 @@ export default function SpectateBattlePage() {
   const [sampleRunByPlayerId, setSampleRunByPlayerId] = useState<
     Record<number, SampleRunPayload>
   >({});
-  const wsRef = useRef<WebSocket | null>(null);
+  const [socketStatus, setSocketStatus] = useState<SocketStatus>("connecting");
 
   useEffect(() => {
     if (!battleId) return;
@@ -51,20 +56,10 @@ export default function SpectateBattlePage() {
       .catch(() => setBattle(null));
   }, [battleId]);
 
-  useEffect(() => {
-    if (!battleId) return;
-
-    let cancelled = false;
-    let ws: WebSocket | null = null;
-
-    const connect = async () => {
-      const token = await getToken().catch(() => null);
-      if (cancelled) return;
-      ws = new WebSocket(spectatorSocketUrl(battleId, token ?? undefined));
-      wsRef.current = ws;
-
-      ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
+  const handleMessage = useCallback(
+    (raw: unknown) => {
+      {
+        const msg = raw as { event?: string; payload?: any };
         if (msg.event === "SPECTATOR_EMOTE") {
           setMessageLog((log) => [
             `[${msg.payload.username || "anon"}] ${msg.payload.emote}`,
@@ -124,36 +119,118 @@ export default function SpectateBattlePage() {
             .then((res) => setBattle(res.data))
             .catch(() => {});
         }
-      };
-    };
-
-    void connect();
-
-    return () => {
-      cancelled = true;
-      if (ws) {
-        ws.close();
       }
-      wsRef.current = null;
-    };
+    },
+    [battleId]
+  );
+
+  const getUrl = useCallback(async () => {
+    if (!battleId) return null;
+    // Spectating now requires a signed-in, non-participating user: this stream
+    // carries both players' live buffers, so an anonymous socket was a way for
+    // a player to watch their own match and read the opponent's solution.
+    const token = await getToken().catch(() => null);
+    return token ? spectatorSocketUrl(battleId, token) : null;
   }, [battleId, getToken]);
 
+  const { send } = useReconnectingSocket({
+    enabled: Boolean(battleId) && Boolean(isSignedIn),
+    getUrl,
+    onMessage: handleMessage,
+    onStatusChange: setSocketStatus,
+  });
+
   const sendLike = () => {
-    const ws = wsRef.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({ event: "SPECTATOR_LIKE", payload: {} }));
+    send({ event: "SPECTATOR_LIKE", payload: {} });
   };
 
   const sendEmote = (emote: string) => {
-    const ws = wsRef.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(
-      JSON.stringify({
-        event: "SPECTATOR_EMOTE",
-        payload: { emote, username: "spectator" },
-      })
-    );
+    // The username is filled in server-side from the authenticated user; the
+    // client no longer gets to assert who it is.
+    send({ event: "SPECTATOR_EMOTE", payload: { emote } });
   };
+
+  if (isLoaded && !isSignedIn) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#0a0c10",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "12px",
+          color: "rgba(200,211,224,0.6)",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "24px",
+        }}
+      >
+        <p>Sign in to watch this battle.</p>
+        <p style={{ fontSize: "12px", color: "rgba(200,211,224,0.35)", maxWidth: 380 }}>
+          The live feed shows both players&apos; code, so it is limited to
+          signed-in viewers who are not competing in this match.
+        </p>
+        <Link
+          href="/sign-in"
+          style={{
+            marginTop: "4px",
+            border: "1px solid rgba(0,255,136,0.35)",
+            borderRadius: "4px",
+            color: "#00ff88",
+            fontSize: "12px",
+            padding: "8px 18px",
+            textDecoration: "none",
+            fontFamily: "monospace",
+          }}
+        >
+          Sign in
+        </Link>
+      </div>
+    );
+  }
+
+  if (socketStatus === "closed") {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#0a0c10",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          color: "rgba(200,211,224,0.6)",
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "24px",
+        }}
+      >
+        <p>You can&apos;t spectate this battle.</p>
+        <p style={{ fontSize: "12px", color: "rgba(200,211,224,0.35)", maxWidth: 380 }}>
+          Players can&apos;t watch their own match — that would show you your
+          opponent&apos;s code. Head back to your battle instead.
+        </p>
+        <Link
+          href="/lobby"
+          style={{
+            marginTop: "4px",
+            border: "1px solid rgba(0,255,136,0.35)",
+            borderRadius: "4px",
+            color: "#00ff88",
+            fontSize: "12px",
+            padding: "8px 18px",
+            textDecoration: "none",
+            fontFamily: "monospace",
+          }}
+        >
+          Back to lobby
+        </Link>
+      </div>
+    );
+  }
 
   if (!battle) {
     return (

@@ -20,13 +20,16 @@ type ReviewUser = {
 
 type ReviewSubmission = {
   id: number;
-  code: string;
+  /** Null when the server withheld it — see `hidden`. */
+  code: string | null;
   language: string;
   status: string;
   passed_cases: number;
   total_cases: number;
   execution_time_ms: number | null;
   submitted_at: string;
+  /** True when this is the opponent's submission and the battle is still live. */
+  hidden?: boolean;
 };
 
 type ReviewSide = {
@@ -42,6 +45,9 @@ type MyReward = {
 
 type ReviewPayload = {
   battle_id: number;
+  battle_status: string;
+  /** Opponent code is only released once the battle is over. */
+  opponent_code_visible: boolean;
   problem: { id: number; title: string; difficulty: string };
   my_reward: MyReward | null;
   player1: ReviewSide;
@@ -164,24 +170,48 @@ function CodeBlock({
               </span>
             )}
           </div>
-          <pre
-            style={{
-              margin: 0,
-              padding: "12px",
-              flex: 1,
-              overflow: "auto",
-              maxHeight: "min(70vh, 560px)",
-              fontSize: "11px",
-              lineHeight: 1.45,
-              color: "#c8d3e0",
-              fontFamily:
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {sub.code}
-          </pre>
+          {sub.code === null ? (
+            <div
+              style={{
+                padding: "24px 16px",
+                color: "rgba(200,211,224,0.4)",
+                fontSize: "12px",
+                fontFamily: "monospace",
+                lineHeight: 1.6,
+                textAlign: "center",
+              }}
+            >
+              Hidden until the battle ends.
+              <div
+                style={{
+                  fontSize: "10px",
+                  color: "rgba(200,211,224,0.25)",
+                  marginTop: "6px",
+                }}
+              >
+                Their progress is shown above.
+              </div>
+            </div>
+          ) : (
+            <pre
+              style={{
+                margin: 0,
+                padding: "12px",
+                flex: 1,
+                overflow: "auto",
+                maxHeight: "min(70vh, 560px)",
+                fontSize: "11px",
+                lineHeight: 1.45,
+                color: "#c8d3e0",
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {sub.code}
+            </pre>
+          )}
         </>
       )}
     </div>
@@ -242,14 +272,39 @@ export default function BattleProblemReviewPage() {
     }
   }, [battleId, problemId]);
 
+  // Poll while anything is still in flight: our own submission is judged
+  // asynchronously on the execution queue, and the opponent may not have
+  // submitted yet. Stops as soon as there is nothing left to wait for.
   useEffect(() => {
     if (!data || !djangoUser) return;
+    const mine =
+      data.player1.user.id === djangoUser.id ? data.player1 : data.player2;
     const opp =
       data.player1.user.id === djangoUser.id ? data.player2 : data.player1;
-    if (opp.submission) return;
-    const t = setInterval(load, 4000);
-    return () => clearInterval(t);
+
+    const myVerdictPending =
+      !mine.submission || mine.submission.status === "pending";
+    const waitingOnOpponent = !opp.submission;
+
+    if (!myVerdictPending && !waitingOnOpponent) return;
+
+    const interval = setInterval(load, myVerdictPending ? 2000 : 5000);
+    return () => clearInterval(interval);
   }, [data, djangoUser, load]);
+
+  // Once our verdict lands, drop the "pending" marker the battle page left.
+  useEffect(() => {
+    if (!data || !djangoUser) return;
+    const mine =
+      data.player1.user.id === djangoUser.id ? data.player1 : data.player2;
+    if (mine.submission && mine.submission.status !== "pending") {
+      try {
+        sessionStorage.removeItem(`arena-pending-${battleId}-${problemId}`);
+      } catch {
+        /* sessionStorage may be unavailable */
+      }
+    }
+  }, [data, djangoUser, battleId, problemId]);
 
   const me = data && djangoUser
     ? data.player1.user.id === djangoUser.id

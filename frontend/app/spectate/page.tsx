@@ -53,7 +53,7 @@ export default function SpectateLobbyPage() {
           <div>
             <div className="text-noir-terminal/50 text-[10px] uppercase tracking-widest mb-2">Spectate Lobby</div>
             <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-              Live battles <span className="text-noir-accent opacity-50 text-xl">//</span>
+              Live battles <span className="text-noir-accent opacity-50 text-xl">{"//"}</span>
             </h1>
             <p className="text-xs text-noir-terminal/60">
               Watch real players in action. Every match is live.

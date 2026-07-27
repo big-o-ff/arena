@@ -46,10 +46,15 @@ export default function TetrisLoading({
 
   const frameRef = useRef<number>()
   const lastTickRef = useRef<number>(0)
+  // Mirrors of the latest state for the rAF loop to read. Assigned in an effect
+  // rather than during render — writing a ref while rendering is not safe under
+  // concurrent rendering, where a render can be discarded or replayed.
   const gridRef = useRef(grid)
   const clearingRef = useRef(isClearing)
-  gridRef.current = grid
-  clearingRef.current = isClearing
+  useEffect(() => {
+    gridRef.current = grid
+    clearingRef.current = isClearing
+  }, [grid, isClearing])
 
   const rotateShape = (shape: number[][]): number[][] => {
     const rows = shape.length, cols = shape[0].length

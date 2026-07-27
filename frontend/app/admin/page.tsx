@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../lib/fetchWithAuth";
 import { adminMonitorSocketUrl } from "../../lib/ws";
+import { asList, useReconnectingSocket } from "../../lib/useReconnectingSocket";
 
 type AdminBattle = {
   id: number;
@@ -59,37 +60,44 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (!djangoUser) return;
     if (djangoUser.role !== "admin" && djangoUser.role !== "superadmin") return;
-    api.get("/api/admin/battles/").then((res) => setBattles(res.data));
-    api.get("/api/admin/users/").then((res) => setUsers(res.data));
+    // These list endpoints are paginated; unwrap the envelope.
+    api
+      .get("/api/admin/battles/")
+      .then((res) => setBattles(asList<AdminBattle>(res.data)))
+      .catch(() => setBattles([]));
+    api
+      .get("/api/admin/users/")
+      .then((res) => setUsers(asList<AdminUser>(res.data)))
+      .catch(() => setUsers([]));
   }, [djangoUser, api]);
 
-  // WebSocket for live updates
-  useEffect(() => {
-    if (!djangoUser) return;
-    if (djangoUser.role !== "admin" && djangoUser.role !== "superadmin") return;
+  // WebSocket for live updates. Only staff are admitted to the monitor group
+  // now, so a non-admin connecting here is simply closed by the server.
+  const isAdmin =
+    djangoUser?.role === "admin" || djangoUser?.role === "superadmin";
 
-    let ws: WebSocket | null = null;
-    const run = async () => {
-      const token = await getToken();
-      if (!token) return;
-      ws = new WebSocket(adminMonitorSocketUrl(token));
-      ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        if (msg.event === "ADMIN_MONITOR_UPDATE" && msg.payload?.battles) {
-          setBattles(msg.payload.battles);
-        }
-      };
-    };
-    void run();
-    return () => {
-      ws?.close();
-    };
-  }, [djangoUser, getToken]);
+  const getAdminSocketUrl = useCallback(async () => {
+    const token = await getToken();
+    return token ? adminMonitorSocketUrl(token) : null;
+  }, [getToken]);
+
+  const handleAdminMessage = useCallback((raw: unknown) => {
+    const msg = raw as { event?: string; payload?: { battles?: AdminBattle[] } };
+    if (msg?.event === "ADMIN_MONITOR_UPDATE" && msg.payload?.battles) {
+      setBattles(asList<AdminBattle>(msg.payload.battles));
+    }
+  }, []);
+
+  useReconnectingSocket({
+    enabled: Boolean(isAdmin),
+    getUrl: getAdminSocketUrl,
+    onMessage: handleAdminMessage,
+  });
 
   const changeRole = async (id: number, role: string) => {
     await api.patch(`/api/admin/users/${id}/role/`, { role });
     const updated = await api.get("/api/admin/users/");
-    setUsers(updated.data);
+    setUsers(asList<AdminUser>(updated.data));
   };
 
   if (!isLoaded || !isSignedIn || !djangoUser) {

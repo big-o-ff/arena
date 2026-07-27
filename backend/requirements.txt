@@ -1,13 +1,20 @@
 python-dotenv==1.0.1
 pymysql==1.1.1
-PyJWT==2.8.0
+# mysqlclient is intentionally absent — it needs MySQL headers. PyMySQL is
+# installed as MySQLdb in config/settings.py instead.
+
 django==5.0.6
 djangorestframework==3.15.1
 django-cors-headers==4.3.1
 channels==4.0.0
 channels-redis==4.1.0
 daphne==4.2.1
-# mysqlclient optional — needs MySQL headers (brew install mysql-client). This app uses PyMySQL as MySQLdb.
+
+PyJWT==2.8.0
+# Required by PyJWT to verify Clerk's RS256 signatures against their JWKS.
+# Without it no request can authenticate.
+cryptography>=42.0.0
+
 Pillow==11.2.1
 celery==5.4.0
 redis==5.0.7

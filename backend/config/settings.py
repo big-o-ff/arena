@@ -16,25 +16,28 @@ def _get_env(name: str, default: str | None = None) -> str:
         raise RuntimeError(f"Missing required environment variable: {name}")
     return value
 
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
+# Fail safe: anything other than an explicit opt-in runs as production.
+DEBUG = os.getenv("DJANGO_DEBUG", "False").strip().lower() in ("1", "true", "yes")
 
-if DEBUG:
-    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-insecure-key")
-else:
-    SECRET_KEY = _get_env("DJANGO_SECRET_KEY")
+# Always required. A checked-in fallback key means forgeable sessions and signed
+# cookies the moment this ships, so there is no development shortcut here.
+# Generate one with:  python -c "from django.core.management.utils import
+#   get_random_secret_key as k; print(k())"
+SECRET_KEY = _get_env("DJANGO_SECRET_KEY")
 
-CLERK_WEBHOOK_SECRET = os.getenv('CLERK_WEBHOOK_SECRET', '')
-
-# ALLOWED_HOSTS: list[str] = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(
-#    ","
-# )
+# ---------------------------------------------------------------------------
+# Clerk
+# ---------------------------------------------------------------------------
+# Origin that issues your session tokens, e.g. https://your-app.clerk.accounts.dev
+# Used to pin the JWKS endpoint used for signature verification — see accounts/clerk.py.
+CLERK_ISSUER = os.getenv("CLERK_ISSUER", "").strip()
+# Only needed if your Clerk JWT template sets an `aud` claim.
+CLERK_AUDIENCE = os.getenv("CLERK_AUDIENCE", "").strip()
+CLERK_WEBHOOK_SECRET = os.getenv("CLERK_WEBHOOK_SECRET", "")
 
 ALLOWED_HOSTS = [
     h.strip()
-    for h in os.getenv(
-        "DJANGO_ALLOWED_HOSTS",
-        "localhost,127.0.0.1,54.xx.xx.xx",  # add Tailscale IP or MagicDNS name when needed
-    ).split(",")
+    for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
     if h.strip()
 ]
 
@@ -47,7 +50,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party
     "rest_framework",
-    "rest_framework.authtoken",
     "corsheaders",
     "channels",
     # Local apps
@@ -121,7 +123,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# Only advertise the extra source dir if it actually exists — otherwise every
+# management command emits staticfiles.W004.
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").is_dir() else []
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -132,16 +136,39 @@ AUTH_USER_MODEL = "accounts.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        # Clerk is the only way to authenticate as a player. SessionAuthentication
+        # is retained purely so the Django admin / browsable API stay usable.
         "accounts.authentication.ClerkAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 50,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        # Code execution is the expensive, abusable path.
+        "run": "20/min",
+        "submit": "30/min",
+        "public": "120/min",
+    },
 }
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0") # change this to elastiCache primary endpoint
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+
+# Shared cache — DRF throttling stores counters here. With the default LocMemCache
+# every worker process would keep its own counts, so the limits would scale with
+# the number of workers instead of being enforced.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+    }
+}
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -185,19 +212,52 @@ CELERY_TASK_QUEUES = [
 CELERY_TASK_DEFAULT_QUEUE = "execution"
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
+# Keys must match the `name=` given to each @shared_task, not the dotted module
+# path — the previous "battles.tasks.*" keys silently matched nothing.
 CELERY_TASK_ROUTES = {
-    'battles.tasks.evaluate_submission':  {'queue': 'execution'},
-    'battles.tasks.complexity_analysis':  {'queue': 'execution'},
-    'battles.tasks.schedule_fog':         {'queue': 'events'},
-    'battles.tasks.end_fog':              {'queue': 'events'},
-    'battles.tasks.send_gc_end':          {'queue': 'events'},
-    'battles.tasks.process_battle_end':   {'queue': 'events'},
-    'battles.tasks.battle_timeout':       {'queue': 'events'},
+    "battles.evaluate_submission": {"queue": "execution"},
+    "battles.schedule_fog": {"queue": "events"},
+    "battles.end_fog": {"queue": "events"},
+    "battles.send_gc_end": {"queue": "events"},
+    "battles.process_battle_end": {"queue": "events"},
+    "battles.expire_battle_request": {"queue": "events"},
+}
+
+# A submission runs every test case through the sandbox; without a hard ceiling a
+# pathological program can pin a worker indefinitely.
+CELERY_TASK_SOFT_TIME_LIMIT = 180
+CELERY_TASK_TIME_LIMIT = 240
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {"format": "[{asctime}] {levelname} {name}: {message}", "style": "{"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+    },
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "battles": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "accounts": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
 }
 
 if not DEBUG:
-    # Ensure Django knows it is behind a proxy (Nginx)
+    # Django sits behind a TLS-terminating proxy (Nginx).
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = True  # Redirects 80 to 443
+    SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    CSRF_TRUSTED_ORIGINS = [
+        o for o in CORS_ALLOWED_ORIGINS if o.startswith("https://")
+    ]

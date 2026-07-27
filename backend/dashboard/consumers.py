@@ -1,79 +1,53 @@
-from channels.db import database_sync_to_async
+from __future__ import annotations
+
+import logging
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+logger = logging.getLogger(__name__)
+
+ADMIN_ROLES = ("admin", "superadmin")
 
 
 class LobbyConsumer(AsyncJsonWebsocketConsumer):
+    """
+    Per-user lobby socket: battle invites, accept/decline, and expiry.
+
+    Authentication is handled once by `accounts.middleware.JWTAuthMiddleware`,
+    which verifies the Clerk signature and populates `scope["user"]`.
+    """
+
     async def connect(self):
-        import jwt
-        from channels.db import database_sync_to_async
-        from accounts.models import User
-
-        query_string = self.scope.get('query_string', b'').decode()
-        token = None
-        for param in query_string.split('&'):
-            if param.startswith('token='):
-                token = param.split('=')[1]
-                break
-
-        if not token:
-            await self.close()
+        user = self.scope.get("user")
+        if user is None or not user.is_authenticated:
+            await self.close(code=4401)
             return
 
-        try:
-            payload = jwt.decode(token, options={"verify_signature": False})
-            clerk_id = payload.get('sub')
-            if not clerk_id:
-                await self.close()
-                return
-            
-            user = await self.get_user(clerk_id)
-            if not user:
-                await self.close()
-                return
-                
-            self.scope['user'] = user
-        except Exception:
-            await self.close()
-            return
-
-        print(f"LobbyConsumer connected user: {self.scope['user'].username}")
-            
-        self.user_group = f"user_{self.scope['user'].id}"
-        self.admin_group = "admin_monitor"
-        
+        self.user_group = f"user_{user.id}"
         await self.channel_layer.group_add(self.user_group, self.channel_name)
-        await self.channel_layer.group_add(self.admin_group, self.channel_name)
+
+        # Only staff join the monitor group. It used to be joined by everyone,
+        # which turned it into an open broadcast channel to every logged-in user.
+        self.admin_group = (
+            "admin_monitor" if getattr(user, "role", "") in ADMIN_ROLES else None
+        )
+        if self.admin_group:
+            await self.channel_layer.group_add(self.admin_group, self.channel_name)
+
         await self.accept()
 
-    @database_sync_to_async
-    def get_user(self, clerk_id):
-        from accounts.models import User
-        try:
-            res = User.objects.filter(clerk_id=clerk_id).first()
-            if res:
-                return res
-            # Backward fallback if clerk_id is empty but username matches
-            return User.objects.get(username=clerk_id)
-        except User.DoesNotExist:
-            return None
-
     async def disconnect(self, code):
-        if hasattr(self, 'user_group'):
+        if getattr(self, "user_group", None):
             await self.channel_layer.group_discard(self.user_group, self.channel_name)
+        if getattr(self, "admin_group", None):
             await self.channel_layer.group_discard(self.admin_group, self.channel_name)
 
     async def receive_json(self, content, **kwargs):
-        event_type = content.get("event")
-        payload = content.get("payload", {})
-
-        await self.channel_layer.group_send(
-            self.admin_group,
-            {
-                "type": "broadcast.event",
-                "event": event_type or "ADMIN_MONITOR_UPDATE",
-                "payload": payload,
-            },
-        )
+        # Clients are listeners here. Relaying arbitrary client payloads into a
+        # group is how the old implementation let any user broadcast to everyone;
+        # admin monitor updates must originate server-side.
+        if content.get("event") == "PING" or content.get("type") == "PING":
+            await self.send_json({"event": "PONG", "payload": {}})
 
     async def broadcast_event(self, event):
         await self.send_json(
@@ -84,7 +58,7 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
         )
 
     # ------------------------------------------------------------------
-    # Invite System Event Handlers
+    # Invite lifecycle events (sent to `user_<id>` groups from views/tasks)
     # ------------------------------------------------------------------
     async def battle_invite(self, event):
         await self.send_json(event)
@@ -97,4 +71,3 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
 
     async def invite_expired(self, event):
         await self.send_json(event)
-

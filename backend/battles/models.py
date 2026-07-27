@@ -59,6 +59,19 @@ class Battle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            # Every lobby poll, spectate list and expiry sweep filters on status.
+            models.Index(fields=["status", "-created_at"], name="battle_status_created"),
+            models.Index(fields=["status", "ends_at"], name="battle_status_ends_at"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(player1=models.F("player2")),
+                name="battle_players_must_differ",
+            ),
+        ]
+
     def __str__(self) -> str:
         return f"Battle #{self.pk}"
 
@@ -123,7 +136,19 @@ class Submission(models.Model):
 
     class Meta:
         ordering = ["-submitted_at"]
-        unique_together = [("battle", "player", "problem")]
+        # Deliberately NOT unique on (battle, player, problem): a single failed
+        # attempt used to lock a player out of that problem for the whole match,
+        # which with a 3-problem pool could eliminate them outright. Retries are
+        # allowed; scoring only ever counts the first *passing* submission.
+        indexes = [
+            models.Index(
+                fields=["battle", "problem", "status"],
+                name="submission_battle_prob_st",
+            ),
+            models.Index(
+                fields=["battle", "player"], name="submission_battle_player"
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.player.username} -> {self.problem.title} ({self.passed_cases}/{self.total_cases})"
@@ -196,6 +221,14 @@ class BattleRequest(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["to_user", "status"], name="battlereq_to_user_status"
+            ),
+            models.Index(
+                fields=["status", "expires_at"], name="battlereq_status_expires"
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.from_user} -> {self.to_user} ({self.status})"

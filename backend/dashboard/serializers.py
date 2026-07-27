@@ -40,20 +40,25 @@ class AdminBattleSerializer(serializers.ModelSerializer):
 
 
 class SubmissionLogSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source="user.username", read_only=True)
+    # `Submission` relates to the user through `player`, and stores
+    # `complexity_class`. The previous `user` / `complexity_score` names raised
+    # ImproperlyConfigured at field-build time, so this endpoint always 500'd.
+    player = serializers.CharField(source="player.username", read_only=True)
     problem = serializers.CharField(source="problem.title", read_only=True)
 
     class Meta:
         model = Submission
         fields = (
             "id",
-            "user",
+            "player",
             "problem",
             "battle_id",
             "language",
+            "status",
             "passed_cases",
             "total_cases",
-            "complexity_score",
+            "execution_time_ms",
+            "complexity_class",
             "submitted_at",
         )
 

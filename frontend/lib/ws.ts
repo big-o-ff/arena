@@ -18,7 +18,7 @@ export function spectatorSocketUrl(battleId: string | number, token?: string) {
 }
 
 export function lobbySocketUrl(token: string) {
-  return `${WS_BASE_URL.replace(/\/$/, "")}/ws/lobby/?token=${token}`;
+  return withWsToken("/ws/lobby/", token);
 }
 
 /** Same path as lobby; dashboard consumer joins the admin_monitor group. */

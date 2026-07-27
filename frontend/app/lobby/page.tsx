@@ -7,6 +7,7 @@ import { useUser, useClerk, useAuth } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../lib/fetchWithAuth";
 import TetrisLoading from "@/components/tetris-loader";
 import { lobbySocketUrl } from "../../lib/ws";
+import { asList, useReconnectingSocket } from "../../lib/useReconnectingSocket";
 import { ProfileHoverCard } from "@/components/ProfileHoverCard";
 
 type LeaderboardEntry = {
@@ -117,9 +118,11 @@ export default function LobbyPage() {
   useEffect(() => {
     setIsLeaderboardLoading(true);
     api
-      .get<LeaderboardEntry[]>("/api/leaderboard/")
+      .get("/api/leaderboard/")
       .then((res) => {
-        setLeaderboard(res.data);
+        // List endpoints are paginated now, so the payload is
+        // {count, next, previous, results} rather than a bare array.
+        setLeaderboard(asList<LeaderboardEntry>(res.data));
         setIsLeaderboardLoading(false);
       })
       .catch(() => {
@@ -131,10 +134,8 @@ export default function LobbyPage() {
     if (!djangoUser) return;
     setHistoryLoading(true);
     try {
-      const { data } = await api.get<BattleRequestHistoryItem[]>(
-        "/api/battles/requests/history/"
-      );
-      setRequestHistory(Array.isArray(data) ? data : []);
+      const { data } = await api.get("/api/battles/requests/history/");
+      setRequestHistory(asList<BattleRequestHistoryItem>(data));
     } catch {
       setRequestHistory([]);
     } finally {
@@ -173,66 +174,53 @@ export default function LobbyPage() {
   }, [djangoUser, api]);
 
   // WebSocket connection & event handling
-  useEffect(() => {
-    if (!djangoUser) return;
+  const handleLobbyMessage = useCallback(
+    (raw: unknown) => {
+      const data = raw as Record<string, any>;
+      if (!data) return;
+      const type = data.type || data.event;
+      const payload = data.payload || data;
 
-    let ws: WebSocket;
+      if (type === "battle_invite") {
+        setIncomingInvite({
+          id: payload.battle_request_id,
+          from_username: payload.from_username,
+          expires_at: payload.expires_at,
+        });
+      } else if (type === "invite_declined") {
+        setInfo(`${payload.by_username} declined your battle invite.`);
+      } else if (type === "battle_starting") {
+        router.push(`/battle/${payload.battle_id}`);
+      } else if (type === "invite_expired") {
+        setIncomingInvite((prev) =>
+          prev?.id === payload.battle_request_id ? null : prev
+        );
+        setInfo("Invite expired.");
+      } else {
+        return;
+      }
+      void loadRequestHistory();
+    },
+    [router, loadRequestHistory]
+  );
 
-    const initWS = async () => {
-      const token = await getToken();
-      if (!token) return;
+  const getLobbySocketUrl = useCallback(async () => {
+    const token = await getToken();
+    return token ? lobbySocketUrl(token) : null;
+  }, [getToken]);
 
-      ws = new WebSocket(lobbySocketUrl(token));
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          const type = data.type || data.event;
-          const payload = data.payload || data;
-
-          if (type === "battle_invite") {
-            setIncomingInvite({
-              id: payload.battle_request_id,
-              from_username: payload.from_username,
-              expires_at: payload.expires_at,
-            });
-          }
-          else if (type === "invite_declined") {
-            setInfo(`${payload.by_username} declined your battle invite.`);
-          }
-          else if (type === "battle_starting") {
-            router.push(`/battle/${payload.battle_id}`);
-          }
-          else if (type === "invite_expired") {
-            setIncomingInvite((prev) => prev?.id === payload.battle_request_id ? null : prev);
-            setInfo("Invite expired.");
-          }
-          if (
-            type === "battle_invite" ||
-            type === "invite_declined" ||
-            type === "battle_starting" ||
-            type === "invite_expired"
-          ) {
-            void loadRequestHistory();
-          }
-        } catch (e) { }
-      };
-    };
-
-    initWS();
-
-    return () => {
-      if (ws) ws.close();
-    };
-  }, [djangoUser, api, router, getToken, loadRequestHistory]);
+  useReconnectingSocket({
+    enabled: Boolean(djangoUser),
+    getUrl: getLobbySocketUrl,
+    onMessage: handleLobbyMessage,
+  });
 
   // Countdown timer for incoming invite
   useEffect(() => {
     if (!incomingInvite) return;
     const interval = setInterval(() => {
       const expires = new Date(incomingInvite.expires_at).getTime();
-      const now = new Date().getTime();
-      const diff = Math.max(0, Math.floor((expires - now) / 1000));
+      const diff = Math.max(0, Math.floor((expires - Date.now()) / 1000));
       setTimeLeft(diff);
       if (diff === 0) {
         setIncomingInvite(null); // auto-dismiss
@@ -240,6 +228,20 @@ export default function LobbyPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, [incomingInvite]);
+
+  /**
+   * A ticking clock for the invite-expiry countdowns in the request list.
+   *
+   * Those rows used to call `Date.now()` inline while rendering, which is both
+   * impure and stale: the number only changed when something else happened to
+   * re-render the page, so a "expires in 12:34" label could sit unchanged for
+   * minutes.
+   */
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCreateBattle = async (e: FormEvent) => {
     e.preventDefault();
@@ -373,7 +375,7 @@ export default function LobbyPage() {
       <header style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
         <div>
           <h1 style={{ fontSize: 18, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", margin: 0 }}>
-            Lobby <span style={{ color: "#39FF14" }}>//</span> <span style={{ color: "#39FF14" }}>Matchmaking</span>
+            Lobby <span style={{ color: "#39FF14" }}>{"//"}</span> <span style={{ color: "#39FF14" }}>Matchmaking</span>
           </h1>
           <p style={{ fontSize: 11, color: "#555", marginTop: 4 }}>are you the best?</p>
         </div>
@@ -415,7 +417,7 @@ export default function LobbyPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {pendingReceived.map(row => {
                   const peer = row.from_user;
-                  const expiresIn = row.expires_at ? Math.max(0, Math.floor((new Date(row.expires_at).getTime() - Date.now()) / 1000)) : null;
+                  const expiresIn = row.expires_at ? Math.max(0, Math.floor((new Date(row.expires_at).getTime() - now) / 1000)) : null;
                   return (
                     <div key={row.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: 16 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -465,7 +467,7 @@ export default function LobbyPage() {
           {/* Challenge Form */}
           <div className="lobby-card" style={{ padding: "28px", width: "100%", maxWidth: 480, textAlign: "center", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8 }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 6px" }}>
-              <span style={{ color: "#39FF14" }}>//</span> Challenge a Player
+              <span style={{ color: "#39FF14" }}>{"//"}</span> Challenge a Player
             </h2>
             <p style={{ fontSize: 11, color: "#555", marginBottom: 24 }}>Enter your opponent&apos;s exact username.</p>
             <form onSubmit={handleCreateBattle}>
@@ -501,7 +503,7 @@ export default function LobbyPage() {
         <div style={{ flex: "0 0 260px", display: "flex", flexDirection: "column", gap: 12, overflow: "hidden" }}>
           {/* Leaderboard */}
           <div className="lobby-card" style={{ padding: "16px 20px", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8 }}>
-            <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: "0 0 16px", color: "#eaeaea" }}>Leaderboard <span style={{ color: "#39FF14" }}>// Top 5</span></h2>
+            <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: "0 0 16px", color: "#eaeaea" }}>Leaderboard <span style={{ color: "#39FF14" }}>{"// Top 5"}</span></h2>
             {isLeaderboardLoading ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "30px 0" }}><TetrisLoading size="sm" speed="fast" loadingText="Syncing rankings..." /></div>
             ) : (
@@ -524,7 +526,7 @@ export default function LobbyPage() {
           {/* Request History */}
           <div className="lobby-card" style={{ padding: "16px 20px", background: "#0d1117", border: "1px solid #1a1f2b", borderRadius: 8, flex: 1, minHeight: 0, overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0, color: "#eaeaea" }}>Requests <span style={{ color: "#39FF14" }}>// History</span></h2>
+              <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0, color: "#eaeaea" }}>Requests <span style={{ color: "#39FF14" }}>{"// History"}</span></h2>
               <button type="button" onClick={() => void loadRequestHistory()} style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "#555", background: "transparent", border: "none", cursor: "pointer" }}>Refresh ↻</button>
             </div>
             <p style={{ fontSize: 10, color: "#444", lineHeight: 1.6, marginBottom: 12 }}>

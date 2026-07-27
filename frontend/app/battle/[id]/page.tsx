@@ -6,7 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../../lib/fetchWithAuth";
 import { battleSocketUrl } from "../../../lib/ws";
-import { GCButton } from "../../../components/BattleEditors";
+import {
+  useReconnectingSocket,
+  type SocketStatus,
+} from "../../../lib/useReconnectingSocket";
+import { GCButton } from "../../../components/GCButton";
 
 const MonacoEditorInner = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -67,6 +71,18 @@ type BattleState = {
 type WSMessage = {
   event: string;
   payload: Record<string, any>;
+};
+
+/**
+ * What the opponent is allowed to know about your editor.
+ *
+ * The server no longer sends the opposing player the raw buffer — only these
+ * derived counts. Full code goes to the spectator stream instead.
+ */
+type OpponentActivity = {
+  chars: number;
+  lines: number;
+  non_empty_lines: number;
 };
 
 type Toast = {
@@ -168,8 +184,11 @@ export default function BattlePage() {
   // Core state
   const [djangoUser, setDjangoUser] = useState<DjangoUser | null>(null);
   const [battle, setBattle] = useState<BattleState | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [myCode, setMyCode] = useState("");
-  const [opponentCode, setOpponentCode] = useState("");
+  const [opponentActivity, setOpponentActivity] =
+    useState<OpponentActivity | null>(null);
+  const [socketStatus, setSocketStatus] = useState<SocketStatus>("connecting");
   const [timer, setTimer] = useState(30 * 60);
   const [selectedLanguage, setSelectedLanguage] = useState("python");
   const [selectedProblemIdx, setSelectedProblemIdx] = useState(0);
@@ -196,8 +215,6 @@ export default function BattlePage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastIdRef = useRef(0);
 
-  // WS ref
-  const wsRef = useRef<WebSocket | null>(null);
 
   // Refs to avoid stale closures
   const battleRef = useRef(battle);
@@ -236,9 +253,31 @@ export default function BattlePage() {
   // ------------------------------------------------------------------
   useEffect(() => {
     if (!battleId) return;
+    let cancelled = false;
     api
       .get(`/api/battles/${battleId}/state/`)
-      .then((res) => setBattle(res.data));
+      .then((res) => {
+        if (!cancelled) {
+          setBattle(res.data);
+          setLoadError(null);
+        }
+      })
+      .catch((err) => {
+        // Without this the page sat on "Spinning up battle instance…" forever
+        // and raised an unhandled rejection.
+        if (cancelled) return;
+        const status = err?.response?.status;
+        setLoadError(
+          status === 403
+            ? "You are not a participant in this battle."
+            : status === 404
+            ? "That battle does not exist."
+            : "Could not load the battle. Check that the API is reachable."
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [battleId, api]);
 
   /** Sync countdown to server end time. */
@@ -295,55 +334,30 @@ export default function BattlePage() {
   // ------------------------------------------------------------------
   // Editor change — broadcast every keystroke so spectators see live typing
   // ------------------------------------------------------------------
-  const handleCodeChange = useCallback((code: string) => {
-    setMyCode(code);
-    const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "code_update", code }));
-    }
-  }, []);
-
   // ------------------------------------------------------------------
   // WebSocket — single connection (Clerk token → Django user on WS for code_update player_id)
   // ------------------------------------------------------------------
-  useEffect(() => {
-    if (!battleId || !isSignedIn) return;
-
-    let cancelled = false;
-    let ws: WebSocket | null = null;
-
-    const connect = async () => {
-      const token = await getToken();
-      if (!token || cancelled) return;
-
-      ws = new WebSocket(battleSocketUrl(battleId, token));
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        const ping = setInterval(() => {
-          if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ event: "PING", payload: {} }));
-          }
-        }, 25_000);
-        (ws as any).__pingInterval = ping;
-      };
-
-      ws.onmessage = (event) => {
-      const msg: WSMessage = JSON.parse(event.data);
-      const p = msg.payload;
-      const b = battleRef.current;
+  const handleSocketMessage = useCallback(
+    (raw: unknown) => {
+      const msg = raw as WSMessage;
+      if (!msg || typeof msg.event !== "string") return;
+      const p = msg.payload ?? {};
       const me = djangoUserRef.current;
 
       switch (msg.event) {
-        // HP update — animate bars
+        // HP update — animate bars.
+        // Functional update: two events arriving in the same tick would
+        // otherwise both build from the same stale snapshot.
         case "HP_UPDATE":
-          if (b) {
-            setBattle({
-              ...b,
-              player1_hp: p.player1_hp,
-              player2_hp: p.player2_hp,
-            });
-          }
+          setBattle((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  player1_hp: p.player1_hp ?? prev.player1_hp,
+                  player2_hp: p.player2_hp ?? prev.player2_hp,
+                }
+              : prev
+          );
           break;
 
         // Submission lifecycle
@@ -399,26 +413,19 @@ export default function BattlePage() {
           break;
         }
 
-        // Efficiency result
-        case "EFFICIENCY_RESULT":
-          if (me && p.winner_id === me.id) {
-            addToast(
-              `Efficiency bonus! ${p.winner_complexity} vs ${p.loser_complexity}. −10 HP ⚡`,
-              "success"
-            );
-          } else if (me) {
-            addToast(
-              `Opponent more efficient (${p.winner_complexity}). −10 HP`,
-              "danger"
-            );
-          }
-          break;
-
         // GC
         case "GC_START":
           if (me && p.target_user_id === me.id) {
             setGcActive(true);
-            addToast("⚠ GARBAGE COLLECTION — IDE blanked for 5s", "danger");
+            const seconds = p.duration_seconds ?? 5;
+            addToast(
+              `⚠ GARBAGE COLLECTION — IDE blanked for ${seconds}s`,
+              "danger"
+            );
+            // Self-clear as well as waiting for GC_END: if no Celery worker is
+            // running, the server-side end event never arrives and the overlay
+            // would stay up for the rest of the match.
+            setTimeout(() => setGcActive(false), seconds * 1000);
           } else {
             addToast("You activated Garbage Collection on opponent!", "success");
           }
@@ -440,53 +447,104 @@ export default function BattlePage() {
 
         // Battle end → report card route (both players)
         case "BATTLE_END":
-          if (b) {
-            setBattle({
-              ...b,
-              status: "completed",
-              winner: p.winner_id ?? b.winner ?? null,
-              player1_hp: p.player1_final_hp ?? b.player1_hp,
-              player2_hp: p.player2_final_hp ?? b.player2_hp,
-            });
-          }
+          setBattle((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: "completed",
+                  winner: p.winner_id ?? prev.winner ?? null,
+                  player1_hp: p.player1_final_hp ?? prev.player1_hp,
+                  player2_hp: p.player2_final_hp ?? prev.player2_hp,
+                }
+              : prev
+          );
           router.replace(`/battle/${battleId}/ended`);
           break;
 
-        // Opponent code feed (ignore until server sends real player_id — needs WS ?token=)
-        case "OPPONENT_CODE":
-          if (
-            me &&
-            p.player_id != null &&
-            p.player_id !== me.id
-          ) {
-            setOpponentCode(p.code ?? "");
+        // Opponent progress — counts only. The server no longer sends the
+        // opposing player the buffer itself.
+        case "OPPONENT_ACTIVITY":
+          if (me && p.player_id != null && p.player_id !== me.id) {
+            setOpponentActivity({
+              chars: p.chars ?? 0,
+              lines: p.lines ?? 0,
+              non_empty_lines: p.non_empty_lines ?? 0,
+            });
           }
           break;
 
         case "PONG":
-          break;
-
         default:
           break;
       }
-    };
+    },
+    [addToast, battleId, router]
+  );
 
-      ws.onclose = () => {
-        clearInterval((ws as any).__pingInterval);
-      };
-    };
+  const getSocketUrl = useCallback(async () => {
+    if (!battleId) return null;
+    const token = await getToken();
+    return token ? battleSocketUrl(battleId, token) : null;
+  }, [battleId, getToken]);
 
-    void connect();
+  const { send: sendSocket } = useReconnectingSocket({
+    enabled: Boolean(battleId) && Boolean(isSignedIn),
+    getUrl: getSocketUrl,
+    onMessage: handleSocketMessage,
+    onStatusChange: setSocketStatus,
+  });
 
-    return () => {
-      cancelled = true;
-      if (ws) {
-        clearInterval((ws as any).__pingInterval);
-        ws.close();
+  // Debounced editor broadcast. Every keystroke used to push the whole document
+  // through Redis to the opponent and every spectator; coalescing to ~4 updates
+  // a second keeps the live feed smooth at a fraction of the traffic.
+  //
+  // Declared after the socket hook so it can close over the stable `send`
+  // directly rather than reaching through a ref during render.
+  const codeSendTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingCode = useRef<string | null>(null);
+
+  const flushCode = useCallback(() => {
+    codeSendTimer.current = null;
+    const code = pendingCode.current;
+    pendingCode.current = null;
+    if (code === null) return;
+    sendSocket({ type: "code_update", code });
+  }, [sendSocket]);
+
+  const handleCodeChange = useCallback(
+    (code: string) => {
+      setMyCode(code);
+      pendingCode.current = code;
+      if (codeSendTimer.current === null) {
+        codeSendTimer.current = setTimeout(flushCode, 250);
       }
-      wsRef.current = null;
-    };
-  }, [battleId, addToast, isSignedIn, getToken, router]);
+    },
+    [flushCode]
+  );
+
+  useEffect(
+    () => () => {
+      if (codeSendTimer.current) clearTimeout(codeSendTimer.current);
+    },
+    []
+  );
+
+  // A dropped socket means HP, fog and battle-end stop arriving. Re-sync from
+  // the API once the connection comes back so the board is not left stale.
+  const wasDisconnected = useRef(false);
+  useEffect(() => {
+    if (socketStatus === "reconnecting") {
+      wasDisconnected.current = true;
+      return;
+    }
+    if (socketStatus === "open" && wasDisconnected.current) {
+      wasDisconnected.current = false;
+      api
+        .get(`/api/battles/${battleId}/state/`)
+        .then((res) => setBattle(res.data))
+        .catch(() => {});
+    }
+  }, [socketStatus, api, battleId]);
 
   // ------------------------------------------------------------------
   // Timer countdown
@@ -543,6 +601,9 @@ export default function BattlePage() {
         problem_id: round.problem.id,
       });
       setSubmittedProblems((prev) => new Set([...prev, round.problem.id]));
+
+      // Judging now runs on the Celery `execution` queue, so the usual response
+      // is 202 with no verdict. The review page polls for the result.
       const evaluation = res.data?.evaluation;
       if (evaluation) {
         try {
@@ -551,29 +612,44 @@ export default function BattlePage() {
             JSON.stringify(evaluation)
           );
         } catch {
-          /* ignore quota */
+          /* sessionStorage may be full or unavailable */
         }
-      }
-      if (evaluation?.status === "error") {
-        addToast("Evaluation error — check review for details.", "warning");
-      } else if (evaluation?.all_passed) {
-        addToast("All test cases passed! Opening review.", "success");
+        if (evaluation.status === "error") {
+          addToast("Evaluation error — check review for details.", "warning");
+        } else if (evaluation.all_passed) {
+          addToast("All test cases passed! Opening review.", "success");
+        } else {
+          addToast(
+            `${evaluation.passed_cases ?? 0}/${evaluation.total_cases ?? 0} test cases passed — opening review.`,
+            "info"
+          );
+        }
       } else {
-        addToast(
-          `${evaluation?.passed_cases ?? 0}/${evaluation?.total_cases ?? 0} test cases passed — opening review.`,
-          "info"
-        );
+        if (res.data?.submission_id) {
+          try {
+            sessionStorage.setItem(
+              `arena-pending-${battleId}-${round.problem.id}`,
+              String(res.data.submission_id)
+            );
+          } catch {
+            /* sessionStorage may be full or unavailable */
+          }
+        }
+        addToast("Submitted — judging, opening review.", "info");
       }
       router.push(`/battle/${battleId}/review/${round.problem.id}`);
     } catch (err: any) {
       const detail = err?.response?.data?.detail ?? "Submission error";
-      const msg = typeof detail === "string" ? detail : "";
-      if (msg.toLowerCase().includes("already submitted")) {
+      const msg = typeof detail === "string" ? detail.toLowerCase() : "";
+      if (msg.includes("already solved") || msg.includes("being judged")) {
         setSubmittedProblems((prev) => new Set([...prev, round.problem.id]));
-        addToast("Already submitted — waiting for result.", "info");
+        addToast(
+          typeof detail === "string" ? detail : "Already submitted.",
+          "info"
+        );
         router.push(`/battle/${battleId}/review/${round.problem.id}`);
       } else {
-        addToast(detail, "danger");
+        addToast(typeof detail === "string" ? detail : "Submission error", "danger");
       }
     } finally {
       setIsSubmitting(false);
@@ -650,6 +726,53 @@ export default function BattlePage() {
   // ------------------------------------------------------------------
   // Loading state
   // ------------------------------------------------------------------
+  if (loadError) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          background: "#0a0c10",
+          padding: "24px",
+        }}
+      >
+        <div style={{ textAlign: "center", maxWidth: 420 }}>
+          <div style={{ fontSize: "22px", marginBottom: "12px" }}>⚠</div>
+          <p
+            style={{
+              color: "#ff8888",
+              fontSize: "13px",
+              fontFamily: "monospace",
+              lineHeight: 1.6,
+              marginBottom: "16px",
+            }}
+          >
+            {loadError}
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/lobby")}
+            style={{
+              background: "rgba(0,255,136,0.08)",
+              border: "1px solid rgba(0,255,136,0.35)",
+              borderRadius: "4px",
+              color: "#00ff88",
+              fontSize: "12px",
+              padding: "8px 18px",
+              cursor: "pointer",
+              fontFamily: "monospace",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Back to lobby
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!djangoUser || !battle) {
     return (
       <div
@@ -813,7 +936,31 @@ export default function BattlePage() {
             BATTLE OVER
           </span>
         )}
-        <span style={{ color: "rgba(200,211,224,0.3)", fontSize: "10px" }}>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            color: "rgba(200,211,224,0.3)",
+            fontSize: "10px",
+          }}
+        >
+          {/* Connection state was previously invisible: a dropped socket looked
+              identical to a quiet match. */}
+          {socketStatus !== "open" && (
+            <span
+              style={{
+                color: socketStatus === "closed" ? "#ff6666" : "#ffa500",
+                letterSpacing: "0.1em",
+              }}
+            >
+              {socketStatus === "closed"
+                ? "● disconnected"
+                : socketStatus === "reconnecting"
+                ? "● reconnecting…"
+                : "● connecting…"}
+            </span>
+          )}
           {problems.length} problems
         </span>
       </div>
@@ -926,7 +1073,8 @@ export default function BattlePage() {
             selectedProblemIdx={selectedProblemIdx}
             onSelectProblem={setSelectedProblemIdx}
             solvedProblems={solvedProblems}
-            opponentCode={opponentCode}
+            opponentActivity={opponentActivity}
+            opponentName={oppName}
           />
         </div>
 
@@ -1221,9 +1369,12 @@ function EditorPane({
   const [runResult, setRunResult] = useState<RunResult2 | null>(null);
   const [runCooldown, setRunCooldown] = useState(false);
 
+  // Clear the previous problem's run output when switching problems. The
+  // identity checks make this a no-op when there is nothing to clear, so
+  // switching problems doesn't force a second render pass.
   useEffect(() => {
-    setRunResult(null);
-    setRunCooldown(false);
+    setRunResult((prev) => (prev === null ? prev : null));
+    setRunCooldown((prev) => (prev === false ? prev : false));
   }, [selectedProblemIdx]);
 
   const handleRun = async () => {
@@ -1473,13 +1624,15 @@ function MiddlePanel({
   selectedProblemIdx,
   onSelectProblem,
   solvedProblems,
-  opponentCode,
+  opponentActivity,
+  opponentName,
 }: {
   problems: ProblemInfo[];
   selectedProblemIdx: number;
   onSelectProblem: (idx: number) => void;
   solvedProblems: Set<number>;
-  opponentCode: string;
+  opponentActivity: OpponentActivity | null;
+  opponentName: string;
 }) {
   const [tab, setTab] = useState<"problem" | "opponent">("problem");
   const selectedProblem = problems[selectedProblemIdx] ?? null;
@@ -1725,7 +1878,14 @@ function MiddlePanel({
             </p>
           )
         ) : (
-          /* Opponent feed */
+          /*
+           * Opponent activity.
+           *
+           * This used to render the opponent's real source behind a CSS blur —
+           * which is not a privacy control: the text sat in the DOM, one
+           * devtools toggle away. The server now sends only these counts, so
+           * there is nothing here to un-blur.
+           */
           <div>
             <div
               style={{
@@ -1737,38 +1897,77 @@ function MiddlePanel({
                 marginBottom: "12px",
               }}
             >
-              OBFUSCATED FEED // read only
+              Opponent activity // {opponentName}
             </div>
-            <pre
-              style={{
-                fontSize: "12px",
-                color: "#c8d3e0",
-                background: "rgba(0,0,0,0.5)",
-                border: "1px solid rgba(200,211,224,0.06)",
-                borderRadius: "6px",
-                padding: "12px",
-                minHeight: "200px",
-                filter: "blur(6px)",
-                userSelect: "none",
-                pointerEvents: "none",
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                lineHeight: 1.6,
-                fontFamily: "monospace",
-              }}
-            >
-              {opponentCode || "// opponent is thinking..."}
-            </pre>
+
+            {opponentActivity === null ? (
+              <p
+                style={{
+                  color: "rgba(200,211,224,0.3)",
+                  fontSize: "12px",
+                  fontFamily: "monospace",
+                  textAlign: "center",
+                  marginTop: "40px",
+                }}
+              >
+                waiting for opponent to start typing…
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[
+                  { label: "Lines written", value: opponentActivity.non_empty_lines },
+                  { label: "Total lines", value: opponentActivity.lines },
+                  { label: "Characters", value: opponentActivity.chars },
+                ].map(({ label, value }) => (
+                  <div
+                    key={label}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      padding: "10px 12px",
+                      background: "rgba(0,0,0,0.4)",
+                      border: "1px solid rgba(0,255,136,0.08)",
+                      borderRadius: "6px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: "rgba(200,211,224,0.45)",
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: 700,
+                        color: "#00ff88",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <p
               style={{
                 fontSize: "10px",
                 color: "rgba(200,211,224,0.2)",
                 textAlign: "center",
-                marginTop: "10px",
+                marginTop: "14px",
+                lineHeight: 1.5,
                 fontFamily: "monospace",
               }}
             >
-              feed is intentionally obfuscated
+              opponent source is never sent to you
             </p>
           </div>
         )}

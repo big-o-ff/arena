@@ -1,0 +1,155 @@
+[
+  {
+    "title": "Reverse Words in a String",
+    "difficulty": "easy",
+    "description": "Given a line of text, return the words in reverse order.\n\nWords are separated by one or more spaces. Leading and trailing spaces are ignored, and the returned words must be separated by exactly one space.\n\nExample 1:\n  Input:\n    the sky is blue\n  Output:\n    blue is sky the\n\nExample 2:\n  Input:\n      hello   world  \n  Output:\n    world hello\n  Explanation: Extra spaces are collapsed to a single space.",
+    "input_format": "A single line of text containing words separated by spaces",
+    "output_format": "The words in reverse order, separated by single spaces",
+    "constraints": "1 <= line length <= 10^4\nThe line contains at least one non-space character\nWords consist of printable non-space characters",
+    "sample_input": "the sky is blue",
+    "sample_output": "blue is sky the",
+    "test_cases": [
+      {"input": "the sky is blue", "expected_output": "blue is sky the"},
+      {"input": "  hello   world  ", "expected_output": "world hello"},
+      {"input": "a", "expected_output": "a"},
+      {"input": "one two three four five", "expected_output": "five four three two one"},
+      {"input": "Coding Arena Battle", "expected_output": "Battle Arena Coding"}
+    ]
+  },
+  {
+    "title": "Missing Number",
+    "difficulty": "easy",
+    "description": "You are given n distinct integers drawn from the range [0, n] — exactly one number from that range is missing.\n\nReturn the missing number.\n\nExample 1:\n  Input:\n    3 0 1\n  Output:\n    2\n  Explanation: n = 3, so the range is [0, 3]. 2 does not appear.\n\nExample 2:\n  Input:\n    0 1 2 4 5 6\n  Output:\n    3\n  Explanation: n = 6, so the range is [0, 6]. 3 does not appear.\n\nHint: The sum of 0..n is n*(n+1)/2.",
+    "input_format": "A single line of space-separated distinct integers",
+    "output_format": "A single integer — the missing number",
+    "constraints": "1 <= n <= 10^4\nAll values are distinct and lie in [0, n]\nExactly one value in [0, n] is absent",
+    "sample_input": "3 0 1",
+    "sample_output": "2",
+    "test_cases": [
+      {"input": "3 0 1", "expected_output": "2"},
+      {"input": "0 1 2 4 5 6", "expected_output": "3"},
+      {"input": "0", "expected_output": "1"},
+      {"input": "1", "expected_output": "0"},
+      {"input": "9 6 4 2 3 5 7 0 1", "expected_output": "8"}
+    ]
+  },
+  {
+    "title": "Valid Palindrome",
+    "difficulty": "easy",
+    "description": "Given a line of text, determine whether it is a palindrome when considering only alphanumeric characters and ignoring case.\n\nPrint VALID if it is a palindrome, otherwise INVALID.\n\nExample 1:\n  Input:\n    A man, a plan, a canal: Panama\n  Output:\n    VALID\n  Explanation: Reduced to alphanumerics and lowercased this is \"amanaplanacanalpanama\", which reads the same backwards.\n\nExample 2:\n  Input:\n    race a car\n  Output:\n    INVALID\n  Explanation: \"raceacar\" is not a palindrome.\n\nA line with no alphanumeric characters at all is VALID.",
+    "input_format": "A single line of text",
+    "output_format": "VALID or INVALID",
+    "constraints": "1 <= line length <= 10^4\nThe line consists of printable ASCII characters",
+    "sample_input": "A man, a plan, a canal: Panama",
+    "sample_output": "VALID",
+    "test_cases": [
+      {"input": "A man, a plan, a canal: Panama", "expected_output": "VALID"},
+      {"input": "race a car", "expected_output": "INVALID"},
+      {"input": ".,", "expected_output": "VALID"},
+      {"input": "Was it a car or a cat I saw?", "expected_output": "VALID"},
+      {"input": "hello", "expected_output": "INVALID"}
+    ]
+  },
+  {
+    "title": "Longest Substring Without Repeating Characters",
+    "difficulty": "medium",
+    "description": "Given a string, return the length of the longest substring that contains no repeated characters.\n\nA substring is a contiguous run of characters.\n\nExample 1:\n  Input:\n    abcabcbb\n  Output:\n    3\n  Explanation: \"abc\" has length 3.\n\nExample 2:\n  Input:\n    bbbbb\n  Output:\n    1\n  Explanation: \"b\" has length 1.\n\nExample 3:\n  Input:\n    pwwkew\n  Output:\n    3\n  Explanation: \"wke\" has length 3. Note that \"pwke\" is a subsequence, not a substring.\n\nHint: A sliding window with a last-seen index per character runs in O(n).",
+    "input_format": "A single line containing the string (no spaces)",
+    "output_format": "A single integer — the length of the longest substring without repeating characters",
+    "constraints": "1 <= s.length <= 5 * 10^4\ns consists of English letters and digits",
+    "sample_input": "abcabcbb",
+    "sample_output": "3",
+    "test_cases": [
+      {"input": "abcabcbb", "expected_output": "3"},
+      {"input": "bbbbb", "expected_output": "1"},
+      {"input": "pwwkew", "expected_output": "3"},
+      {"input": "abcdefg", "expected_output": "7"},
+      {"input": "tmmzuxt", "expected_output": "5"}
+    ]
+  },
+  {
+    "title": "Product of Array Except Self",
+    "difficulty": "medium",
+    "description": "Given an integer array, return an array where each position holds the product of every element except the one at that position.\n\nExample 1:\n  Input:\n    1 2 3 4\n  Output:\n    24 12 8 6\n  Explanation: 2*3*4=24, 1*3*4=12, 1*2*4=8, 1*2*3=6.\n\nExample 2:\n  Input:\n    -1 1 0 -3 3\n  Output:\n    0 0 9 0 0\n\nHint: Prefix products from the left, then suffix products from the right — no division needed.",
+    "input_format": "A single line of space-separated integers",
+    "output_format": "A single line of space-separated integers — the products",
+    "constraints": "2 <= nums.length <= 10^4\n-30 <= nums[i] <= 30\nThe full product fits in a 32-bit signed integer",
+    "sample_input": "1 2 3 4",
+    "sample_output": "24 12 8 6",
+    "test_cases": [
+      {"input": "1 2 3 4", "expected_output": "24 12 8 6"},
+      {"input": "-1 1 0 -3 3", "expected_output": "0 0 9 0 0"},
+      {"input": "2 3", "expected_output": "3 2"},
+      {"input": "1 1 1 1", "expected_output": "1 1 1 1"},
+      {"input": "5 0", "expected_output": "0 5"}
+    ]
+  },
+  {
+    "title": "Container With Most Water",
+    "difficulty": "medium",
+    "description": "You are given an array of non-negative integers where each value is the height of a vertical line drawn at that index.\n\nPick two lines that, together with the x-axis, form a container. Return the maximum amount of water such a container can hold.\n\nThe area between lines at indices i and j is (j - i) * min(height[i], height[j]).\n\nExample 1:\n  Input:\n    1 8 6 2 5 4 8 3 7\n  Output:\n    49\n  Explanation: Lines at index 1 and 8 give (8-1) * min(8,7) = 7 * 7 = 49.\n\nExample 2:\n  Input:\n    1 1\n  Output:\n    1\n\nHint: Two pointers from both ends — always move the shorter side inward.",
+    "input_format": "A single line of space-separated non-negative integers",
+    "output_format": "A single integer — the maximum area",
+    "constraints": "2 <= height.length <= 10^5\n0 <= height[i] <= 10^4",
+    "sample_input": "1 8 6 2 5 4 8 3 7",
+    "sample_output": "49",
+    "test_cases": [
+      {"input": "1 8 6 2 5 4 8 3 7", "expected_output": "49"},
+      {"input": "1 1", "expected_output": "1"},
+      {"input": "4 3 2 1 4", "expected_output": "16"},
+      {"input": "1 2 1", "expected_output": "2"},
+      {"input": "2 3 4 5 18 17 6", "expected_output": "17"}
+    ]
+  },
+  {
+    "title": "Edit Distance",
+    "difficulty": "hard",
+    "description": "Given two words, return the minimum number of single-character operations required to turn the first into the second.\n\nThe permitted operations are insert a character, delete a character, and replace a character.\n\nExample 1:\n  Input:\n    horse\n    ros\n  Output:\n    3\n  Explanation: horse -> rorse (replace 'h' with 'r') -> rose (delete 'r') -> ros (delete 'e').\n\nExample 2:\n  Input:\n    intention\n    execution\n  Output:\n    5\n\nHint: Classic O(m*n) dynamic programming over the two prefixes.",
+    "input_format": "Line 1: the first word\nLine 2: the second word",
+    "output_format": "A single integer — the minimum number of operations",
+    "constraints": "0 <= word length <= 500\nBoth words consist of lowercase English letters",
+    "sample_input": "horse\nros",
+    "sample_output": "3",
+    "test_cases": [
+      {"input": "horse\nros", "expected_output": "3"},
+      {"input": "intention\nexecution", "expected_output": "5"},
+      {"input": "abc\nabc", "expected_output": "0"},
+      {"input": "a\nab", "expected_output": "1"},
+      {"input": "kitten\nsitting", "expected_output": "3"}
+    ]
+  },
+  {
+    "title": "Trapping Rain Water",
+    "difficulty": "hard",
+    "description": "Given an elevation map where each value is the height of a bar of width 1, compute how much rainwater is trapped after it rains.\n\nWater sits above a bar up to the lower of the tallest bar to its left and the tallest bar to its right.\n\nExample 1:\n  Input:\n    0 1 0 2 1 0 1 3 2 1 2 1\n  Output:\n    6\n\nExample 2:\n  Input:\n    4 2 0 3 2 5\n  Output:\n    9\n\nHint: Two pointers tracking the running left and right maxima solves this in O(n) time and O(1) space.",
+    "input_format": "A single line of space-separated non-negative integers",
+    "output_format": "A single integer — the total units of trapped water",
+    "constraints": "1 <= height.length <= 2 * 10^4\n0 <= height[i] <= 10^5",
+    "sample_input": "0 1 0 2 1 0 1 3 2 1 2 1",
+    "sample_output": "6",
+    "test_cases": [
+      {"input": "0 1 0 2 1 0 1 3 2 1 2 1", "expected_output": "6"},
+      {"input": "4 2 0 3 2 5", "expected_output": "9"},
+      {"input": "1 2 3 4 5", "expected_output": "0"},
+      {"input": "5 4 1 2", "expected_output": "1"},
+      {"input": "3 0 0 2 0 4", "expected_output": "10"}
+    ]
+  },
+  {
+    "title": "Coin Change",
+    "difficulty": "hard",
+    "description": "You are given a list of distinct coin denominations and a target amount.\n\nReturn the fewest number of coins needed to make up that amount. You may use each denomination any number of times. If the amount cannot be made, return -1.\n\nExample 1:\n  Input:\n    1 2 5\n    11\n  Output:\n    3\n  Explanation: 11 = 5 + 5 + 1.\n\nExample 2:\n  Input:\n    2\n    3\n  Output:\n    -1\n  Explanation: 3 cannot be formed from 2s.\n\nExample 3:\n  Input:\n    1\n    0\n  Output:\n    0\n\nHint: Bottom-up DP over amounts 0..target.",
+    "input_format": "Line 1: space-separated coin denominations\nLine 2: the target amount",
+    "output_format": "A single integer — the fewest coins, or -1 if the amount cannot be made",
+    "constraints": "1 <= number of coins <= 12\n1 <= coin value <= 2^31 - 1\n0 <= amount <= 10^4",
+    "sample_input": "1 2 5\n11",
+    "sample_output": "3",
+    "test_cases": [
+      {"input": "1 2 5\n11", "expected_output": "3"},
+      {"input": "2\n3", "expected_output": "-1"},
+      {"input": "1\n0", "expected_output": "0"},
+      {"input": "2 5 10 1\n27", "expected_output": "4"},
+      {"input": "186 419 83 408\n6249", "expected_output": "20"}
+    ]
+  }
+]

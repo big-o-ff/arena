@@ -11,9 +11,8 @@ urlpatterns = [
     path("api/battles/", include("sabotage.urls")),
     path("api/spectators/", include("spectators.urls")),
     path("api/admin/", include("dashboard.urls")),
+    # Single canonical mount for each of these — they were previously also
+    # reachable under /api/auth/.
     path("api/profile/<str:username>/", ProfileView.as_view(), name="profile"),
     path("api/leaderboard/", LeaderboardView.as_view(), name="leaderboard"),
 ]
-
-
-

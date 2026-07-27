@@ -1,15 +1,10 @@
 from django.urls import path
 
-from .views import AuthMeView, LeaderboardView, LoginView, LogoutView, ProfileView, RegisterView, ClerkWebhookView
+from .views import AuthMeView, ClerkWebhookView
 
-
+# Profile and leaderboard are mounted once, at the project level (config/urls.py).
+# They used to be registered here as well, giving every endpoint two URLs.
 urlpatterns = [
-    path("register/", RegisterView.as_view(), name="register"),
-    path("login/", LoginView.as_view(), name="login"),
-    path("logout/", LogoutView.as_view(), name="logout"),
-    path("profile/<str:username>/", ProfileView.as_view(), name="profile"),
-    path("leaderboard/", LeaderboardView.as_view(), name="leaderboard"),
     path("me/", AuthMeView.as_view(), name="auth-me"),
     path("clerk-webhook/", ClerkWebhookView.as_view(), name="clerk-webhook"),
 ]
-

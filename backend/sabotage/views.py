@@ -1,34 +1,34 @@
+from __future__ import annotations
+
+import logging
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, views
 from rest_framework.response import Response
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 
+from battles.events import broadcast_battle_event
 from battles.models import Battle
 
 from .models import SabotageMove
 from .serializers import SabotageMoveSerializer
+
+logger = logging.getLogger(__name__)
+
+# HP the attacker pays to blank the opponent's editor for GC_DURATION_SECONDS.
+#
+# This was 80 of a 100 HP pool, which made the ability strictly self-defeating:
+# the winner is decided by remaining HP, so spending 80 handed the match away,
+# and it left the attacker one opponent solve (35) from elimination. 15 makes it
+# a real trade-off — meaningful, recoverable, still cheaper than losing a round.
+GC_HP_COST = 15
+GC_DURATION_SECONDS = 5
 
 
 class SabotageTriggerView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, battle_id: int, *args, **kwargs):
-        battle = get_object_or_404(Battle, pk=battle_id)
-
-        if battle.status != Battle.Status.ACTIVE:
-            return Response(
-                {"detail": "This battle is not active."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if request.user not in (battle.player1, battle.player2):
-            return Response(
-                {"detail": "You are not a participant in this battle."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         move_type = request.data.get("move_type")
         if move_type != SabotageMove.MoveType.GARBAGE_COLLECTION:
             return Response(
@@ -36,89 +36,99 @@ class SabotageTriggerView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Enforce single use per player per battle
-        if SabotageMove.objects.filter(
-            battle=battle, attacker=request.user, move_type=move_type
-        ).exists():
-            return Response(
-                {"detail": "You have already used this sabotage in this battle."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # ------------------------------------------------------------------
-        # HP Deduction Transaction
-        # ------------------------------------------------------------------
         with transaction.atomic():
-            battle_lock = Battle.objects.select_for_update().get(pk=battle.id)
-            
-            is_player1 = request.user == battle_lock.player1
-            my_hp = battle_lock.player1_hp if is_player1 else battle_lock.player2_hp
-            
-            cost = 80
-            if my_hp < cost:
+            battle = (
+                Battle.objects.select_for_update().filter(pk=battle_id).first()
+            )
+            if battle is None:
                 return Response(
-                    {"detail": f"Not enough HP! Garbage Collection costs {cost} HP."},
+                    {"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND
+                )
+            if request.user.id not in (battle.player1_id, battle.player2_id):
+                return Response(
+                    {"detail": "You are not a participant in this battle."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if battle.status != Battle.Status.ACTIVE:
+                return Response(
+                    {"detail": "This battle is not active."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Deduct HP
+            # Single use per player per battle. Checked under the same lock that
+            # applies the cost, so two concurrent requests cannot both pass.
+            if SabotageMove.objects.filter(
+                battle=battle, attacker=request.user, move_type=move_type
+            ).exists():
+                return Response(
+                    {"detail": "You have already used this sabotage in this battle."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            is_player1 = request.user.id == battle.player1_id
+            my_hp = battle.player1_hp if is_player1 else battle.player2_hp
+
+            # Must leave the attacker alive; paying your last HP to blank the
+            # opponent's screen would end the match against you.
+            if my_hp <= GC_HP_COST:
+                return Response(
+                    {
+                        "detail": (
+                            f"Not enough HP — Garbage Collection costs {GC_HP_COST} HP "
+                            "and cannot reduce you to zero."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             if is_player1:
-                battle_lock.player1_hp -= cost
+                battle.player1_hp = my_hp - GC_HP_COST
             else:
-                battle_lock.player2_hp -= cost
-                
-            battle_lock.save(update_fields=["player1_hp", "player2_hp"])
+                battle.player2_hp = my_hp - GC_HP_COST
+            battle.save(update_fields=["player1_hp", "player2_hp"])
 
-            # Create the record
             sabotage = SabotageMove.objects.create(
-                battle=battle_lock,
-                attacker=request.user,
-                move_type=move_type,
+                battle=battle, attacker=request.user, move_type=move_type
             )
+            target_user_id = battle.player2_id if is_player1 else battle.player1_id
+            player1_hp, player2_hp = battle.player1_hp, battle.player2_hp
 
-        # ------------------------------------------------------------------
-        # Broadcasting Events
-        # ------------------------------------------------------------------
-        channel_layer = get_channel_layer()
-        target_user_id = battle.player2_id if is_player1 else battle.player1_id
-        
-        # 1. Update HP for everyone
-        async_to_sync(channel_layer.group_send)(
-            f"battle_{battle.id}",
+        broadcast_battle_event(
+            battle_id,
+            "HP_UPDATE",
             {
-                "type": "broadcast.event",
-                "event": "HP_UPDATE",
-                "payload": {
-                    "battle_id": battle.id,
-                    "player1_hp": battle_lock.player1_hp,
-                    "player2_hp": battle_lock.player2_hp,
-                },
+                "battle_id": battle_id,
+                "player1_hp": player1_hp,
+                "player2_hp": player2_hp,
             },
         )
-
-        # 2. Start GC Sabotage
-        async_to_sync(channel_layer.group_send)(
-            f"battle_{battle.id}",
+        # Sent through the standard broadcast.event envelope. It used to be sent
+        # as a raw {"type": "gc_start"} message, which the spectator consumer has
+        # no handler for — Channels raises on an unknown type, so every spectator
+        # was disconnected whenever anyone used this ability.
+        broadcast_battle_event(
+            battle_id,
+            "GC_START",
             {
-                "type": "gc_start",
                 "attacker_id": request.user.id,
                 "target_user_id": target_user_id,
+                "duration_seconds": GC_DURATION_SECONDS,
             },
         )
 
-        # 3. Queue GC End task after 5 seconds
-        from battles.tasks import send_gc_end
-        send_gc_end.apply_async(
-            (battle.id, target_user_id),
-            countdown=5,
-            queue="events"
+        try:
+            from battles.tasks import send_gc_end
+
+            send_gc_end.apply_async(
+                (battle_id, target_user_id),
+                countdown=GC_DURATION_SECONDS,
+                queue="events",
+            )
+        except Exception:
+            # Without a worker the overlay would never lift, so the client also
+            # self-clears after duration_seconds.
+            logger.exception("Could not schedule GC_END for battle %s", battle_id)
+
+        return Response(
+            SabotageMoveSerializer(sabotage).data, status=status.HTTP_201_CREATED
         )
-        
-        # Check if paying the HP cost killed the player (unlikely, but safe)
-        if battle_lock.player1_hp <= 0 or battle_lock.player2_hp <= 0:
-            from battles.tasks import process_battle_end
-            process_battle_end.apply_async((battle.id,), queue="events")
-
-        serializer = SabotageMoveSerializer(sabotage)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
