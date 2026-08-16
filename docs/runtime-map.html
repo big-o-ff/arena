@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Deliberately fixed, not device-width. This is a wide-canvas instrument with
+     one layout everywhere; phones get the desktop console scaled to fit and
+     pinch-zoom to read, the way you would treat any map. -->
+<meta name="viewport" content="width=1200">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="Interactive isometric map of the Arena runtime: 19 modules as buildings, 8 traced call paths, every hop cited to file and line.">
 <title>BigOff Runtime Map</title>
@@ -256,34 +259,9 @@ kbd{
 @media (max-width:1180px){
   .main{grid-template-columns:180px minmax(0,1fr) 300px}
 }
-.narrow-note{display:none}
-@media (max-width:960px){
-  body{overflow-y:auto}
-  .shell{height:auto;min-height:0}
-  .main{grid-template-columns:1fr}
-  /* Stage first, then the reading panel, then the index. The panels carry the
-     content; the index is navigation and belongs last on a phone. */
-  .stage{order:1}
-  .inspector{order:2}
-  .rail{order:3}
-  .rail,.inspector{border:0;border-top:1px solid var(--line);max-height:none;overflow:visible}
-  .pane{overflow:visible}
-  .canvas-wrap{height:56vh;min-height:300px}
-  /* The isometric canvas is inherently wide: let it pan instead of shrinking
-     the buildings past legibility. */
-  svg#map{min-width:760px}
-  .brand{min-width:0;flex:1 1 100%;border-right:0;border-bottom:1px solid var(--line)}
-  .topbar{flex-wrap:wrap}
-  .stat{flex:1 1 auto;padding:9px 14px}
-  .transport{margin-left:0;flex:1 1 100%;border-top:1px solid var(--line)}
-  select{flex:1 1 140px;max-width:none}
-  .narrow-note{
-    display:block;padding:9px 16px;border-bottom:1px solid var(--line);
-    background:var(--panel-2);color:var(--ink-3);font-size:10.5px;line-height:1.5;
-  }
-  .narrow-note b{color:var(--ink-2);font-weight:400}
-  .statusbar{font-size:9px;gap:10px}
-}
+/* No small-screen breakpoint by design: the viewport is pinned to 1200 above,
+   so every device gets the same console. The 1180px rule below still earns its
+   place for desktop users resizing a window, where the meta tag does not apply. */
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
@@ -311,11 +289,6 @@ kbd{
       <button id="btn-reset">Reset</button>
     </div>
   </div>
-
-  <p class="narrow-note">
-    <b>Built for a wide screen.</b> The map pans sideways; tap a building to inspect it,
-    or use Step to walk the flow one call at a time.
-  </p>
 
   <div class="main">
     <nav class="rail" aria-label="Modules">
