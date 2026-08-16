@@ -43,6 +43,10 @@ body{
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
   font-variant-numeric:tabular-nums;
+  /* Centre the capped shell in the tall scaled viewport a phone gives us.
+     align-content (not place-items) so the shell still stretches full width. */
+  display:grid;
+  align-content:center;
 }
 .shell{
   height:100vh;
