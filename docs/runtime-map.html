@@ -46,7 +46,11 @@ body{
 }
 .shell{
   height:100vh;
-  min-height:640px;
+  /* Cap it. Under the fixed 1200px viewport a phone resolves 100vh against the
+     scaled layout viewport (~2600px), which stretched the 1fr stage row and left
+     the map floating in a huge empty box with the status bar pushed off-screen. */
+  max-height:900px;
+  min-height:560px;
   display:grid;
   grid-template-rows:auto 1fr auto;
   gap:0;
@@ -66,14 +70,14 @@ body{
 .brand .repo{font-size:15px;color:var(--ink);letter-spacing:-.01em}
 .brand .meta{font-size:10px;color:var(--ink-3);letter-spacing:.08em}
 .stat{
-  padding:12px 20px;border-right:1px solid var(--line);
+  padding:12px 15px;border-right:1px solid var(--line);
   display:flex;flex-direction:column;gap:3px;justify-content:center;
 }
 .stat .k{font-size:9px;letter-spacing:.18em;color:var(--ink-4);text-transform:uppercase;white-space:nowrap}
 .stat .v{font-size:15px;color:var(--ink-2)}
 .transport{
-  margin-left:auto;display:flex;align-items:center;gap:8px;
-  padding:10px 16px;flex-wrap:wrap;
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  padding:10px 12px;flex-wrap:nowrap;white-space:nowrap;
 }
 .transport label{font-size:9px;letter-spacing:.18em;color:var(--ink-4);text-transform:uppercase}
 select,button{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
