@@ -1,10 +1,14 @@
 # Arena
 
+![Interactive isometric map of the Arena runtime: modules as buildings, traced call paths, and payloads on the wire](docs/system-map.png)
+
 Real-time coding battle platform with:
 - **Frontend:** Next.js (`frontend`)
 - **Backend API + WebSockets:** Django + Channels (`backend`)
 - **Async workers:** Celery
 - **Broker / channel layer:** Redis
+
+[Interactive system map](https://big-o-ff.github.io/arena/runtime-map.html) · [Architecture, data model, concurrency and scaling](architecture.md)
 
 ---
 
@@ -13,6 +17,7 @@ Real-time coding battle platform with:
 - `frontend` - Next.js app (battle UI, spectate UI, auth flows)
 - `backend` - Django REST API, Channels consumers, Celery tasks
 - `problems` - Problem dataset and related assets
+- `architecture.md` - how the system works and why it was built this way
 
 ---
 

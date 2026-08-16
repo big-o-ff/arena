@@ -1,0 +1,1272 @@
+<title>BigOff Runtime Map</title>
+<style>
+:root{
+  --ground:#06080B;
+  --stage:#080C11;
+  --panel:#0B1118;
+  --panel-2:#0E1620;
+  --line:#1B2A36;
+  --line-2:#122029;
+  --face-a:#1B2833;
+  --face-b:#101922;
+  --roof:#26363F;
+  --wire:#4E7C9E;
+  --wire-dim:#2C4657;
+  --live:#39FF14;
+  --fail:#FF6B4A;
+  --loop:#C79A4B;
+  --ret:#6FB2C9;
+  --ink:#C6D5E0;
+  --ink-2:#8199AB;
+  --ink-3:#54697A;
+  --ink-4:#33454F;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Avenir Next","Segoe UI",Inter,system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+.shell{
+  height:100vh;
+  min-height:640px;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  gap:0;
+}
+
+/* ---------- top strip ---------- */
+.topbar{
+  display:flex;align-items:stretch;
+  border-bottom:1px solid var(--line);
+  background:var(--panel);
+}
+.brand{
+  padding:12px 18px;border-right:1px solid var(--line);
+  min-width:230px;display:flex;flex-direction:column;gap:2px;
+}
+.brand .eyebrow{font-size:9px;letter-spacing:.18em;color:var(--ink-4);text-transform:uppercase}
+.brand .repo{font-size:15px;color:var(--ink);letter-spacing:-.01em}
+.brand .meta{font-size:10px;color:var(--ink-3);letter-spacing:.08em}
+.stat{
+  padding:12px 20px;border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:3px;justify-content:center;
+}
+.stat .k{font-size:9px;letter-spacing:.18em;color:var(--ink-4);text-transform:uppercase;white-space:nowrap}
+.stat .v{font-size:15px;color:var(--ink-2)}
+.transport{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  padding:10px 16px;flex-wrap:wrap;
+}
+.transport label{font-size:9px;letter-spacing:.18em;color:var(--ink-4);text-transform:uppercase}
+select,button{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+select{
+  background:var(--panel-2);border:1px solid var(--line);
+  padding:6px 8px;border-radius:2px;max-width:230px;
+}
+button{
+  background:transparent;border:1px solid var(--line);
+  padding:6px 11px;border-radius:2px;cursor:pointer;
+  letter-spacing:.1em;text-transform:uppercase;font-size:10px;
+  transition:border-color .15s,color .15s,background .15s;
+}
+button:hover{border-color:var(--wire);color:var(--ink)}
+button[aria-pressed="true"]{border-color:var(--live);color:var(--live)}
+:focus-visible{outline:2px solid var(--live);outline-offset:2px}
+
+/* ---------- main 3 columns ---------- */
+.main{display:grid;grid-template-columns:212px minmax(0,1fr) 340px;min-height:0}
+.rail,.inspector{background:var(--panel);min-height:0}
+.rail{border-right:1px solid var(--line);overflow-y:auto}
+.inspector{border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+
+/* rail */
+.rail h2{
+  font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-4);
+  padding:14px 14px 6px;font-weight:400;
+}
+.tier{border-bottom:1px solid var(--line-2)}
+.tier-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:10px 14px 4px;
+}
+.tier-head .name{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.tier-head .n{font-size:9px;color:var(--ink-4)}
+.mod{
+  display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:8px;
+  width:100%;text-align:left;border:0;border-left:2px solid transparent;
+  background:transparent;padding:6px 14px;cursor:pointer;
+  text-transform:none;letter-spacing:0;font-size:11px;color:var(--ink-2);
+  border-radius:0;
+}
+.mod:hover{background:var(--panel-2);border-left-color:var(--wire-dim);color:var(--ink)}
+.mod[aria-current="true"]{background:var(--panel-2);border-left-color:var(--live);color:var(--ink)}
+.mod .tag{font-size:9px;color:var(--ink-4);letter-spacing:.06em}
+.mod[aria-current="true"] .tag{color:var(--live)}
+.mod .lines{font-size:9px;color:var(--ink-4)}
+
+/* stage */
+.stage{position:relative;background:var(--stage);display:flex;flex-direction:column;min-width:0}
+.stage-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:14px 20px 0;gap:16px;
+}
+.stage-head .eyebrow{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-4)}
+.stage-head h1{font-size:19px;font-weight:400;letter-spacing:-.01em;color:var(--ink);margin-top:2px}
+.pulse{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--live);box-shadow:0 0 8px var(--live)}
+.paused .dot{background:var(--ink-4);box-shadow:none}
+.canvas-wrap{flex:1;min-height:0;position:relative;overflow:auto}
+svg#map{display:block;width:100%;height:100%}
+
+.bld{cursor:pointer}
+.bld .hit{fill:transparent}
+.face-t{fill:var(--roof)}
+.face-l{fill:var(--face-b)}
+.face-r{fill:var(--face-a)}
+.edge{stroke:#31485A;stroke-width:.9;fill:none;vector-effect:non-scaling-stroke}
+.rib{stroke:#2A3D4C;stroke-width:.7;fill:none;vector-effect:non-scaling-stroke}
+.bld:hover .face-t{fill:#31454F}
+.bld:hover .edge{stroke:var(--wire)}
+.bld.sel .face-t{fill:#123322}
+.bld.sel .edge{stroke:var(--live)}
+.bld.sel .rib{stroke:#1E6B32}
+.bld.act .face-t{fill:#2A4152}
+.bld.act .edge{stroke:var(--wire);stroke-width:1.4}
+.bld.dim{opacity:.34}
+.blabel{font-family:var(--mono);font-size:8.5px;fill:var(--ink-3);letter-spacing:.1em;pointer-events:none}
+.bld.sel .blabel,.bld.act .blabel{fill:var(--ink)}
+.grid-line{stroke:var(--line-2);stroke-width:.8;fill:none;vector-effect:non-scaling-stroke}
+
+.wire{fill:none;stroke:var(--wire-dim);stroke-width:1.1;vector-effect:non-scaling-stroke}
+.wire.k-control{stroke:var(--wire)}
+.wire.k-return{stroke:var(--ret);stroke-dasharray:1 3.5;stroke-linecap:round}
+.wire.k-fail{stroke:var(--fail);stroke-dasharray:6 4}
+.wire.k-loop{stroke:var(--loop);stroke-dasharray:9 3 2 3}
+.wire.past{opacity:.4}
+.wire.future{opacity:.13}
+.wire.live{stroke-width:2}
+.payload{fill:var(--live);filter:drop-shadow(0 0 5px var(--live))}
+.payload.k-fail{fill:var(--fail);filter:drop-shadow(0 0 5px var(--fail))}
+.payload.k-loop{fill:var(--loop);filter:drop-shadow(0 0 5px var(--loop))}
+.payload.k-return{fill:var(--ret);filter:drop-shadow(0 0 5px var(--ret))}
+.wiretag{font-family:var(--mono);font-size:8px;fill:var(--live);letter-spacing:.04em;pointer-events:none}
+.wiretag.k-fail{fill:var(--fail)}
+.wiretag.k-loop{fill:var(--loop)}
+.wiretag.k-return{fill:var(--ret)}
+.wiretag-bg{fill:#04070A;opacity:.88}
+
+/* stage footer */
+.legend{
+  display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;
+  padding:9px 20px;border-top:1px solid var(--line);
+  font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+}
+.legend .item{display:flex;align-items:center;gap:7px}
+.swatch{width:24px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block}
+.sw-control{border-color:var(--wire)}
+.sw-return{border-color:var(--ret);border-top-style:dotted}
+.sw-fail{border-color:var(--fail);border-top-style:dashed}
+.sw-loop{border-color:var(--loop);border-top-style:dashed}
+.sw-pay{width:7px;height:7px;border-radius:50%;background:var(--live);border:0}
+
+/* inspector */
+.tabs{display:flex;border-bottom:1px solid var(--line);flex-shrink:0}
+.tab{
+  flex:1;padding:12px 8px;border:0;border-bottom:2px solid transparent;
+  background:transparent;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-4);cursor:pointer;border-radius:0;
+}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--live)}
+.pane{padding:18px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1;min-height:0}
+.pane[hidden]{display:none}
+.k{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-4)}
+.title{font-size:17px;color:var(--ink);letter-spacing:-.01em;line-height:1.25}
+.prose{font-family:var(--sans);font-size:13.5px;line-height:1.62;color:var(--ink-2)}
+.prose strong{color:var(--ink);font-weight:600}
+.block{display:flex;flex-direction:column;gap:6px}
+.cite{
+  font-size:10.5px;color:var(--ret);background:var(--panel-2);
+  border:1px solid var(--line);padding:5px 8px;border-radius:2px;
+  word-break:break-all;
+}
+.payload-box{
+  font-size:10.5px;color:var(--live);background:#07130A;
+  border:1px solid #14361B;padding:8px 9px;border-radius:2px;
+  white-space:pre-wrap;word-break:break-word;line-height:1.5;
+}
+.payload-box.k-fail{color:var(--fail);background:#150A07;border-color:#3A1A11}
+.payload-box.k-loop{color:var(--loop);background:#130F06;border-color:#33280F}
+.payload-box.k-return{color:var(--ret);background:#061216;border-color:#123039}
+.steps{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line-2)}
+.step{
+  display:grid;grid-template-columns:22px 1fr;gap:9px;align-items:start;
+  width:100%;text-align:left;border:0;border-bottom:1px solid var(--line-2);
+  border-left:2px solid transparent;background:transparent;
+  padding:8px 8px 8px 6px;cursor:pointer;border-radius:0;
+  text-transform:none;letter-spacing:0;
+}
+.step:hover{background:var(--panel-2)}
+.step[aria-current="true"]{background:var(--panel-2);border-left-color:var(--live)}
+.step .n{font-size:9px;color:var(--ink-4);padding-top:2px}
+.step[aria-current="true"] .n{color:var(--live)}
+.step .call{font-size:10.5px;color:var(--ink-2);line-height:1.45;word-break:break-word}
+.step[aria-current="true"] .call{color:var(--ink)}
+.step .hop{font-size:9px;color:var(--ink-4);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.step .src{font-size:9px;color:var(--ink-4);margin-top:2px;word-break:break-all}
+.pill{
+  display:inline-block;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:2px 6px;border:1px solid var(--line);border-radius:2px;color:var(--ink-3);
+}
+.pill.k-control{border-color:#2C4657;color:var(--wire)}
+.pill.k-fail{border-color:#4A2317;color:var(--fail)}
+.pill.k-loop{border-color:#3A2E12;color:var(--loop)}
+.pill.k-return{border-color:#153742;color:var(--ret)}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:11px}
+.dl dt{color:var(--ink-4);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding-top:2px}
+.dl dd{color:var(--ink-2)}
+.hr{height:1px;background:var(--line-2)}
+
+/* bottom bar */
+.statusbar{
+  display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+  border-top:1px solid var(--line);background:var(--panel);
+  padding:8px 18px;font-size:10px;color:var(--ink-4);letter-spacing:.06em;
+}
+.statusbar .now{color:var(--ink-2)}
+kbd{
+  font-family:var(--mono);font-size:9px;border:1px solid var(--line);
+  padding:1px 4px;border-radius:2px;color:var(--ink-3);
+}
+@media (max-width:1180px){
+  .main{grid-template-columns:180px minmax(0,1fr) 300px}
+}
+@media (max-width:960px){
+  body{overflow-y:auto}
+  .shell{height:auto}
+  .main{grid-template-columns:1fr}
+  .rail,.inspector{border:0;border-top:1px solid var(--line);max-height:none}
+  .canvas-wrap{height:460px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="eyebrow">Repository</span>
+      <span class="repo">bigoff / arena</span>
+      <span class="meta">main · 6a9662e · codebase audit</span>
+    </div>
+    <div class="stat"><span class="k">Traced flows</span><span class="v">8</span></div>
+    <div class="stat"><span class="k">Modules</span><span class="v">19</span></div>
+    <div class="stat"><span class="k">Tiers</span><span class="v">5</span></div>
+    <div class="stat"><span class="k">Selected view</span><span class="v" id="stat-view">submit</span></div>
+    <div class="transport">
+      <label for="flowsel">Flow</label>
+      <select id="flowsel"></select>
+      <button id="btn-play" aria-pressed="true">Pause</button>
+      <button id="btn-step">Step</button>
+      <button id="btn-back">Back</button>
+      <button id="btn-reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <nav class="rail" aria-label="Modules">
+      <h2>The system</h2>
+      <div id="rail"></div>
+    </nav>
+
+    <section class="stage">
+      <div class="stage-head">
+        <div>
+          <div class="eyebrow">Runtime topology</div>
+          <h1 id="flow-title">Submit to verdict</h1>
+        </div>
+        <div class="pulse" id="pulse"><span class="dot"></span><span id="pulse-text">Payload in motion</span></div>
+      </div>
+      <div class="canvas-wrap">
+        <svg id="map" viewBox="0 0 980 600" preserveAspectRatio="xMidYMid meet" role="img"
+             aria-label="Isometric map of the arena runtime. Buildings are source modules; lines are traced call paths."></svg>
+      </div>
+      <div class="legend">
+        <span class="item"><i class="swatch sw-control"></i>control flow</span>
+        <span class="item"><i class="swatch sw-return"></i>return value</span>
+        <span class="item"><i class="swatch sw-fail"></i>failure / degraded</span>
+        <span class="item"><i class="swatch sw-loop"></i>background loop</span>
+        <span class="item"><i class="swatch sw-pay"></i>payload</span>
+        <span class="item" style="color:var(--ink-4)">form = role · height = call depth · footprint = LOC</span>
+      </div>
+    </section>
+
+    <aside class="inspector" aria-label="Inspector">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-what" aria-selected="true" aria-controls="pane-what">What it does</button>
+        <button class="tab" role="tab" id="tab-how" aria-selected="false" aria-controls="pane-how">How it's built</button>
+      </div>
+      <div class="pane" id="pane-what" role="tabpanel" aria-labelledby="tab-what"></div>
+      <div class="pane" id="pane-how" role="tabpanel" aria-labelledby="tab-how" hidden></div>
+    </aside>
+  </div>
+
+  <div class="statusbar">
+    <span class="now" id="ticker">Step 1 / 18</span>
+    <span>click a building to inspect it</span>
+    <span><kbd>←</kbd> <kbd>→</kbd> step</span>
+    <span><kbd>space</kbd> pause</span>
+    <span style="margin-left:auto">every node and hop cites real source at commit 6a9662e</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   MODULES — every entry is a real file in the repo.
+   form encodes role · h encodes call depth · footprint ~ LOC
+   ============================================================ */
+const TIERS = [
+  {id:"client", name:"Client"},
+  {id:"edge",   name:"Edge & identity"},
+  {id:"app",    name:"Application"},
+  {id:"worker", name:"Workers"},
+  {id:"data",   name:"Data"}
+];
+
+const M = [
+  // ---------- client ----------
+  {id:"BT", name:"Battle UI", tier:"client", form:"slab", x:0.0, y:0.0, w:1.7, d:1.3, h:26,
+   file:"frontend/app/battle/[id]/page.tsx", loc:1977,
+   what:"The match screen. Holds the editor, the HP bars, the round tabs and the countdown, and reacts to every event the server pushes.",
+   how:"A single client component. It owns one WebSocket via useReconnectingSocket (page.tsx:490) and one Axios instance via useApiClient. Incoming frames are dispatched through a switch on msg.event covering HP_UPDATE, ROUND_RESULT, GC_START, FOG_START and BATTLE_END (page.tsx:340-480).",
+   cite:"frontend/app/battle/[id]/page.tsx:340"},
+
+  {id:"SP", name:"Spectate UI", tier:"client", form:"slab", x:2.15, y:0.0, w:1.25, d:1.1, h:18,
+   file:"frontend/app/spectate/[id]/page.tsx", loc:570,
+   what:"The public watch screen. Renders both players' live editor buffers, the HP bars and the like counter.",
+   how:"Opens a second socket type through spectatorSocketUrl (page.tsx:133) and keeps the latest buffer per participant id from OPPONENT_CODE frames (page.tsx:85). Likes are sent as SPECTATOR_LIKE and echoed back as a count.",
+   cite:"frontend/app/spectate/[id]/page.tsx:85"},
+
+  {id:"SK", name:"Socket hook", tier:"client", form:"slab", x:3.85, y:0.0, w:1.15, d:1.05, h:22,
+   file:"frontend/lib/useReconnectingSocket.ts", loc:192,
+   what:"Keeps the connection alive. Reconnects after a drop, backs off, and gives up permanently when the server says you are not allowed in.",
+   how:"Exponential backoff with full jitter: delay = random(0, min(1000 * 2^attempt, 30000)) at line 81. Pings every 25s. FATAL_CLOSE_CODES = {4401, 4403, 4404} stop the retry loop entirely (line 24, checked at 140), because those are authorisation rejections that will never succeed on retry.",
+   cite:"frontend/lib/useReconnectingSocket.ts:81"},
+
+  {id:"AX", name:"API client", tier:"client", form:"slab", x:5.35, y:0.0, w:1.05, d:1.0, h:14,
+   file:"frontend/lib/fetchWithAuth.ts", loc:60,
+   what:"Attaches the signed-in user's token to every REST call so the backend knows who is asking.",
+   how:"An Axios instance with a request interceptor that awaits Clerk's getToken() and sets Authorization: Bearer <jwt> on each request (fetchWithAuth.ts:30-31). 20s timeout, because default Axios has none.",
+   cite:"frontend/lib/fetchWithAuth.ts:30"},
+
+  // ---------- edge ----------
+  {id:"AS", name:"ASGI router", tier:"edge", form:"gate", x:0.35, y:1.85, w:1.5, d:1.15, h:16,
+   file:"backend/config/asgi.py", loc:22,
+   what:"The front door. Decides whether an incoming connection is a normal web request or a long-lived socket, and sends it down the right pipe.",
+   how:"ProtocolTypeRouter maps \"http\" to the plain Django app and \"websocket\" through JWTAuthMiddlewareStack into a URLRouter over the battles, spectators and dashboard patterns (asgi.py:14-25). Two protocols, one process, one set of models.",
+   cite:"backend/config/asgi.py:14"},
+
+  {id:"MW", name:"WS auth middleware", tier:"edge", form:"vault", x:2.35, y:1.85, w:1.0, d:1.0, h:40,
+   file:"backend/accounts/middleware.py", loc:53,
+   what:"Works out who is on the other end of a socket before any game code runs.",
+   how:"Browsers cannot set headers on a WebSocket handshake, so the token arrives as ?token=. parse_qs pulls it out (middleware.py:43), _resolve verifies it and maps claims to a user, and scope[\"user\"] is set to that user or AnonymousUser (middleware.py:47).",
+   cite:"backend/accounts/middleware.py:47"},
+
+  {id:"CK", name:"Clerk verify", tier:"edge", form:"vault", x:4.15, y:1.85, w:1.0, d:1.0, h:54,
+   file:"backend/accounts/clerk.py", loc:124,
+   what:"Checks that a token really was issued by our identity provider and has not expired or been tampered with.",
+   how:"Resolves the signing key from Clerk's JWKS (clerk.py:96, cached 1h) then jwt.decode with algorithms=[\"RS256\"] (clerk.py:120). The issuer is pinned from settings, never read off the token (clerk.py:106) — trusting the token's own iss would let an attacker point verification at a JWKS they control.",
+   cite:"backend/accounts/clerk.py:106"},
+
+  // ---------- app ----------
+  {id:"BC", name:"Battle consumer", tier:"app", form:"cluster", x:0.0, y:3.55, w:1.15, d:1.05, h:34,
+   file:"backend/battles/consumers.py", loc:134,
+   what:"The in-match socket, players only. Streams what you type, and pushes everything the server decides.",
+   how:"connect() closes 4401 if unauthenticated and 4403 if _battle_role finds you are neither player (consumers.py:48-54), then group_add to battle_<id>. receive_json handles PING, code_update and CHAT_MESSAGE only; everything else is dropped. Code is capped at MAX_CODE_CHARS = 200KB.",
+   cite:"backend/battles/consumers.py:42"},
+
+  {id:"SC", name:"Spectator consumer", tier:"app", form:"cluster", x:1.5, y:3.55, w:1.15, d:1.05, h:28,
+   file:"backend/spectators/consumers.py", loc:144,
+   what:"The public watch socket. Carries the live code, plus emotes and likes.",
+   how:"Requires a signed-in user who is NOT a participant: _battle_is_watchable then _is_participant, closing 4404 and 4403 respectively (consumers.py:82-88). Likes are throttled to 1/s and emotes to 2/s per socket, and the username is stamped server-side so a client cannot impersonate anyone.",
+   cite:"backend/spectators/consumers.py:86"},
+
+  {id:"LC", name:"Lobby consumer", tier:"app", form:"cluster", x:3.0, y:3.55, w:1.1, d:1.0, h:22,
+   file:"backend/dashboard/consumers.py", loc:73,
+   what:"Your personal notification channel: invites arriving, being declined, expiring, and a match starting.",
+   how:"Joins group user_<id>, and admin_monitor only when role is admin or superadmin (consumers.py:35-38). receive_json answers PING and ignores everything else, because relaying arbitrary client payloads into a group once let any user broadcast to everyone.",
+   cite:"backend/dashboard/consumers.py:35"},
+
+  {id:"EV", name:"Event fan-out", tier:"app", form:"spire", x:4.5, y:3.55, w:1.05, d:1.0, h:36,
+   file:"backend/battles/events.py", loc:75,
+   what:"The one place that decides who is allowed to see each event. Spectators get the code; the opponent gets a summary that cannot be reversed.",
+   how:"Two groups per battle: battle_<id> for players and battle_<id>_watch for spectators (events.py:28-33). broadcast_battle_event sends to both (events.py:73-75); code_activity returns only {chars, lines, non_empty_lines} (events.py:36). Sends are best-effort and log rather than raise (events.py:51).",
+   cite:"backend/battles/events.py:62"},
+
+  {id:"VW", name:"Battle REST views", tier:"app", form:"hall", x:6.0, y:3.55, w:1.75, d:1.2, h:30,
+   file:"backend/battles/views.py", loc:881,
+   what:"Every request/response action in a match: create from an invite, submit, run a sample, resign, read state, read the report card.",
+   how:"DRF APIViews with throttle scopes run=20/min and submit=30/min (settings.py:152). Submit validates the battle is ACTIVE, the caller is a participant and the problem belongs to a Round of this battle, then inserts a pending Submission and queues the judge (views.py:683-793).",
+   cite:"backend/battles/views.py:679"},
+
+  {id:"SB", name:"Sabotage view", tier:"app", form:"hall", x:0.15, y:5.2, w:1.2, d:1.05, h:20,
+   file:"backend/sabotage/views.py", loc:134,
+   what:"The one offensive ability: pay 15 HP to blank your opponent's editor for five seconds.",
+   how:"Takes select_for_update on the battle (views.py:41), checks single-use per player under that same lock (views.py:60), refuses if it would drop you to zero, then broadcasts HP_UPDATE and GC_START and queues send_gc_end with countdown=5 (views.py:122).",
+   cite:"backend/sabotage/views.py:31"},
+
+  // ---------- workers ----------
+  {id:"TK", name:"Celery tasks", tier:"worker", form:"stack", x:1.95, y:5.2, w:1.2, d:1.1, h:44,
+   file:"backend/battles/tasks.py", loc:266,
+   what:"Everything that happens on a timer or off the request path: judging, fog of war, the match clock, invite expiry, and settling the result.",
+   how:"Six @shared_tasks split across two queues. evaluate_submission goes to \"execution\"; fog, GC end, battle end and invite expiry go to \"events\" (settings.py:217). finalize_battle_if_active claims the match with a conditional UPDATE and returns early if it changed no rows (tasks.py:114-119).",
+   cite:"backend/battles/tasks.py:90"},
+
+  {id:"EVAL", name:"Judge core", tier:"worker", form:"spire", x:3.65, y:5.2, w:1.25, d:1.1, h:50,
+   file:"backend/battles/evaluation.py", loc:245,
+   what:"Decides whether a submission passed, and whether it was first — which is what actually costs the opponent HP.",
+   how:"Runs the tests with no transaction open, then opens one and takes select_for_update on the battle (evaluation.py:116-117). The verdict write happens INSIDE that lock, before the already_solved read (evaluation.py:125,136) — writing it first let two simultaneous solves each see the other as already passed, so neither was awarded.",
+   cite:"backend/battles/evaluation.py:116"},
+
+  {id:"EX", name:"Sandbox runner", tier:"worker", form:"kiln", x:5.4, y:5.2, w:1.15, d:1.05, h:32,
+   file:"backend/battles/execution.py", loc:318,
+   what:"Runs code written by someone who is trying to beat you, without letting it take the machine with it.",
+   how:"Fresh 0700 temp dir, scrubbed env so DJANGO_SECRET_KEY and MYSQL_PASSWORD are not inherited (execution.py:116), start_new_session so killpg reaps forks, RLIMIT_CPU/AS/NPROC/FSIZE/CORE, plus a wall-clock timeout on communicate() because CPU time does not advance while a process sleeps. Compiles once per submission, not per test case (execution.py:291).",
+   cite:"backend/battles/execution.py:268"},
+
+  {id:"EL", name:"Rating maths", tier:"worker", form:"block", x:0.7, y:6.85, w:1.0, d:1.0, h:15,
+   file:"backend/battles/utils.py", loc:46,
+   what:"Turns a win, loss or draw into the number that moves on each player's profile.",
+   how:"Standard ELO expected score, with a K-factor that falls as rating rises: 32 below 2100, 24 below 2400, 16 above (utils.py:9-16). Lower K at the top because a high rating is backed by more games, so each new result is weaker evidence.",
+   cite:"backend/battles/utils.py:18"},
+
+  // ---------- data ----------
+  {id:"DB", name:"MySQL", tier:"data", form:"drum", x:2.85, y:6.85, w:1.3, d:1.3, h:30,
+   file:"backend/config/settings.py:97 · backend/*/models.py", loc:null,
+   what:"The system of record. HP, submissions, rewards, ratings and results all live here and survive a restart.",
+   how:"InnoDB via pymysql. Ten tables across six apps. Battle indexes (status, -created_at) and (status, ends_at) at models.py:65-66 and carries a CheckConstraint that player1 != player2 at models.py:68-73. Submission is indexed on (battle, problem, status) at models.py:144 — that is the index behind the first-solve check that runs inside the row lock.",
+   cite:"backend/battles/models.py:144"},
+
+  {id:"RD", name:"Redis", tier:"data", form:"hex", x:4.95, y:6.85, w:1.35, d:1.35, h:34,
+   file:"backend/config/settings.py", loc:262,
+   what:"Three jobs in one process: it carries live events between servers, holds the job queue, and counts rate limits.",
+   how:"CHANNEL_LAYERS uses channels_redis (settings.py:172), CELERY_BROKER_URL and result backend point at the same URL, and CACHES is Redis specifically so DRF throttle counters are shared — with LocMemCache each worker keeps its own counts and the limit silently multiplies by the worker count (settings.py:165).",
+   cite:"backend/config/settings.py:172"}
+];
+
+const byId = Object.fromEntries(M.map(m=>[m.id,m]));
+
+/* ============================================================
+   FLOWS — every step is one real call, in source order.
+   kind: control | return | fail | loop
+   ============================================================ */
+const FLOWS = [
+{
+  id:"submit", name:"Submit to verdict", kind:"control",
+  blurb:"The happy path. A player hits submit, the request returns almost immediately, and the verdict arrives later over the socket.",
+  what:"You press Submit. The server checks you are allowed to submit this problem, writes a pending row, tells the room you submitted, hands the actual judging to a background worker and answers you in milliseconds. The worker compiles your code once, runs the hidden tests, then takes a lock on the match to decide whether you were first. If you were, the opponent loses 35 HP and everyone's bar moves.",
+  steps:[
+   {f:"BT",t:"AX",k:"control",call:"handleSubmit() → api.post(\"/api/battles/{id}/submit/\")",
+    pay:"{ code: string, language: \"python\"|\"javascript\"|\"cpp\", problem_id: number }",
+    src:"frontend/app/battle/[id]/page.tsx:588"},
+   {f:"AX",t:"VW",k:"control",call:"interceptor attaches Clerk session token",
+    pay:"Authorization: Bearer <clerk session jwt>",
+    src:"frontend/lib/fetchWithAuth.ts:30"},
+   {f:"VW",t:"VW",k:"control",call:"SubmitSolutionView.post — throttle scope \"submit\"",
+    pay:"ScopedRateThrottle → 30/min, counter in Redis",
+    src:"backend/battles/views.py:681 · settings.py:152"},
+   {f:"VW",t:"DB",k:"control",call:"get_object_or_404(Battle, pk=pk) + participant and ACTIVE checks",
+    pay:"Battle(pk, status, player1_id, player2_id) → 403 if not a participant, 400 if not active",
+    src:"backend/battles/views.py:684"},
+   {f:"VW",t:"DB",k:"control",call:"Round.objects.filter(battle=battle, problem=problem).exists()",
+    pay:"bool — the authorisation boundary: is this problem part of this battle?",
+    src:"backend/battles/views.py:705"},
+   {f:"VW",t:"DB",k:"control",call:"Submission.objects.create(...)",
+    pay:"Submission(status=\"pending\", total_cases=len(problem.test_cases), code, language)",
+    src:"backend/battles/views.py:746"},
+   {f:"VW",t:"EV",k:"control",call:"_broadcast_battle(battle.id, \"SUBMISSION_RECEIVED\", ...)",
+    pay:"{ player_id: int, problem_id: int }",
+    src:"backend/battles/views.py:755"},
+   {f:"EV",t:"RD",k:"control",call:"async_to_sync(channel_layer.group_send)(group, message)",
+    pay:"{ type: \"broadcast.event\", event: \"SUBMISSION_RECEIVED\", payload: {...} } → battle_<id> and battle_<id>_watch",
+    src:"backend/battles/events.py:57"},
+   {f:"VW",t:"RD",k:"control",call:"evaluate_submission.apply_async((submission.id,), queue=\"execution\")",
+    pay:"job: battles.evaluate_submission(submission_id: int) on queue \"execution\"",
+    src:"backend/battles/views.py:768"},
+   {f:"VW",t:"BT",k:"return",call:"Response(..., status=HTTP_202_ACCEPTED)",
+    pay:"202 { submission_id: int, queued: true, status: \"pending\", total_cases: int }",
+    src:"backend/battles/views.py:785"},
+   {f:"RD",t:"TK",k:"control",call:"worker reserves the job — prefetch multiplier 1",
+    pay:"battles.evaluate_submission(submission_id)",
+    src:"backend/battles/tasks.py:36 · settings.py:230"},
+   {f:"TK",t:"EVAL",k:"control",call:"evaluate_submission_sync(submission_id)",
+    pay:"submission_id: int",
+    src:"backend/battles/tasks.py:37 → evaluation.py:58"},
+   {f:"EVAL",t:"DB",k:"control",call:"Submission.objects.select_related(\"battle\",\"problem\",\"player\").get(...)",
+    pay:"Submission + Battle + Problem.test_cases: list[{input, expected_output}]",
+    src:"backend/battles/evaluation.py:61"},
+   {f:"EVAL",t:"EX",k:"control",call:"run_batch(code, stdins, language, stop_on_failure=True)",
+    pay:"stdins = [str(tc[\"input\"]) for tc in test_cases] — no transaction open, no locks held",
+    src:"backend/battles/evaluation.py:99 → execution.py:268"},
+   {f:"EX",t:"EX",k:"control",call:"_prepared_program(...) then _spawn(argv, stdin, workdir, 5s) per case",
+    pay:"compile once (45s cap), then subprocess.Popen with scrubbed env, own session, RLIMIT caps",
+    src:"backend/battles/execution.py:291 · 188"},
+   {f:"EX",t:"EVAL",k:"return",call:"list[ExecutionResult]",
+    pay:"ExecutionResult(stdout, stderr, return_code, elapsed_ms, timed_out)",
+    src:"backend/battles/execution.py:98"},
+   {f:"EVAL",t:"DB",k:"control",call:"transaction.atomic() → Battle.objects.select_for_update().get(id=...)",
+    pay:"row lock on the battle — this is the serialisation point for the whole match",
+    src:"backend/battles/evaluation.py:116"},
+   {f:"EVAL",t:"DB",k:"control",call:"submission.save(...) then already_solved / self_already_rewarded",
+    pay:"verdict written INSIDE the lock, then read: any other player PASSED this problem? any BattleReward for me?",
+    src:"backend/battles/evaluation.py:125 · 136 · 147"},
+   {f:"EVAL",t:"DB",k:"control",call:"opponent_hp = max(0, hp - 35) + BattleReward.objects.create(...)",
+    pay:"BattleReward(user, battle, problem, reward_type=\"round_first_solve\", hp_damage_dealt=35)",
+    src:"backend/battles/evaluation.py:155 · 166"},
+   {f:"EVAL",t:"EV",k:"control",call:"_broadcast(ROUND_RESULT) then _broadcast(HP_UPDATE) — after commit",
+    pay:"{ battle_id, player1_hp, player2_hp } — sent post-commit so no client can read a stale row",
+    src:"backend/battles/evaluation.py:217 · 228"},
+   {f:"EV",t:"RD",k:"control",call:"_group_send(player_group) and _group_send(spectator_group)",
+    pay:"one envelope, both audiences: battle_<id> and battle_<id>_watch",
+    src:"backend/battles/events.py:73"},
+   {f:"RD",t:"BC",k:"control",call:"BattleConsumer.broadcast_event → send_json",
+    pay:"{ event: \"HP_UPDATE\", payload: { battle_id, player1_hp, player2_hp } }",
+    src:"backend/battles/consumers.py:130"},
+   {f:"BC",t:"BT",k:"return",call:"socket.onmessage → switch (msg.event) case \"HP_UPDATE\"",
+    pay:"HP bars animate; no refetch needed",
+    src:"frontend/app/battle/[id]/page.tsx:351"}
+  ]
+},
+{
+  id:"ko", name:"Knockout to settlement", kind:"control",
+  blurb:"HP reaches zero. Four different things can end a match, so ending it has to be safe to attempt twice.",
+  what:"The hit that takes the opponent to zero settles the match immediately, in the same worker, rather than queuing it. The match is claimed with a single conditional update so that only one of the four possible enders actually does the work. Ratings move, a result row is written, and the room is told.",
+  steps:[
+   {f:"EVAL",t:"EVAL",k:"control",call:"if opponent_new_hp is not None and opponent_new_hp <= 0",
+    pay:"opponent_new_hp: int — read from the row that was just locked and updated",
+    src:"backend/battles/evaluation.py:236"},
+   {f:"EVAL",t:"TK",k:"control",call:"finalize_battle_if_active(battle.id) — called inline, not queued",
+    pay:"battle_id: int — must settle before clients that just got HP_UPDATE refetch state, and must work with no worker running",
+    src:"backend/battles/evaluation.py:243"},
+   {f:"TK",t:"DB",k:"control",call:"Battle.objects.filter(id=..., status=ACTIVE).update(status=COMPLETED)",
+    pay:"updated: int — compare-and-set. Exactly one caller can observe 1; everyone else returns.",
+    src:"backend/battles/tasks.py:114"},
+   {f:"TK",t:"DB",k:"control",call:"winner = whoever has more HP, else None for a draw",
+    pay:"winner_id: int | None, reason: \"hp_zero\" | \"timeout\" | \"resign\"",
+    src:"backend/battles/tasks.py:124"},
+   {f:"TK",t:"EL",k:"control",call:"calculate_elo_deltas(p1.rating, p2.rating, winner_id, p1.id, p2.id)",
+    pay:"expected score 1/(1+10^((rb-ra)/400)), K from get_k_factor(rating)",
+    src:"backend/battles/tasks.py:146 → utils.py:18"},
+   {f:"EL",t:"TK",k:"return",call:"(delta1, delta2)",
+    pay:"tuple[int, int] — rounded rating changes",
+    src:"backend/battles/utils.py:18"},
+   {f:"TK",t:"DB",k:"control",call:"player.save(update_fields=[\"rating\",\"total_wins\",\"total_losses\"])",
+    pay:"both User rows updated inside the same transaction as the claim",
+    src:"backend/battles/tasks.py:159"},
+   {f:"TK",t:"DB",k:"control",call:"BattleResult.objects.create(...)",
+    pay:"BattleResult(player1_rating_change, player2_rating_change, fastest_solve_time_ms, problems_solved)",
+    src:"backend/battles/tasks.py:178"},
+   {f:"TK",t:"EV",k:"control",call:"_broadcast(battle.id, \"BATTLE_END\", end_payload)",
+    pay:"{ battle_id, winner_id, reason, player1_final_hp, player2_final_hp }",
+    src:"backend/battles/tasks.py:197"},
+   {f:"EV",t:"RD",k:"control",call:"group_send to players and spectators",
+    pay:"{ type: \"broadcast.event\", event: \"BATTLE_END\", payload: {...} }",
+    src:"backend/battles/events.py:73"},
+   {f:"RD",t:"BT",k:"return",call:"case \"BATTLE_END\" → router.replace(\"/battle/{id}/ended\")",
+    pay:"client navigates to the report card",
+    src:"frontend/app/battle/[id]/page.tsx:449"}
+  ]
+},
+{
+  id:"broker-down", name:"Broker unreachable — inline judge", kind:"fail",
+  blurb:"Redis is gone, so the job cannot be queued. The submission is judged on the request thread instead.",
+  what:"If the queue cannot be reached, the platform does not fail the submission. It judges the code right there in the web request and returns the full result with a 200 instead of a 202. The match stays playable, at the cost of holding a server worker for the length of the judge. That is a deliberate trade: availability over latency.",
+  steps:[
+   {f:"VW",t:"RD",k:"fail",call:"evaluate_submission.apply_async((submission.id,), queue=\"execution\")",
+    pay:"raises — broker unreachable",
+    src:"backend/battles/views.py:768"},
+   {f:"VW",t:"VW",k:"fail",call:"except Exception: logger.exception(...); queued = False",
+    pay:"logged, not swallowed silently — a broken broker must still produce a signal",
+    src:"backend/battles/views.py:769"},
+   {f:"VW",t:"EVAL",k:"fail",call:"evaluate_submission_sync(submission.id) — on the request thread",
+    pay:"submission_id: int — the same function the worker would have called",
+    src:"backend/battles/views.py:779"},
+   {f:"EVAL",t:"EX",k:"control",call:"run_batch(...) — identical judging path",
+    pay:"compile once, run each case, stop at first failure",
+    src:"backend/battles/evaluation.py:99"},
+   {f:"EVAL",t:"DB",k:"control",call:"select_for_update, verdict, reward — unchanged",
+    pay:"the correctness path does not care which process it runs in",
+    src:"backend/battles/evaluation.py:116"},
+   {f:"EVAL",t:"EV",k:"fail",call:"_group_send(...) → channel layer also unreachable",
+    pay:"logger.exception(\"Channel layer send failed\") — broadcasts are best-effort by design",
+    src:"backend/battles/events.py:51"},
+   {f:"VW",t:"BT",k:"return",call:"Response({submission_id, queued: False, evaluation}, status=200)",
+    pay:"200 { submission_id, queued: false, evaluation: { passed_cases, total_cases, all_passed, hp_damage, player1_hp, player2_hp } }",
+    src:"backend/battles/views.py:780"},
+   {f:"BT",t:"BT",k:"return",call:"client reads the verdict from the response body, not the socket",
+    pay:"sessionStorage.setItem(evaluation) → router.push(review page)",
+    src:"frontend/app/battle/[id]/page.tsx:640"}
+  ]
+},
+{
+  id:"socket-drop", name:"Socket drop and resync", kind:"fail",
+  blurb:"The connection dies mid-match. The client backs off, reconnects, and pulls the truth back from the API.",
+  what:"A dropped socket means missed events, and missed events mean a stale board. So reconnecting is not enough: once the socket is open again the client refetches the whole battle state over REST. Push is for speed, pull is for truth. Rejections that will never succeed on retry stop the loop instead of hammering.",
+  steps:[
+   {f:"BC",t:"SK",k:"fail",call:"socket.onclose(event)",
+    pay:"CloseEvent { code: number } — 1006 on a network drop, 4401/4403/4404 on rejection",
+    src:"frontend/lib/useReconnectingSocket.ts:135"},
+   {f:"SK",t:"SK",k:"fail",call:"if (FATAL_CLOSE_CODES.has(event.code)) return setStatus(\"closed\")",
+    pay:"{4401 unauthenticated, 4403 not a participant, 4404 not watchable} — retrying these never works",
+    src:"frontend/lib/useReconnectingSocket.ts:140"},
+   {f:"SK",t:"SK",k:"fail",call:"scheduleReconnect() — full jitter backoff",
+    pay:"delay = Math.random() * Math.min(1000 * 2 ** attempt, 30000)",
+    src:"frontend/lib/useReconnectingSocket.ts:81"},
+   {f:"SK",t:"MW",k:"control",call:"getUrl() re-resolved per attempt → new WebSocket(url)",
+    pay:"wss://.../ws/battles/<id>/?token=<fresh clerk jwt> — token re-fetched so it cannot be stale",
+    src:"frontend/lib/useReconnectingSocket.ts:108 · lib/ws.ts:12"},
+   {f:"MW",t:"BC",k:"control",call:"scope[\"user\"] set, BattleConsumer.connect re-runs the participant check",
+    pay:"_battle_role(battle_id, user.id) → \"player1\" | \"player2\" | None",
+    src:"backend/battles/consumers.py:52"},
+   {f:"BC",t:"SK",k:"return",call:"accept() → socket.onopen, attempt reset to 0",
+    pay:"status \"open\"; 25s ping interval restarts",
+    src:"frontend/lib/useReconnectingSocket.ts:115"},
+   {f:"BT",t:"VW",k:"control",call:"api.get(`/api/battles/${battleId}/state/`) once the socket reopens",
+    pay:"wasDisconnected.current === true → resync request",
+    src:"frontend/app/battle/[id]/page.tsx:540"},
+   {f:"VW",t:"BT",k:"return",call:"BattleSerializer(battle).data",
+    pay:"{ id, status, player1_hp, player2_hp, ends_at, rounds: [{ round_number, problem }] }",
+    src:"backend/battles/views.py:364"}
+  ]
+},
+{
+  id:"handshake", name:"Socket handshake and identity", kind:"control",
+  blurb:"How an anonymous TCP upgrade becomes an authenticated player in a specific match.",
+  what:"A browser cannot put an auth header on a WebSocket handshake, so the token rides in the query string. It is verified against the identity provider's published keys with the issuer pinned in our own config, mapped to a local user, and only then does the consumer ask the second question: are you actually in this match?",
+  steps:[
+   {f:"BT",t:"SK",k:"control",call:"battleSocketUrl(battleId, token)",
+    pay:"ws://host/ws/battles/<id>/?token=<jwt> — encodeURIComponent applied",
+    src:"frontend/lib/ws.ts:12"},
+   {f:"SK",t:"AS",k:"control",call:"new WebSocket(url) → HTTP Upgrade",
+    pay:"GET /ws/battles/42/?token=... with Upgrade: websocket",
+    src:"frontend/lib/useReconnectingSocket.ts:108"},
+   {f:"AS",t:"MW",k:"control",call:"ProtocolTypeRouter routes \"websocket\" into JWTAuthMiddlewareStack",
+    pay:"scope { type: \"websocket\", path, query_string: bytes }",
+    src:"backend/config/asgi.py:14"},
+   {f:"MW",t:"MW",k:"control",call:"parse_qs(scope[\"query_string\"].decode()).get(\"token\")",
+    pay:"token: str | None",
+    src:"backend/accounts/middleware.py:43"},
+   {f:"MW",t:"CK",k:"control",call:"verify_clerk_token(token)",
+    pay:"raw JWT string",
+    src:"backend/accounts/middleware.py:20"},
+   {f:"CK",t:"CK",k:"control",call:"_get_jwk_client().get_signing_key_from_jwt(token) — JWKS cached 1h",
+    pay:"kid → RSA public key; unknown kid means a forged or stale token",
+    src:"backend/accounts/clerk.py:96"},
+   {f:"CK",t:"MW",k:"return",call:"jwt.decode(token, key, algorithms=[\"RS256\"], issuer=get_issuer(), leeway=30)",
+    pay:"claims { sub, exp, iat, email?, first_name? } — issuer pinned from settings, never read off the token",
+    src:"backend/accounts/clerk.py:120"},
+   {f:"MW",t:"DB",k:"control",call:"resolve_user_from_clerk_claims(payload)",
+    pay:"User.objects.filter(clerk_id=payload[\"sub\"]).first(), created on first sight with IntegrityError retry",
+    src:"backend/accounts/authentication.py:58"},
+   {f:"MW",t:"BC",k:"control",call:"scope[\"user\"] = user → BattleConsumer.connect()",
+    pay:"an authenticated user, but not yet an authorised one",
+    src:"backend/accounts/middleware.py:47"},
+   {f:"BC",t:"DB",k:"control",call:"_battle_role(battle_id, user.id)",
+    pay:"reads only (id, player1_id, player2_id) → \"player1\" | \"player2\" | None",
+    src:"backend/battles/consumers.py:18"},
+   {f:"BC",t:"RD",k:"control",call:"group_add(\"battle_<id>\", channel_name) then accept()",
+    pay:"None → close(4403) instead; group membership lives in Redis, not process memory",
+    src:"backend/battles/consumers.py:57"},
+   {f:"BC",t:"BT",k:"return",call:"group_send PLAYER_JOINED",
+    pay:"{ event: \"PLAYER_JOINED\", payload: { player_id: int } }",
+    src:"backend/battles/consumers.py:64"}
+  ]
+},
+{
+  id:"codestream", name:"Live code, split two ways", kind:"control",
+  blurb:"The hottest message path in the system, and the one place where the same event is deliberately shaped differently per audience.",
+  what:"As you type, your editor contents are streamed out at most four times a second. Spectators get the real buffer so they can watch the solve. Your opponent gets only character and line counts, because with one shared channel a player could open the public spectate page for their own match in a second tab and read the other side's solution keystroke by keystroke.",
+  steps:[
+   {f:"BT",t:"BT",k:"control",call:"handleCodeChange(code) → setTimeout(flushCode, 250)",
+    pay:"debounce: at most 4 messages/second per player",
+    src:"frontend/app/battle/[id]/page.tsx:519"},
+   {f:"BT",t:"BC",k:"control",call:"sendSocket({ type: \"code_update\", code })",
+    pay:"{ type: \"code_update\", code: string } — full buffer, not a diff",
+    src:"frontend/app/battle/[id]/page.tsx:511"},
+   {f:"BC",t:"BC",k:"control",call:"receive_json — reject if not a str or len > MAX_CODE_CHARS",
+    pay:"200 * 1024 cap, so one socket cannot stream an unbounded buffer into the channel layer",
+    src:"backend/battles/consumers.py:89"},
+   {f:"BC",t:"EV",k:"control",call:"code_activity(code)",
+    pay:"{ chars: int, lines: int, non_empty_lines: int } — a non-reversible summary",
+    src:"backend/battles/events.py:36"},
+   {f:"BC",t:"RD",k:"control",call:"group_send(player_group, OPPONENT_ACTIVITY)",
+    pay:"{ event: \"OPPONENT_ACTIVITY\", payload: { player_id, chars, lines, non_empty_lines } } → battle_<id>",
+    src:"backend/battles/consumers.py:99"},
+   {f:"BC",t:"RD",k:"control",call:"group_send(spectator_group, OPPONENT_CODE)",
+    pay:"{ event: \"OPPONENT_CODE\", payload: { player_id, code } } → battle_<id>_watch only",
+    src:"backend/battles/consumers.py:105"},
+   {f:"RD",t:"BT",k:"return",call:"case \"OPPONENT_ACTIVITY\" — opponent sees a typing indicator",
+    pay:"counts only; the buffer never reaches the other player",
+    src:"frontend/app/battle/[id]/page.tsx:466"},
+   {f:"RD",t:"SC",k:"control",call:"SpectatorConsumer.broadcast_event → send_json",
+    pay:"the real buffer, to sockets rejected with 4403 at connect time if _is_participant (consumers.py:86)",
+    src:"backend/spectators/consumers.py:141"},
+   {f:"SC",t:"SP",k:"return",call:"case \"OPPONENT_CODE\" → codeByPlayer[player_id] = code",
+    pay:"live editor mirror. At ~2KB x 8 msg/s x N watchers, this is the system's scaling wall.",
+    src:"frontend/app/spectate/[id]/page.tsx:85"}
+  ]
+},
+{
+  id:"fog", name:"Fog of war — self-rescheduling loop", kind:"loop",
+  blurb:"A recurring game event with no scheduler process. The task re-enqueues itself, and the match status is the base case.",
+  what:"Ninety seconds into a match the editors fog over for ten seconds, and it repeats every ninety. There is no cron and no beat process: each run of the task queues both the end of this fog and the next one. The chain stops when the task wakes up and finds the match is no longer active.",
+  steps:[
+   {f:"VW",t:"RD",k:"loop",call:"schedule_fog.apply_async((battle.id,), countdown=90, queue=\"events\")",
+    pay:"queued once at match creation, inside _create_battle",
+    src:"backend/battles/views.py:125"},
+   {f:"RD",t:"TK",k:"loop",call:"schedule_fog(battle_id) fires 90s later",
+    pay:"battle_id: int on the \"events\" queue",
+    src:"backend/battles/tasks.py:55"},
+   {f:"TK",t:"DB",k:"loop",call:"Battle.objects.get(id=battle_id) → if status != ACTIVE: return",
+    pay:"the kill switch — this guard is the recursion's base case",
+    src:"backend/battles/tasks.py:66"},
+   {f:"TK",t:"EV",k:"loop",call:"_broadcast(battle.id, \"FOG_START\", {\"battle_id\": battle.id})",
+    pay:"{ event: \"FOG_START\", payload: { battle_id } } → players and spectators",
+    src:"backend/battles/tasks.py:69"},
+   {f:"TK",t:"RD",k:"loop",call:"end_fog.apply_async((battle.id,), countdown=10, queue=\"events\")",
+    pay:"clears the overlay 10 seconds from now",
+    src:"backend/battles/tasks.py:72"},
+   {f:"TK",t:"RD",k:"loop",call:"schedule_fog.apply_async((battle.id,), countdown=90, queue=\"events\")",
+    pay:"the task queues a copy of itself — no beat process exists",
+    src:"backend/battles/tasks.py:75"},
+   {f:"RD",t:"BC",k:"loop",call:"end_fog → _broadcast(battle_id, \"FOG_END\", ...)",
+    pay:"{ event: \"FOG_END\", payload: { battle_id } }",
+    src:"backend/battles/tasks.py:80"},
+   {f:"BC",t:"BT",k:"return",call:"case \"FOG_START\" / \"FOG_END\" toggle the overlay",
+    pay:"purely visual; nothing about scoring depends on it",
+    src:"frontend/app/battle/[id]/page.tsx:440"}
+  ]
+},
+{
+  id:"lazy-expiry", name:"Wall-clock expiry — the backup scheduler", kind:"fail",
+  blurb:"The degraded path that makes the match clock survive a total worker outage.",
+  what:"The 30 minute deadline is stored on the match row, not just held by a timer. Every endpoint that reads match state checks it first, so the match ends the moment anyone looks at it, even if no worker has been running for hours. The scheduled task routes through the same check rather than ending the match outright, so an early redelivery cannot cut a live match short.",
+  steps:[
+   {f:"VW",t:"DB",k:"control",call:"_create_battle → Battle.objects.create(ends_at=now + 30 min)",
+    pay:"the deadline is materialised on the row, not derived at read time",
+    src:"backend/battles/views.py:100"},
+   {f:"VW",t:"RD",k:"loop",call:"process_battle_end.apply_async(countdown=1800, queue=\"events\")",
+    pay:"the timely path — an optimisation, not the correctness path",
+    src:"backend/battles/views.py:122"},
+   {f:"BT",t:"VW",k:"fail",call:"BattleStateView.get — no worker ever ran",
+    pay:"GET /api/battles/<id>/state/",
+    src:"backend/battles/views.py:349"},
+   {f:"VW",t:"TK",k:"fail",call:"maybe_finalize_expired_battle(pk) — called before the row is serialised",
+    pay:"called from 5 read endpoints: views.py:340, 352, 422, 479, 517",
+    src:"backend/battles/views.py:352"},
+   {f:"TK",t:"DB",k:"fail",call:"if battle.ends_at is not None and now < battle.ends_at: return False",
+    pay:"one indexed comparison against (status, ends_at)",
+    src:"backend/battles/tasks.py:221"},
+   {f:"TK",t:"TK",k:"fail",call:"finalize_battle_if_active(battle_id)",
+    pay:"same compare-and-set claim the worker path uses, so a late task is a no-op",
+    src:"backend/battles/tasks.py:229"},
+   {f:"TK",t:"DB",k:"control",call:"claim, ELO, BattleResult — one transaction",
+    pay:"reason inferred as \"timeout\" when neither HP is zero",
+    src:"backend/battles/tasks.py:112"},
+   {f:"VW",t:"BT",k:"return",call:"BattleSerializer(battle).data with status \"completed\"",
+    pay:"the match ended because someone read it, not because a timer fired",
+    src:"backend/battles/views.py:364"}
+  ]
+}
+];
+
+/* ============================================================
+   Isometric renderer
+   ============================================================ */
+const SVG_NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("map");
+const TW=44, TH=25, OX=500, OY=95;
+
+const proj=(gx,gy,gz=0)=>[OX+(gx-gy)*TW, OY+(gx+gy)*TH-gz];
+const el=(n,a={})=>{const e=document.createElementNS(SVG_NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const pts=a=>a.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+
+function boxFaces(g,x,y,w,d,base,h){
+  const top=base+h;
+  g.appendChild(el("polygon",{class:"face-l",points:pts([proj(x,y+d,top),proj(x+w,y+d,top),proj(x+w,y+d,base),proj(x,y+d,base)])}));
+  g.appendChild(el("polygon",{class:"face-r",points:pts([proj(x+w,y,top),proj(x+w,y+d,top),proj(x+w,y+d,base),proj(x+w,y,base)])}));
+  g.appendChild(el("polygon",{class:"face-t",points:pts([proj(x,y,top),proj(x+w,y,top),proj(x+w,y+d,top),proj(x,y+d,top)])}));
+  g.appendChild(el("polyline",{class:"edge",points:pts([proj(x,y,top),proj(x+w,y,top),proj(x+w,y+d,top),proj(x,y+d,top),proj(x,y,top)])}));
+  g.appendChild(el("line",{class:"edge",x1:proj(x+w,y,top)[0],y1:proj(x+w,y,top)[1],x2:proj(x+w,y,base)[0],y2:proj(x+w,y,base)[1]}));
+  g.appendChild(el("line",{class:"edge",x1:proj(x,y+d,top)[0],y1:proj(x,y+d,top)[1],x2:proj(x,y+d,base)[0],y2:proj(x,y+d,base)[1]}));
+  g.appendChild(el("line",{class:"edge",x1:proj(x+w,y+d,top)[0],y1:proj(x+w,y+d,top)[1],x2:proj(x+w,y+d,base)[0],y2:proj(x+w,y+d,base)[1]}));
+}
+function floorLines(g,x,y,w,d,base,h,n){
+  for(let i=1;i<n;i++){
+    const z=base+h*i/n;
+    g.appendChild(el("line",{class:"rib",x1:proj(x,y+d,z)[0],y1:proj(x,y+d,z)[1],x2:proj(x+w,y+d,z)[0],y2:proj(x+w,y+d,z)[1]}));
+    g.appendChild(el("line",{class:"rib",x1:proj(x+w,y,z)[0],y1:proj(x+w,y,z)[1],x2:proj(x+w,y+d,z)[0],y2:proj(x+w,y+d,z)[1]}));
+  }
+}
+function ribs(g,x,y,w,d,base,h,n){
+  for(let i=1;i<n;i++){
+    const fx=x+w*i/n, fy=y+d*i/n;
+    g.appendChild(el("line",{class:"rib",x1:proj(fx,y+d,base+h)[0],y1:proj(fx,y+d,base+h)[1],x2:proj(fx,y+d,base+h*0.12)[0],y2:proj(fx,y+d,base+h*0.12)[1]}));
+    g.appendChild(el("line",{class:"rib",x1:proj(x+w,fy,base+h)[0],y1:proj(x+w,fy,base+h)[1],x2:proj(x+w,fy,base+h*0.12)[0],y2:proj(x+w,fy,base+h*0.12)[1]}));
+  }
+}
+
+const FORMS={
+  // wide, low, strong horizontal banding — client surfaces
+  slab(g,m){ boxFaces(g,m.x,m.y,m.w,m.d,0,m.h); floorLines(g,m.x,m.y,m.w,m.d,0,m.h,Math.max(3,Math.round(m.h/7))); },
+  // plinth + two pylons + lintel — a protocol gateway
+  gate(g,m){
+    const {x,y,w,d,h}=m, p=w*0.26;
+    boxFaces(g,x,y,w,d,0,h*0.34);
+    boxFaces(g,x,y,p,d,h*0.34,h*1.5);
+    boxFaces(g,x+w-p,y,p,d,h*0.34,h*1.5);
+    boxFaces(g,x,y,w,d*0.42,h*1.84,h*0.34);
+  },
+  // narrow, tall, tight vertical ribs, capped — security
+  vault(g,m){
+    const {x,y,w,d,h}=m;
+    boxFaces(g,x,y,w,d,0,h);
+    ribs(g,x,y,w,d,0,h,6);
+    boxFaces(g,x-w*0.12,y-d*0.12,w*1.24,d*1.24,h,h*0.09);
+  },
+  // three shafts of unequal height on a shared podium — the WS consumers
+  cluster(g,m){
+    const {x,y,w,d,h}=m;
+    boxFaces(g,x,y,w,d,0,h*0.2);
+    const sw=w*0.3, sd=d*0.36;
+    const shafts=[[0,0,1],[0.62,0.1,0.72],[0.24,0.58,0.86]];
+    shafts.forEach(([ox,oy,sc])=>{
+      boxFaces(g,x+w*ox+w*0.04,y+d*oy+d*0.06,sw,sd,h*0.2,h*sc);
+      floorLines(g,x+w*ox+w*0.04,y+d*oy+d*0.06,sw,sd,h*0.2,h*sc,4);
+    });
+  },
+  // tiered setback ziggurat — the serialisation points
+  spire(g,m){
+    const {x,y,w,d,h}=m;
+    const tiers=[[0,1,0.42],[0.14,0.72,0.34],[0.27,0.46,0.28]];
+    let base=0;
+    tiers.forEach(([inset,scale,frac])=>{
+      const bw=w*scale, bd=d*scale;
+      boxFaces(g,x+w*inset,y+d*inset,bw,bd,base,h*frac);
+      floorLines(g,x+w*inset,y+d*inset,bw,bd,base,h*frac,3);
+      base+=h*frac;
+    });
+  },
+  // long low warehouse with a sawtooth roof — request/response handlers
+  hall(g,m){
+    const {x,y,w,d,h}=m;
+    boxFaces(g,x,y,w,d,0,h);
+    floorLines(g,x,y,w,d,0,h,3);
+    const n=4;
+    for(let i=0;i<n;i++){
+      const sx=x+w*i/n;
+      g.appendChild(el("polygon",{class:"face-t",points:pts([
+        proj(sx,y,h),proj(sx+w/n,y,h+7),proj(sx+w/n,y+d,h+7),proj(sx,y+d,h)])}));
+      g.appendChild(el("polyline",{class:"rib",points:pts([
+        proj(sx,y,h),proj(sx+w/n,y,h+7),proj(sx+w/n,y+d,h+7),proj(sx,y+d,h)])}));
+    }
+  },
+  // industrial body + chimney + banding — the workers
+  stack(g,m){
+    const {x,y,w,d,h}=m;
+    boxFaces(g,x,y,w,d,0,h*0.62);
+    floorLines(g,x,y,w,d,0,h*0.62,4);
+    boxFaces(g,x+w*0.58,y+d*0.12,w*0.3,d*0.3,h*0.62,h*0.5);
+    boxFaces(g,x+w*0.55,y+d*0.09,w*0.36,d*0.36,h*1.12,h*0.06);
+    boxFaces(g,x+w*0.06,y+d*0.55,w*0.34,d*0.3,h*0.62,h*0.22);
+  },
+  // squat blast furnace with a vent — the sandbox
+  kiln(g,m){
+    const {x,y,w,d,h}=m;
+    boxFaces(g,x,y,w,d,0,h*0.3);
+    boxFaces(g,x+w*0.08,y+d*0.08,w*0.84,d*0.84,h*0.3,h*0.5);
+    ribs(g,x+w*0.08,y+d*0.08,w*0.84,d*0.84,h*0.3,h*0.5,4);
+    boxFaces(g,x+w*0.3,y+d*0.3,w*0.4,d*0.4,h*0.8,h*0.34);
+    g.appendChild(el("polyline",{class:"rib",points:pts([
+      proj(x+w*0.3,y+d*0.3,h*1.14),proj(x+w*0.5,y+d*0.5,h*1.34),proj(x+w*0.7,y+d*0.7,h*1.14)])}));
+  },
+  // simple block — small pure-function module
+  block(g,m){ boxFaces(g,m.x,m.y,m.w,m.d,0,m.h); floorLines(g,m.x,m.y,m.w,m.d,0,m.h,2); },
+  // cylinder — the relational store
+  drum(g,m){
+    const {x,y,w,d,h}=m;
+    const cx=x+w/2, cy=y+d/2, rx=(w/2)*TW*2*0.72, ry=(d/2)*TH*2*0.72;
+    const [bx,by]=proj(cx,cy,0), [tx,ty]=proj(cx,cy,h);
+    g.appendChild(el("path",{class:"face-l",d:`M ${bx-rx} ${by} A ${rx} ${ry} 0 0 0 ${bx+rx} ${by} L ${tx+rx} ${ty} A ${rx} ${ry} 0 0 1 ${tx-rx} ${ty} Z`}));
+    for(let i=1;i<3;i++){
+      const [mx,my]=proj(cx,cy,h*i/3);
+      g.appendChild(el("path",{class:"rib",d:`M ${mx-rx} ${my} A ${rx} ${ry} 0 0 0 ${mx+rx} ${my}`}));
+    }
+    g.appendChild(el("ellipse",{class:"face-t",cx:tx,cy:ty,rx,ry}));
+    g.appendChild(el("ellipse",{class:"edge",cx:tx,cy:ty,rx,ry}));
+    g.appendChild(el("path",{class:"edge",d:`M ${bx-rx} ${by} A ${rx} ${ry} 0 0 0 ${bx+rx} ${by}`}));
+  },
+  // hexagonal prism, three lobes on the cap — Redis' three roles
+  hex(g,m){
+    const {x,y,w,d,h}=m;
+    const cx=x+w/2, cy=y+d/2, r=w*0.5;
+    const corners=[];
+    for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;corners.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}
+    for(let i=0;i<6;i++){
+      const a=corners[i], b=corners[(i+1)%6];
+      const mid=((a[0]+b[0])/2+(a[1]+b[1])/2)/2;
+      if(mid<(cx+cy)/2) continue;
+      g.appendChild(el("polygon",{class:i%2?"face-l":"face-r",
+        points:pts([proj(a[0],a[1],h),proj(b[0],b[1],h),proj(b[0],b[1],0),proj(a[0],a[1],0)])}));
+      g.appendChild(el("line",{class:"edge",x1:proj(a[0],a[1],h)[0],y1:proj(a[0],a[1],h)[1],x2:proj(a[0],a[1],0)[0],y2:proj(a[0],a[1],0)[1]}));
+    }
+    g.appendChild(el("polygon",{class:"face-t",points:pts(corners.map(c=>proj(c[0],c[1],h)))}));
+    g.appendChild(el("polygon",{class:"edge",points:pts(corners.map(c=>proj(c[0],c[1],h)))}));
+    [[0.28,0.28],[0.62,0.3],[0.44,0.62]].forEach(([ox,oy])=>{
+      boxFaces(g,x+w*ox-w*0.07,y+d*oy-d*0.07,w*0.15,d*0.15,h,h*0.3);
+    });
+  }
+};
+
+const anchor=m=>proj(m.x+m.w/2, m.y+m.d/2, 0);
+const roofPt=m=>proj(m.x+m.w/2, m.y+m.d/2, m.h*1.12);
+
+function drawGrid(){
+  const g=el("g",{});
+  for(let i=-1;i<=9;i++){
+    const a=proj(i,-1), b=proj(i,9);
+    g.appendChild(el("line",{class:"grid-line",x1:a[0],y1:a[1],x2:b[0],y2:b[1]}));
+    const c=proj(-1,i), dd=proj(9,i);
+    g.appendChild(el("line",{class:"grid-line",x1:c[0],y1:c[1],x2:dd[0],y2:dd[1]}));
+  }
+  svg.appendChild(g);
+}
+
+const wireLayer=el("g",{}), bldLayer=el("g",{}), fxLayer=el("g",{});
+
+function routeD(a,b){
+  // L-route along the isometric street grid
+  const ax=a.x+a.w/2, ay=a.y+a.d/2, bx=b.x+b.w/2, by=b.y+b.d/2;
+  const elbow = Math.abs(bx-ax) > Math.abs(by-ay) ? [bx,ay] : [ax,by];
+  const p=[proj(ax,ay,4), proj(elbow[0],elbow[1],4), proj(bx,by,4)];
+  return `M ${p[0][0]} ${p[0][1]} L ${p[1][0]} ${p[1][1]} L ${p[2][0]} ${p[2][1]}`;
+}
+function selfLoopD(a){
+  const cx=a.x+a.w/2, cy=a.y+a.d/2;
+  const p0=proj(cx,cy,4), p1=proj(cx+0.62,cy-0.5,4), p2=proj(cx+0.62,cy+0.5,4);
+  return `M ${p0[0]} ${p0[1]} L ${p1[0]} ${p1[1]} L ${p2[0]} ${p2[1]} L ${p0[0]} ${p0[1]}`;
+}
+
+function buildScene(){
+  svg.innerHTML="";
+  drawGrid();
+  svg.appendChild(wireLayer);
+  svg.appendChild(bldLayer);
+  svg.appendChild(fxLayer);
+  bldLayer.innerHTML="";
+  [...M].sort((a,b)=>(a.x+a.y)-(b.x+b.y)).forEach(m=>{
+    const g=el("g",{class:"bld", tabindex:"0", role:"button",
+      "aria-label":`${m.name}, ${m.file}`, "data-id":m.id});
+    (FORMS[m.form]||FORMS.block)(g,m);
+    const [lx,ly]=roofPt(m);
+    const t=el("text",{class:"blabel",x:lx,y:ly-3,"text-anchor":"middle"});
+    t.textContent=m.id;
+    g.appendChild(t);
+    const [hx,hy]=anchor(m);
+    g.appendChild(el("rect",{class:"hit",x:hx-26,y:hy-m.h-20,width:52,height:m.h+34}));
+    g.addEventListener("click",()=>selectModule(m.id));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectModule(m.id);}});
+    bldLayer.appendChild(g);
+  });
+}
+
+/* ============================================================
+   State
+   ============================================================ */
+let flow=FLOWS[0], stepIdx=0, playing=true, selectedModule=null, tab="what";
+let raf=null, t0=0;
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function activeIds(){
+  const s=flow.steps[stepIdx];
+  return new Set([s.f,s.t]);
+}
+function flowIds(){
+  const s=new Set();
+  flow.steps.forEach(st=>{s.add(st.f);s.add(st.t);});
+  return s;
+}
+
+function renderWires(){
+  wireLayer.innerHTML="";
+  flow.steps.forEach((st,i)=>{
+    const a=byId[st.f], b=byId[st.t];
+    const d = st.f===st.t ? selfLoopD(a) : routeD(a,b);
+    const cls = ["wire","k-"+st.k, i<stepIdx?"past":(i>stepIdx?"future":"live")].join(" ");
+    const p=el("path",{class:cls,d,"data-i":i});
+    if(i===stepIdx) p.setAttribute("id","livepath");
+    wireLayer.appendChild(p);
+  });
+}
+
+function renderBuildings(){
+  const act=activeIds(), inFlow=flowIds();
+  bldLayer.querySelectorAll(".bld").forEach(g=>{
+    const id=g.dataset.id;
+    g.classList.toggle("act", act.has(id));
+    g.classList.toggle("sel", selectedModule===id);
+    g.classList.toggle("dim", !inFlow.has(id) && selectedModule!==id);
+  });
+}
+
+function renderPayloadTag(){
+  fxLayer.innerHTML="";
+  const st=flow.steps[stepIdx];
+  const a=byId[st.f], b=byId[st.t];
+  const mid = st.f===st.t
+    ? proj(a.x+a.w/2+0.62, a.y+a.d/2, 4)
+    : proj((a.x+a.w/2+b.x+b.w/2)/2,(a.y+a.d/2+b.y+b.d/2)/2, 4);
+  const label=st.pay.length>52 ? st.pay.slice(0,50)+"…" : st.pay;
+  const bg=el("rect",{class:"wiretag-bg",x:mid[0]-label.length*2.4-5,y:mid[1]-26,
+    width:label.length*4.8+10,height:14,rx:2});
+  const tx=el("text",{class:"wiretag k-"+st.k,x:mid[0],y:mid[1]-16,"text-anchor":"middle"});
+  tx.textContent=label;
+  fxLayer.appendChild(bg); fxLayer.appendChild(tx);
+
+  const dot=el("circle",{class:"payload k-"+st.k,r:4.2,id:"paydot"});
+  fxLayer.appendChild(dot);
+  positionDot(0);
+}
+
+function positionDot(u){
+  const path=document.getElementById("livepath"), dot=document.getElementById("paydot");
+  if(!path||!dot) return;
+  const L=path.getTotalLength();
+  const p=path.getPointAtLength(L*u);
+  dot.setAttribute("cx",p.x); dot.setAttribute("cy",p.y);
+}
+
+function tick(ts){
+  if(!t0) t0=ts;
+  const dur=1900;
+  const u=((ts-t0)%dur)/dur;
+  positionDot(u);
+  raf=requestAnimationFrame(tick);
+}
+function startAnim(){
+  cancelAnimationFrame(raf); t0=0;
+  if(reduceMotion){ positionDot(0.5); return; }
+  if(playing) raf=requestAnimationFrame(tick); else positionDot(0.5);
+}
+
+/* ---------- panels ---------- */
+const paneWhat=document.getElementById("pane-what");
+const paneHow=document.getElementById("pane-how");
+
+function h(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+
+function renderPanel(){
+  paneWhat.innerHTML=""; paneHow.innerHTML="";
+  if(selectedModule){ renderModulePanel(byId[selectedModule]); }
+  else { renderFlowPanel(); }
+}
+
+function renderFlowPanel(){
+  const st=flow.steps[stepIdx];
+  // WHAT
+  const b1=h("div","block");
+  b1.append(h("div","k","Selected flow"), h("div","title",flow.name), h("span","pill k-"+flow.kind,kindLabel(flow.kind)));
+  const b2=h("div","block");
+  b2.append(h("div","k","In plain english"), h("p","prose",flow.what));
+  const b3=h("div","block");
+  b3.append(h("div","k",`Step ${stepIdx+1} of ${flow.steps.length}`), h("p","prose",st.call));
+  const b4=h("div","block");
+  b4.append(h("div","k","On the wire"));
+  const pb=h("div","payload-box k-"+st.k,st.pay); b4.append(pb);
+  const b5=h("div","block");
+  b5.append(h("div","k","Hop"),
+    h("p","prose",`${byId[st.f].name} → ${byId[st.t].name}`));
+  paneWhat.append(b1,b2,h("div","hr"),b3,b4,b5);
+
+  // HOW
+  const c1=h("div","block");
+  c1.append(h("div","k","Mechanism"), h("p","prose",flow.blurb));
+  const c2=h("div","block");
+  c2.append(h("div","k","Traced calls"));
+  const steps=h("div","steps");
+  flow.steps.forEach((s,i)=>{
+    const btn=h("button","step");
+    btn.setAttribute("aria-current", i===stepIdx?"true":"false");
+    btn.append(h("span","n",String(i+1).padStart(2,"0")));
+    const col=h("div");
+    col.append(h("div","call",s.call),
+      h("div","hop",`${s.f} → ${s.t}`),
+      h("div","src",s.src));
+    btn.append(col);
+    btn.addEventListener("click",()=>{stepIdx=i;playing=false;syncPlayBtn();render();});
+    steps.append(btn);
+  });
+  c2.append(steps);
+  paneHow.append(c1,c2);
+}
+
+function renderModulePanel(m){
+  const b1=h("div","block");
+  b1.append(h("div","k","Selected module"), h("div","title",m.name));
+  const dl=document.createElement("dl"); dl.className="dl";
+  const add=(k,v)=>{dl.append(h("dt",null,k),h("dd",null,v));};
+  add("Tier", TIERS.find(t=>t.id===m.tier).name);
+  add("Form", formLabel(m.form));
+  if(m.loc) add("Lines", String(m.loc));
+  b1.append(dl);
+  const b2=h("div","block");
+  b2.append(h("div","k","What it does"), h("p","prose",m.what));
+  const b3=h("div","block");
+  b3.append(h("div","k","Source"), h("div","cite",m.file));
+  const b4=h("div","block");
+  const back=h("button",null,"Back to flow");
+  back.addEventListener("click",()=>{selectedModule=null;render();});
+  b4.append(back);
+  paneWhat.append(b1,b2,b3,b4);
+
+  const c1=h("div","block");
+  c1.append(h("div","k","Mechanism"), h("p","prose",m.how));
+  const c2=h("div","block");
+  c2.append(h("div","k","Cited at"), h("div","cite",m.cite));
+  const c3=h("div","block");
+  c3.append(h("div","k","Appears in"));
+  const list=h("div","steps");
+  FLOWS.forEach(f=>{
+    const hits=f.steps.filter(s=>s.f===m.id||s.t===m.id);
+    if(!hits.length) return;
+    const btn=h("button","step");
+    btn.append(h("span","n",hits.length+"×"));
+    const col=h("div");
+    col.append(h("div","call",f.name), h("div","hop",kindLabel(f.kind)));
+    btn.append(col);
+    btn.addEventListener("click",()=>{
+      selectedModule=null;
+      setFlow(f.id);
+      const i=f.steps.findIndex(s=>s.f===m.id||s.t===m.id);
+      stepIdx=Math.max(0,i); render();
+    });
+    list.append(btn);
+  });
+  c3.append(list);
+  paneHow.append(c1,c2,c3);
+}
+
+const kindLabel=k=>({control:"control flow",fail:"failure / degraded",loop:"background loop",return:"return value"}[k]||k);
+const formLabel=f=>({slab:"slab — client surface",gate:"gate — protocol router",vault:"vault — security boundary",
+  cluster:"cluster — sibling consumers",spire:"spire — serialisation point",hall:"hall — request handlers",
+  stack:"stack — background worker",kiln:"kiln — untrusted execution",block:"block — pure function",
+  drum:"drum — relational store",hex:"hex — multi-role broker"}[f]||f);
+
+/* ---------- rail ---------- */
+function buildRail(){
+  const rail=document.getElementById("rail");
+  rail.innerHTML="";
+  TIERS.forEach(t=>{
+    const mods=M.filter(m=>m.tier===t.id);
+    const wrap=h("div","tier");
+    const head=h("div","tier-head");
+    head.append(h("span","name",t.name), h("span","n",String(mods.length)));
+    wrap.append(head);
+    mods.forEach(m=>{
+      const b=h("button","mod");
+      b.dataset.id=m.id;
+      b.append(h("span","tag",m.id), h("span",null,m.name), h("span","lines",m.loc?m.loc:"—"));
+      b.addEventListener("click",()=>selectModule(m.id));
+      wrap.append(b);
+    });
+    rail.append(wrap);
+  });
+}
+function renderRail(){
+  document.querySelectorAll(".mod").forEach(b=>{
+    b.setAttribute("aria-current", b.dataset.id===selectedModule ? "true":"false");
+  });
+}
+
+/* ---------- controls ---------- */
+function setFlow(id){
+  flow=FLOWS.find(f=>f.id===id)||FLOWS[0];
+  stepIdx=0;
+  document.getElementById("flowsel").value=flow.id;
+  document.getElementById("flow-title").textContent=flow.name;
+  document.getElementById("stat-view").textContent=flow.id;
+}
+function selectModule(id){
+  selectedModule = (selectedModule===id) ? null : id;
+  render();
+}
+function syncPlayBtn(){
+  const b=document.getElementById("btn-play");
+  b.textContent=playing?"Pause":"Play";
+  b.setAttribute("aria-pressed", playing?"true":"false");
+  document.getElementById("pulse").classList.toggle("paused",!playing);
+  document.getElementById("pulse-text").textContent = playing?"Payload in motion":"Paused";
+}
+function render(){
+  renderWires();
+  renderBuildings();
+  renderPayloadTag();
+  renderPanel();
+  renderRail();
+  document.getElementById("ticker").textContent=
+    `Step ${stepIdx+1} / ${flow.steps.length} · ${flow.steps[stepIdx].src}`;
+  startAnim();
+}
+
+function init(){
+  const sel=document.getElementById("flowsel");
+  FLOWS.forEach(f=>{
+    const o=document.createElement("option");
+    o.value=f.id; o.textContent=f.name;
+    sel.append(o);
+  });
+  sel.addEventListener("change",e=>{selectedModule=null;setFlow(e.target.value);render();});
+  document.getElementById("btn-play").addEventListener("click",()=>{playing=!playing;syncPlayBtn();startAnim();});
+  document.getElementById("btn-step").addEventListener("click",()=>{
+    stepIdx=(stepIdx+1)%flow.steps.length; playing=false; syncPlayBtn(); render();});
+  document.getElementById("btn-back").addEventListener("click",()=>{
+    stepIdx=(stepIdx-1+flow.steps.length)%flow.steps.length; playing=false; syncPlayBtn(); render();});
+  document.getElementById("btn-reset").addEventListener("click",()=>{
+    stepIdx=0; selectedModule=null; playing=true; syncPlayBtn(); render();});
+
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click",()=>{
+      tab = t.id==="tab-what" ? "what":"how";
+      document.getElementById("tab-what").setAttribute("aria-selected",tab==="what");
+      document.getElementById("tab-how").setAttribute("aria-selected",tab==="how");
+      paneWhat.hidden = tab!=="what";
+      paneHow.hidden = tab!=="how";
+    });
+  });
+
+  window.addEventListener("keydown",e=>{
+    if(e.target.tagName==="SELECT") return;
+    if(e.key==="ArrowRight"){e.preventDefault();stepIdx=(stepIdx+1)%flow.steps.length;playing=false;syncPlayBtn();render();}
+    if(e.key==="ArrowLeft"){e.preventDefault();stepIdx=(stepIdx-1+flow.steps.length)%flow.steps.length;playing=false;syncPlayBtn();render();}
+    if(e.key===" "){e.preventDefault();playing=!playing;syncPlayBtn();startAnim();}
+  });
+
+  buildScene();
+  buildRail();
+  setFlow(FLOWS[0].id);
+  syncPlayBtn();
+  render();
+}
+init();
+</script>
