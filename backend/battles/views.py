@@ -10,15 +10,13 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import permissions, status, views
 from rest_framework.response import Response
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 
 from accounts.models import User
 from accounts.serializers import UserProfileSerializer
 from problems.models import Problem
 from problems.serializers import ProblemSerializer
 
-from .events import broadcast_battle_event
+from .events import _group_send as _send, broadcast_battle_event
 from .execution import SUPPORTED_LANGUAGES, run_code_safe
 from .models import Battle, BattleRequest, BattleReward, BattleResult, Round, Submission
 from .serializers import (
@@ -32,27 +30,6 @@ logger = logging.getLogger(__name__)
 BATTLE_DURATION = timedelta(minutes=30)
 INVITE_TTL = timedelta(minutes=30)
 MAX_CODE_CHARS = 200 * 1024
-
-
-def _send(group: str, message: dict, *, context: str) -> None:
-    """
-    Fire a channel-layer message, logging rather than swallowing failures.
-
-    Broadcasts are best-effort by design — Redis being down must not fail a
-    battle — but a silent `except: pass` meant a completely broken channel layer
-    produced no signal at all.
-    """
-    try:
-        channel_layer = get_channel_layer()
-        if channel_layer is None:
-            logger.warning("No channel layer configured — dropping %s", context)
-            return
-        async_to_sync(channel_layer.group_send)(group, message)
-    except Exception:
-        logger.exception("Channel layer send failed (%s)", context)
-
-
-_broadcast_battle = broadcast_battle_event
 
 
 def _expire_stale_pending_battle_requests() -> None:
@@ -110,7 +87,7 @@ def _create_battle(player1: User, player2: User) -> Battle:
         ]
     )
 
-    _broadcast_battle(
+    broadcast_battle_event(
         battle.id,
         "ROUND_START",
         {"battle_id": battle.id, "current_round": battle.current_round},
@@ -573,22 +550,12 @@ class BattleProblemReviewView(views.APIView):
             "submitted_at": sub.submitted_at,
         }
 
-    @staticmethod
-    def _redacted_payload(sub: Submission | None) -> dict | None:
+    @classmethod
+    def _redacted_payload(cls, sub: Submission | None) -> dict | None:
         """Opponent progress without the code itself."""
         if sub is None:
             return None
-        return {
-            "id": sub.id,
-            "code": None,
-            "language": sub.language,
-            "status": sub.status,
-            "passed_cases": sub.passed_cases,
-            "total_cases": sub.total_cases,
-            "execution_time_ms": sub.execution_time_ms,
-            "submitted_at": sub.submitted_at,
-            "hidden": True,
-        }
+        return {**cls._submission_payload(sub), "code": None, "hidden": True}
 
     def get(self, request, pk: int, problem_id: int, *args, **kwargs):
         battle = get_object_or_404(
@@ -752,7 +719,7 @@ class SubmitSolutionView(views.APIView):
             total_cases=len(problem.test_cases or []),
         )
 
-        _broadcast_battle(
+        broadcast_battle_event(
             battle.id,
             "SUBMISSION_RECEIVED",
             {"player_id": request.user.id, "problem_id": problem.id},
@@ -855,7 +822,7 @@ class RunSolutionView(views.APIView):
         passed = actual == expected and result.ok
 
         stderr = result.stderr or None
-        _broadcast_battle(
+        broadcast_battle_event(
             battle.id,
             "PLAYER_SAMPLE_RUN",
             {

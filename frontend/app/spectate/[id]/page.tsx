@@ -9,7 +9,7 @@ import {
   useReconnectingSocket,
   type SocketStatus,
 } from "../../../lib/useReconnectingSocket";
-import { api } from "../../../lib/api";
+import { apiGet } from "../../../lib/api";
 
 type BattleState = {
   id: number;
@@ -50,9 +50,8 @@ export default function SpectateBattlePage() {
 
   useEffect(() => {
     if (!battleId) return;
-    api
-      .get<BattleState>(`/api/battles/public/${battleId}/state/`)
-      .then((res) => setBattle(res.data))
+    apiGet<BattleState>(`/api/battles/public/${battleId}/state/`)
+      .then((data) => setBattle(data))
       .catch(() => setBattle(null));
   }, [battleId]);
 
@@ -114,9 +113,8 @@ export default function SpectateBattlePage() {
           }
         }
         if (msg.event === "ROUND_RESULT" || msg.event === "BATTLE_END") {
-          api
-            .get<BattleState>(`/api/battles/public/${battleId}/state/`)
-            .then((res) => setBattle(res.data))
+          apiGet<BattleState>(`/api/battles/public/${battleId}/state/`)
+            .then((data) => setBattle(data))
             .catch(() => {});
         }
       }

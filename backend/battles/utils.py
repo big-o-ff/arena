@@ -1,10 +1,6 @@
 """Rating maths for battle settlement."""
 from __future__ import annotations
 
-# `calculate_round_damage` used to live here. Nothing ever called it, and the
-# Round.player{1,2}_time_ms fields it read are never written — damage is applied
-# in battles.evaluation when a player is first to pass every test case.
-
 
 def get_k_factor(rating: int) -> int:
     """Return K-factor based on current rating. Lower for higher ranks to reduce volatility."""

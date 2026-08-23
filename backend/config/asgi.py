@@ -9,11 +9,11 @@ django_asgi_app = get_asgi_application()
 import battles.routing
 import spectators.routing
 import dashboard.routing
-from accounts.middleware import JWTAuthMiddlewareStack
+from accounts.middleware import JWTAuthMiddleware
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": JWTAuthMiddlewareStack(
+    "websocket": JWTAuthMiddleware(
         URLRouter(
             battles.routing.websocket_urlpatterns
             + spectators.routing.websocket_urlpatterns

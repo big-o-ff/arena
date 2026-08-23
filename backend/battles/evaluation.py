@@ -12,7 +12,7 @@ from typing import Any
 
 from django.db import transaction
 
-from .events import broadcast_battle_event as _broadcast
+from .events import broadcast_battle_event
 from .execution import run_batch
 from .models import Battle, BattleReward, Submission
 
@@ -178,7 +178,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
     # --- Broadcasts happen after commit so clients never read stale rows. ---
     if not all_passed:
         out["error"] = first_error[:500]
-        _broadcast(
+        broadcast_battle_event(
             battle.id,
             "SUBMISSION_FAILED",
             {
@@ -191,7 +191,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
         )
         return out
 
-    _broadcast(
+    broadcast_battle_event(
         battle.id,
         "SUBMISSION_PASSED",
         {
@@ -212,7 +212,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
         opponent_new_hp=opponent_new_hp,
     )
 
-    _broadcast(
+    broadcast_battle_event(
         battle.id,
         "ROUND_RESULT",
         {
@@ -223,7 +223,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
             "opponent_new_hp": opponent_new_hp,
         },
     )
-    _broadcast(
+    broadcast_battle_event(
         battle.id,
         "HP_UPDATE",
         {

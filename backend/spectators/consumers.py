@@ -5,7 +5,7 @@ import time
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.db.models import F
+from django.db.models import F, Q
 
 from battles.events import spectator_group
 
@@ -37,11 +37,11 @@ def _increment_spectator_likes(battle_id: int) -> int:
 def _is_participant(battle_id: str, user_id: int) -> bool:
     from battles.models import Battle
 
-    return Battle.objects.filter(pk=battle_id).filter(
-        **{"player1_id": user_id}
-    ).exists() or Battle.objects.filter(pk=battle_id).filter(
-        **{"player2_id": user_id}
-    ).exists()
+    return (
+        Battle.objects.filter(pk=battle_id)
+        .filter(Q(player1_id=user_id) | Q(player2_id=user_id))
+        .exists()
+    )
 
 
 @database_sync_to_async

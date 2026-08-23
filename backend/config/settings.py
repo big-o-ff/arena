@@ -1,7 +1,6 @@
 import os
 from kombu import Queue, Exchange
 from pathlib import Path
-from django.core.management.utils import get_random_secret_key
 import pymysql
 from dotenv import load_dotenv
 
@@ -127,9 +126,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # management command emits staticfiles.W004.
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").is_dir() else []
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
@@ -211,17 +207,6 @@ CELERY_TASK_QUEUES = [
 ]
 CELERY_TASK_DEFAULT_QUEUE = "execution"
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-
-# Keys must match the `name=` given to each @shared_task, not the dotted module
-# path — the previous "battles.tasks.*" keys silently matched nothing.
-CELERY_TASK_ROUTES = {
-    "battles.evaluate_submission": {"queue": "execution"},
-    "battles.schedule_fog": {"queue": "events"},
-    "battles.end_fog": {"queue": "events"},
-    "battles.send_gc_end": {"queue": "events"},
-    "battles.process_battle_end": {"queue": "events"},
-    "battles.expire_battle_request": {"queue": "events"},
-}
 
 # A submission runs every test case through the sandbox; without a hard ceiling a
 # pathological program can pin a worker indefinitely.

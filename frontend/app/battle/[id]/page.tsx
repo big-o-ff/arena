@@ -1323,14 +1323,6 @@ export default function BattlePage() {
 // EditorPane — left panel editor + run/submit actions
 // ---------------------------------------------------------------------------
 
-type RunResult2 = {
-  passed: boolean;
-  output: string;
-  expected: string;
-  execution_time_ms: number;
-  stderr?: string | null;
-};
-
 function EditorPane({
   myCode,
   onChangeMyCode,
@@ -1359,14 +1351,14 @@ function EditorPane({
   submittedProblems: Set<number>;
   isSubmitting: boolean;
   battleComplete: boolean;
-  onRun: (code: string, lang: string, pid: number) => Promise<RunResult2 | null>;
+  onRun: (code: string, lang: string, pid: number) => Promise<RunResult | null>;
   onSubmit: () => void;
 }) {
   const monacoLanguage =
     language === "cpp" ? "cpp" : language === "javascript" ? "javascript" : "python";
 
   const [isRunning, setIsRunning] = useState(false);
-  const [runResult, setRunResult] = useState<RunResult2 | null>(null);
+  const [runResult, setRunResult] = useState<RunResult | null>(null);
   const [runCooldown, setRunCooldown] = useState(false);
 
   // Clear the previous problem's run output when switching problems. The

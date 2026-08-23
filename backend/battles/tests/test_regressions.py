@@ -11,18 +11,15 @@ pytestmark = pytest.mark.django_db
 class TestAdminSubmissionLog:
     def test_serializer_builds(self):
         """
-        Regression: fields were named `user` and `complexity_score`, but the
-        model has `player` and `complexity_class`. DRF raised
-        ImproperlyConfigured at field-build time, so GET /api/admin/submissions/
-        returned 500 on every request.
+        Regression: the field was named `user`, but the model relates through
+        `player`. DRF raised ImproperlyConfigured at field-build time, so GET
+        /api/admin/submissions/ returned 500 on every request.
         """
         from dashboard.serializers import SubmissionLogSerializer
 
         fields = set(SubmissionLogSerializer().fields)
         assert "player" in fields
-        assert "complexity_class" in fields
         assert "user" not in fields
-        assert "complexity_score" not in fields
 
     def test_endpoint_returns_data(self, battle, player1, make_user, api_client):
         from accounts.models import User

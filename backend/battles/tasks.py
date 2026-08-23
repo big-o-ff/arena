@@ -9,17 +9,13 @@ from __future__ import annotations
 
 import logging
 
-from asgiref.sync import async_to_sync
 from celery import shared_task
-from channels.layers import get_channel_layer
 from django.db import OperationalError, transaction
 
 from .evaluation import evaluate_submission_sync
+from .events import _group_send, broadcast_battle_event
 
 logger = logging.getLogger(__name__)
-
-
-from .events import broadcast_battle_event as _broadcast
 
 
 # ---------------------------------------------------------------------------
@@ -45,7 +41,7 @@ def evaluate_submission(submission_id: int) -> None:
 @shared_task(queue="events", name="battles.send_gc_end")
 def send_gc_end(battle_id: int, target_user_id: int) -> None:
     """Broadcasts GC_END to remove the garbage collection blank screen."""
-    _broadcast(battle_id, "GC_END", {"target_user_id": target_user_id})
+    broadcast_battle_event(battle_id, "GC_END", {"target_user_id": target_user_id})
 
 # ---------------------------------------------------------------------------
 # Phase 4: Fog of War
@@ -66,7 +62,7 @@ def schedule_fog(battle_id: int) -> None:
     if battle.status != Battle.Status.ACTIVE:
         return
         
-    _broadcast(battle.id, "FOG_START", {"battle_id": battle.id})
+    broadcast_battle_event(battle.id, "FOG_START", {"battle_id": battle.id})
     
     # Queue fog end after 10s
     end_fog.apply_async((battle.id,), countdown=10, queue="events")
@@ -77,7 +73,7 @@ def schedule_fog(battle_id: int) -> None:
 @shared_task(queue="events", name="battles.end_fog")
 def end_fog(battle_id: int) -> None:
     """Ends the Fog of War."""
-    _broadcast(battle_id, "FOG_END", {"battle_id": battle_id})
+    broadcast_battle_event(battle_id, "FOG_END", {"battle_id": battle_id})
 
 
 # ---------------------------------------------------------------------------
@@ -194,7 +190,7 @@ def finalize_battle_if_active(
     }
     if resigned_user_id is not None:
         end_payload["resigned_user_id"] = resigned_user_id
-    _broadcast(battle.id, "BATTLE_END", end_payload)
+    broadcast_battle_event(battle.id, "BATTLE_END", end_payload)
     logger.info("Battle %s ended. Winner: %s (P1: %+d, P2: %+d)", battle_id, winner_id, delta1, delta2)
 
 
@@ -250,17 +246,11 @@ def expire_battle_request(battle_request_id: int) -> None:
         id=battle_request_id, status=BattleRequest.Status.PENDING
     ).update(status=BattleRequest.Status.EXPIRED)
     
-    if int(updated) > 0:
-        try:
-            req = BattleRequest.objects.get(id=battle_request_id)
-            channel_layer = get_channel_layer()
-            if channel_layer:
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{req.from_user_id}",
-                    {
-                        "type": "invite_expired",
-                        "battle_request_id": battle_request_id,
-                    },
-                )
-        except Exception:
-            pass
+    if updated:
+        req = BattleRequest.objects.filter(id=battle_request_id).first()
+        if req:
+            _group_send(
+                f"user_{req.from_user_id}",
+                {"type": "invite_expired", "battle_request_id": battle_request_id},
+                context="invite expired",
+            )

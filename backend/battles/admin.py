@@ -26,9 +26,7 @@ class RoundAdmin(admin.ModelAdmin):
         "battle",
         "round_number",
         "problem",
-        "winner",
         "started_at",
-        "ended_at",
     )
     list_filter = ("round_number", "problem__difficulty")
 
@@ -44,7 +42,6 @@ class SubmissionAdmin(admin.ModelAdmin):
         "passed_cases",
         "total_cases",
         "execution_time_ms",
-        "complexity_class",
         "submitted_at",
     )
     list_filter = ("language", "status", "submitted_at")

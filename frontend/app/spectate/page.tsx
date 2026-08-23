@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api } from "../../lib/api";
+import { apiGet } from "../../lib/api";
 
 type LiveBattle = {
   id: number;
@@ -20,11 +20,10 @@ export default function SpectateLobbyPage() {
 
   useEffect(() => {
     let cancelled = false;
-    api
-      .get<LiveBattle[]>("/api/battles/live/")
-      .then((r) => {
+    apiGet<LiveBattle[]>("/api/battles/live/")
+      .then((data) => {
         if (!cancelled) {
-          setRows(r.data);
+          setRows(data);
           setErr(null);
         }
       })
@@ -35,8 +34,8 @@ export default function SpectateLobbyPage() {
         }
       });
     const t = setInterval(() => {
-      api.get<LiveBattle[]>("/api/battles/live/").then((r) => {
-        if (!cancelled) setRows(r.data);
+      apiGet<LiveBattle[]>("/api/battles/live/").then((data) => {
+        if (!cancelled) setRows(data);
       });
     }, 8000);
     return () => {

@@ -100,10 +100,6 @@ def resolve_user_from_clerk_claims(payload: dict) -> User | None:
     return None
 
 
-# Kept under the old name so any external callers keep working.
-resolve_user_from_clerk_jwt_payload = resolve_user_from_clerk_claims
-
-
 class ClerkAuthentication(authentication.BaseAuthentication):
     """DRF authentication class for `Authorization: Bearer <clerk session jwt>`."""
 

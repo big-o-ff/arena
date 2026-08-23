@@ -84,17 +84,7 @@ class Round(models.Model):
     )
     problem = models.ForeignKey(Problem, on_delete=models.PROTECT)
     round_number = models.PositiveSmallIntegerField()
-    winner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="rounds_won",
-    )
     started_at = models.DateTimeField(auto_now_add=True)
-    ended_at = models.DateTimeField(null=True, blank=True)
-    player1_time_ms = models.PositiveIntegerField(null=True, blank=True)
-    player2_time_ms = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["round_number"]
@@ -131,7 +121,6 @@ class Submission(models.Model):
     passed_cases = models.PositiveSmallIntegerField(default=0)
     total_cases = models.PositiveSmallIntegerField(default=0)
     execution_time_ms = models.PositiveIntegerField(null=True, blank=True)
-    complexity_class = models.CharField(max_length=20, null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
