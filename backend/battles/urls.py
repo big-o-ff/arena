@@ -9,6 +9,7 @@ from .views import (
     BattleRequestHistoryView,
     BattleRequestListCreateView,
     BattleResignView,
+    BattleShareCardView,
     BattleStateView,
     LiveBattlesListView,
     MyActiveBattleView,
@@ -27,6 +28,11 @@ urlpatterns = [
         "public/<int:pk>/state/",
         PublicBattleStateView.as_view(),
         name="battle-public-state",
+    ),
+    path(
+        "share/<uuid:share_uuid>/",
+        BattleShareCardView.as_view(),
+        name="battle-share-card",
     ),
     path("active/", MyActiveBattleView.as_view(), name="battle-active"),
     path(

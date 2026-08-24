@@ -6,11 +6,6 @@ import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useApiClient, useFetchMe } from "../../../../lib/fetchWithAuth";
 
-const API_BASE =
-  typeof window !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
-    : "";
-
 type EndedSummary = {
   battle_id: number;
   ended_reason: string | null;
@@ -24,7 +19,7 @@ type EndedSummary = {
   player2_rating_change: number;
   problems_solved: number;
   fastest_solve_time_ms: number | null;
-  /** Absent until a share-card endpoint exists server-side; the link is hidden without it. */
+  /** Frontend-relative path to the public share card, e.g. "/share/<uuid>". */
   share_url?: string | null;
 };
 
@@ -135,11 +130,9 @@ export default function BattleEndedPage() {
   const oppName = iAmP1 ? data.player2.display_name : data.player1.display_name;
   const won = data.winner_id === me.id;
   const draw = data.winner_id == null;
-  const shareHref = !data.share_url
-    ? null
-    : data.share_url.startsWith("http")
-      ? data.share_url
-      : `${API_BASE}${data.share_url}`;
+  // A same-origin app route, so it is used as-is; the guard keeps an older
+  // backend that omits the field from crashing the report.
+  const shareHref = data.share_url || null;
 
   return (
     <div

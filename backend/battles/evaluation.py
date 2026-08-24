@@ -84,6 +84,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
         "reward_saved": False,
         "battle_ended": False,
         "execution_time_ms": 0,
+        "current_round": battle.current_round,
     }
 
     if total == 0:
@@ -162,7 +163,18 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
                     )
                     opponent_new_hp = locked_battle.player1_hp
 
-                locked_battle.save(update_fields=["player1_hp", "player2_hp"])
+                # Advance the match clock. `current_round` is how many problems
+                # have been claimed, +1 — it is display state and the fallback
+                # used when a submission arrives without an explicit problem_id.
+                # Capped at the number of rounds so the last solve does not point
+                # past the end of the pool.
+                round_count = locked_battle.rounds.count()
+                if locked_battle.current_round < round_count:
+                    locked_battle.current_round += 1
+
+                locked_battle.save(
+                    update_fields=["player1_hp", "player2_hp", "current_round"]
+                )
                 BattleReward.objects.create(
                     user_id=submission.player_id,
                     battle=locked_battle,
@@ -174,6 +186,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
 
         out["player1_hp"] = locked_battle.player1_hp
         out["player2_hp"] = locked_battle.player2_hp
+        out["current_round"] = locked_battle.current_round
 
     # --- Broadcasts happen after commit so clients never read stale rows. ---
     if not all_passed:
@@ -221,6 +234,7 @@ def evaluate_submission_sync(submission_id: int) -> dict[str, Any]:
             "problem_difficulty": problem.difficulty,
             "hp_change": -ROUND_DAMAGE,
             "opponent_new_hp": opponent_new_hp,
+            "current_round": out["current_round"],
         },
     )
     broadcast_battle_event(

@@ -431,6 +431,61 @@ class BattleEndedSummaryView(views.APIView):
                 "player2_rating_change": result.player2_rating_change,
                 "problems_solved": result.problems_solved,
                 "fastest_solve_time_ms": result.fastest_solve_time_ms,
+                # Frontend-relative on purpose: the share card is a Next.js route,
+                # not a backend page, so the client resolves it against its own origin.
+                "share_url": f"/share/{result.share_uuid}",
+            }
+        )
+
+
+class BattleShareCardView(views.APIView):
+    """
+    Public, unauthenticated report card addressed by `BattleResult.share_uuid`.
+
+    The uuid is the capability — it is unguessable, so it can be handed out
+    without exposing the numeric battle id. Deliberately narrower than the
+    participant-only `/ended/` view: no submitted code, no email, no clerk id,
+    and no account metadata beyond the two display names.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    throttle_scope = "public"
+
+    def get(self, request, share_uuid, *args, **kwargs):
+        result = get_object_or_404(
+            BattleResult.objects.select_related(
+                "battle__player1", "battle__player2"
+            ),
+            share_uuid=share_uuid,
+        )
+        battle = result.battle
+
+        def public_player(user):
+            return {"display_name": user.display_name, "username": user.username}
+
+        # Slot, not name: two accounts can share a display_name, so the client
+        # cannot reliably tell who won by comparing strings.
+        winner_slot = None
+        if battle.winner_id == battle.player1_id:
+            winner_slot = 1
+        elif battle.winner_id == battle.player2_id:
+            winner_slot = 2
+
+        return Response(
+            {
+                "battle_id": battle.id,
+                "ended_reason": battle.ended_reason,
+                "winner_slot": winner_slot,
+                "is_draw": winner_slot is None,
+                "player1": public_player(battle.player1),
+                "player2": public_player(battle.player2),
+                "player1_hp": battle.player1_hp,
+                "player2_hp": battle.player2_hp,
+                "player1_rating_change": result.player1_rating_change,
+                "player2_rating_change": result.player2_rating_change,
+                "problems_solved": result.problems_solved,
+                "fastest_solve_time_ms": result.fastest_solve_time_ms,
+                "ended_at": result.created_at,
             }
         )
 
