@@ -11,16 +11,22 @@ export function MatrixBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const fontSize = 14;
+    // Seed each column at a random height. Starting them all at row 1 makes the
+    // first few seconds render as one synchronised band across the top of the
+    // page instead of rain — which reads as "background didn't load".
+    let drops: number[] = [];
+
     function resize() {
       canvas!.width = window.innerWidth;
       canvas!.height = window.innerHeight;
+      const columns = Math.floor(canvas!.width / fontSize);
+      const rows = canvas!.height / fontSize;
+      drops = Array.from({ length: columns }, () => Math.random() * rows);
     }
     resize();
     window.addEventListener("resize", resize);
 
-    const fontSize = 14;
-    let columns = Math.floor(canvas.width / fontSize);
-    let drops = Array(columns).fill(1);
     const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
     const handleMove = (e: MouseEvent) => {
