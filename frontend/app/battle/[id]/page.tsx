@@ -66,6 +66,14 @@ type BattleState = {
   rounds?: RoundInfo[];
   /** Present on resign response / share payload. */
   share_url?: string;
+  /**
+   * The caller's own progress, so a remount can rebuild what the live socket
+   * events would otherwise have to replay. Submitting redirects to the review
+   * page, which unmounts this screen before ROUND_RESULT lands.
+   */
+  my_solved_problem_ids?: number[];
+  my_submitted_problem_ids?: number[];
+  my_sabotage_used?: boolean;
 };
 
 type WSMessage = {
@@ -194,6 +202,7 @@ export default function BattlePage() {
   const [selectedProblemIdx, setSelectedProblemIdx] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResigning, setIsResigning] = useState(false);
+  const [resignConfirming, setResignConfirming] = useState(false);
 
   // Solved problems tracking (by problem id)
   const [solvedProblems, setSolvedProblems] = useState<Set<number>>(new Set());
@@ -238,6 +247,26 @@ export default function BattlePage() {
     []
   );
 
+  /**
+   * Adopt a server snapshot, including this player's progress.
+   *
+   * Merged rather than replaced: a ROUND_RESULT that arrived over the socket a
+   * moment ago must not be dropped by a state read that raced it. The server is
+   * additive here — nothing un-solves a problem or un-spends a sabotage.
+   */
+  const applyBattleState = useCallback((b: BattleState) => {
+    setBattle(b);
+    if (b.my_solved_problem_ids?.length) {
+      setSolvedProblems((prev) => new Set([...prev, ...b.my_solved_problem_ids!]));
+    }
+    if (b.my_submitted_problem_ids?.length) {
+      setSubmittedProblems(
+        (prev) => new Set([...prev, ...b.my_submitted_problem_ids!])
+      );
+    }
+    if (b.my_sabotage_used) setGcUsed(true);
+  }, []);
+
   // ------------------------------------------------------------------
   // Fetch Django user
   // ------------------------------------------------------------------
@@ -258,7 +287,7 @@ export default function BattlePage() {
       .get(`/api/battles/${battleId}/state/`)
       .then((res) => {
         if (!cancelled) {
-          setBattle(res.data);
+          applyBattleState(res.data);
           setLoadError(null);
         }
       })
@@ -278,7 +307,7 @@ export default function BattlePage() {
     return () => {
       cancelled = true;
     };
-  }, [battleId, api]);
+  }, [battleId, api, applyBattleState]);
 
   /** Sync countdown to server end time. */
   useEffect(() => {
@@ -314,7 +343,7 @@ export default function BattlePage() {
     api.get(`/api/battles/${battleId}/state/`).then((res) => {
       if (cancelled) return;
       const b = res.data as BattleState;
-      setBattle(b);
+      applyBattleState(b);
       if (b.status === "completed") {
         router.replace(`/battle/${battleId}/ended`);
       } else if (b.ends_at) {
@@ -329,7 +358,7 @@ export default function BattlePage() {
     return () => {
       cancelled = true;
     };
-  }, [timer, battleComplete, battleId, battle, api, router]);
+  }, [timer, battleComplete, battleId, battle, api, router, applyBattleState]);
 
   // ------------------------------------------------------------------
   // Editor change — broadcast every keystroke so spectators see live typing
@@ -541,10 +570,10 @@ export default function BattlePage() {
       wasDisconnected.current = false;
       api
         .get(`/api/battles/${battleId}/state/`)
-        .then((res) => setBattle(res.data))
+        .then((res) => applyBattleState(res.data))
         .catch(() => {});
     }
-  }, [socketStatus, api, battleId]);
+  }, [socketStatus, api, battleId, applyBattleState]);
 
   // ------------------------------------------------------------------
   // Timer countdown
@@ -669,20 +698,16 @@ export default function BattlePage() {
   // ------------------------------------------------------------------
   // Resign — forfeit (opponent wins, battle ends)
   // ------------------------------------------------------------------
+  // `window.confirm` blocks the whole renderer until it is dismissed, which
+  // froze the tab under automation and reads as a browser-chrome dialog dropped
+  // into a full-screen themed app. Confirmation is inline, matching GCButton.
   const handleResign = useCallback(async () => {
     if (!battleId || battleComplete || !djangoUser) return;
-    if (
-      !window.confirm(
-        "Resign and end the battle? Your opponent wins and ratings will be updated."
-      )
-    ) {
-      return;
-    }
     setIsResigning(true);
     try {
       const res = await api.post(`/api/battles/${battleId}/resign/`);
       const b = res.data as BattleState;
-      setBattle(b);
+      applyBattleState(b);
       addToast("You resigned — battle ended.", "warning");
       router.replace(`/battle/${battleId}/ended`);
     } catch (err: any) {
@@ -691,7 +716,7 @@ export default function BattlePage() {
     } finally {
       setIsResigning(false);
     }
-  }, [battleId, battleComplete, djangoUser, api, addToast, router]);
+  }, [battleId, battleComplete, djangoUser, api, addToast, router, applyBattleState]);
 
   // ------------------------------------------------------------------
   // Trigger GC sabotage
@@ -1282,36 +1307,98 @@ export default function BattlePage() {
             >
               End battle
             </div>
-            <button
-              type="button"
-              onClick={() => void handleResign()}
-              disabled={battleComplete || isResigning}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "6px",
-                border: "1px solid rgba(255,100,100,0.45)",
-                background: "rgba(255,60,60,0.06)",
-                color: "#ff8888",
-                fontSize: "11px",
-                fontFamily: "monospace",
-                letterSpacing: "0.12em",
-                cursor: battleComplete || isResigning ? "not-allowed" : "pointer",
-                opacity: battleComplete || isResigning ? 0.45 : 1,
-              }}
-            >
-              {isResigning ? "Resigning…" : "Resign (forfeit)"}
-            </button>
-            <div
-              style={{
-                marginTop: "6px",
-                fontSize: "9px",
-                color: "rgba(200,211,224,0.28)",
-                lineHeight: 1.4,
-              }}
-            >
-              Ends the match now. Opponent wins; ELO updates apply.
-            </div>
+            {resignConfirming ? (
+              <div
+                style={{
+                  border: "1px solid rgba(255,68,68,0.4)",
+                  borderRadius: "6px",
+                  padding: "10px",
+                  background: "rgba(255,68,68,0.05)",
+                }}
+              >
+                <p
+                  style={{
+                    color: "#ff4444",
+                    fontSize: "11px",
+                    marginBottom: "8px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Resign? Your opponent wins and ratings update.
+                </p>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResignConfirming(false);
+                      void handleResign();
+                    }}
+                    style={{
+                      flex: 1,
+                      background: "rgba(255,68,68,0.15)",
+                      border: "1px solid rgba(255,68,68,0.5)",
+                      borderRadius: "4px",
+                      color: "#ff4444",
+                      fontSize: "10px",
+                      padding: "5px 4px",
+                      cursor: "pointer",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    YES — RESIGN
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResignConfirming(false)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(200,211,224,0.2)",
+                      borderRadius: "4px",
+                      color: "rgba(200,211,224,0.5)",
+                      fontSize: "10px",
+                      padding: "5px 8px",
+                      cursor: "pointer",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setResignConfirming(true)}
+                  disabled={battleComplete || isResigning}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    borderRadius: "6px",
+                    border: "1px solid rgba(255,100,100,0.45)",
+                    background: "rgba(255,60,60,0.06)",
+                    color: "#ff8888",
+                    fontSize: "11px",
+                    fontFamily: "monospace",
+                    letterSpacing: "0.12em",
+                    cursor: battleComplete || isResigning ? "not-allowed" : "pointer",
+                    opacity: battleComplete || isResigning ? 0.45 : 1,
+                  }}
+                >
+                  {isResigning ? "Resigning…" : "Resign (forfeit)"}
+                </button>
+                <div
+                  style={{
+                    marginTop: "6px",
+                    fontSize: "9px",
+                    color: "rgba(200,211,224,0.28)",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Ends the match now. Opponent wins; ELO updates apply.
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1483,24 +1570,26 @@ function EditorPane({
   );
 
   return (
+    // Not scrollable: the pane is action bar + editor + result, and the result
+    // must stay pinned to the bottom. When this column scrolled, clicking Run
+    // wrote the verdict below the fold — the button was at the top, so the
+    // feedback looked like nothing had happened at all.
     <div
       style={{
         display: "flex",
         flexDirection: "column",
         flex: 1,
         minHeight: 0,
-        overflowY: "auto",
-        overflowX: "hidden",
+        overflow: "hidden",
       }}
     >
       {actionBar}
-      {/* Monaco editor */}
+      {/* Monaco editor — owns its own scrolling */}
       <div
         style={{
           flex: 1,
           position: "relative",
-          overflowY: "auto",
-          overflowX: "hidden",
+          overflow: "hidden",
           minHeight: 0,
         }}
       >
@@ -1573,6 +1662,9 @@ function EditorPane({
             fontSize: "11px",
             fontFamily: "monospace",
             flexShrink: 0,
+            // A long stderr must scroll here rather than squeeze the editor.
+            maxHeight: "32%",
+            overflowY: "auto",
             background: runResult.passed
               ? "rgba(0,255,136,0.05)"
               : "rgba(255,68,68,0.05)",

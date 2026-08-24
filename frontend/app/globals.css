@@ -29,7 +29,7 @@ body {
   min-height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
   background: var(--bg-dark);
   color: var(--terminal-green);
   cursor: crosshair;
@@ -253,7 +253,7 @@ input[type="radio"] {
 }
 
 .tagline {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
   font-size: clamp(1rem, 3vw, 1.5rem);
   text-align: center;
   color: var(--terminal-green);
@@ -400,7 +400,7 @@ input[type="radio"] {
 /* 9. CORNER DECORATIONS */
 .corner-decor {
   position: fixed;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
   font-size: 0.8rem;
   opacity: 0.5;
   z-index: 4;
@@ -456,7 +456,7 @@ input[type="radio"] {
   flex-direction: column;
   align-items: center;
   color: var(--danger-glow);
-  font-family: 'Orbitron', 'Share Tech Mono', monospace;
+  font-family: 'Orbitron', var(--font-share-tech-mono), 'Share Tech Mono', monospace;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   opacity: 0.9;
@@ -509,7 +509,7 @@ input[type="radio"] {
 
 /* 12. BATTLE TOAST NOTIFICATIONS */
 .battle-toast {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--font-share-tech-mono), 'Share Tech Mono', monospace;
   font-size: 0.75rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;

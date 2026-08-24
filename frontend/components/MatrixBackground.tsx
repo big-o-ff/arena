@@ -37,12 +37,21 @@ export function MatrixBackground() {
 
     const chars = "01";
 
+    // Canvas `font` takes a CSS font shorthand but does not resolve var(), so
+    // the custom property has to be read off the document first — passing the
+    // raw var() string silently invalidates the whole declaration and the rain
+    // falls back to the 10px sans-serif default.
+    const fontFamily =
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--font-jetbrains-mono")
+        .trim() || "monospace";
+
     const draw = () => {
       if (!ctx) return;
       ctx.fillStyle = "rgba(0,0,0,0.08)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+      ctx.font = `${fontSize}px ${fontFamily}, monospace`;
 
       for (let i = 0; i < drops.length; i++) {
         const char = chars[Math.floor(Math.random() * chars.length)];

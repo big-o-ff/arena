@@ -24,24 +24,24 @@ logger = logging.getLogger(__name__)
 USERNAME_RE = re.compile(r"[^a-z0-9]")
 
 
-def _slugify_username(value: str) -> str:
+def slugify_username(value: str) -> str:
     return USERNAME_RE.sub("", (value or "").lower())
 
 
 def _preferred_username(payload: dict, display_name: str, clerk_id: str) -> str:
     """Best human-readable username available from the claims, before uniquing."""
     for candidate in (payload.get("username"), payload.get("preferred_username")):
-        slug = _slugify_username(candidate or "")
+        slug = slugify_username(candidate or "")
         if slug:
             return slug
 
-    slug = _slugify_username(display_name)
+    slug = slugify_username(display_name)
     if slug:
         return slug
 
     email = payload.get("email") or ""
-    slug = _slugify_username(email.split("@")[0]) if email else ""
-    return slug or _slugify_username(clerk_id) or "player"
+    slug = slugify_username(email.split("@")[0]) if email else ""
+    return slug or slugify_username(clerk_id) or "player"
 
 
 def _unique_username(base: str) -> str:

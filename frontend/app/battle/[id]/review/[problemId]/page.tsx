@@ -241,9 +241,19 @@ export default function BattleProblemReviewPage() {
       setData(res.data);
       setError(null);
     } catch (e: unknown) {
-      const detail = (e as { response?: { data?: { detail?: string } } })?.response
-        ?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Could not load review.");
+      // A 404 here means the battle or problem is gone, and the API's generic
+      // "Not found." is not worth showing — say what the reader was looking for.
+      const response = (e as {
+        response?: { status?: number; data?: { detail?: string } };
+      })?.response;
+      const detail = response?.data?.detail;
+      setError(
+        response?.status === 404
+          ? "That battle or problem no longer exists."
+          : typeof detail === "string"
+            ? detail
+            : "Could not load review."
+      );
       setData(null);
     } finally {
       setLoading(false);
@@ -468,8 +478,10 @@ export default function BattleProblemReviewPage() {
           )}
           {!evalSummary && data?.my_reward && (
             <div style={{ color: "#00ff88" }}>
-              Saved reward: {data.my_reward.hp_damage_dealt} HP damage to opponent (
-              {data.my_reward.reward_type})
+              {/* `reward_type` is a Django enum value — "round_first_solve" was
+                  being printed to players verbatim. */}
+              First to solve this round — {data.my_reward.hp_damage_dealt} HP
+              damage to opponent
             </div>
           )}
         </div>

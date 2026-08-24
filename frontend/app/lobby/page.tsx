@@ -262,7 +262,12 @@ export default function LobbyPage() {
     } catch (err: any) {
       const status = err.response?.status;
       if (status === 404) {
-        setError("No player with that username — use the exact Django username (see leaderboard).");
+        // The old copy pointed at the leaderboard for "the exact Django
+        // username", but the leaderboard renders display names — so it named
+        // the one place the required value could not be found.
+        setError(
+          `No player called "${opponentUsername.trim()}". Pick a name from the leaderboard, or ask them for the @handle on their profile.`
+        );
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {
@@ -355,7 +360,7 @@ export default function LobbyPage() {
   const pendingReceived = requestHistory.filter(r => r.status === "pending" && r.direction === "received");
 
   return (
-    <div style={{ height: "100vh", background: "#000", color: "#eaeaea", fontFamily: "'Share Tech Mono', monospace", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ height: "100vh", background: "#000", color: "#eaeaea", fontFamily: "var(--font-share-tech-mono), 'Share Tech Mono', monospace", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ═══ INCOMING INVITE OVERLAY ═══ */}
       {incomingInvite && (
         <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)" }}>
@@ -483,7 +488,12 @@ export default function LobbyPage() {
             </form>
             {error && <p style={{ fontSize: 11, color: "#ff4444", marginTop: 12 }}>{error}</p>}
             {info && <p style={{ fontSize: 11, color: "#39FF14", marginTop: 12 }}>{info}</p>}
-            <p style={{ fontSize: 10, color: "#444", marginTop: 16 }}>TIP: Usernames are case-sensitive</p>
+            {/* Lookup is case-insensitive server-side, so the old "usernames are
+                case-sensitive" tip was both wrong and discouraging. Showing your
+                own handle is what actually unblocks the other player. */}
+            <p style={{ fontSize: 10, color: "#444", marginTop: 16, wordBreak: "break-all" }}>
+              Your handle: <span style={{ color: "#00E5FF" }}>@{djangoUser.username}</span> — share it to get challenged.
+            </p>
           </div>
 
           {/* Quote */}
@@ -508,17 +518,36 @@ export default function LobbyPage() {
               <div style={{ display: "flex", justifyContent: "center", padding: "30px 0" }}><TetrisLoading size="sm" speed="fast" loadingText="Syncing rankings..." /></div>
             ) : (
               <div>
-                {leaderboard.slice(0, 5).map((entry: LeaderboardEntry, idx: number) => (
-                  <div key={entry.username} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "10px 0" }}>
-                    <span style={{ fontSize: 12, color: "#777" }}>
-                      {String(idx + 1).padStart(2, "0")}.{" "}
-                      <ProfileHoverCard username={entry.username} wins={entry.total_wins} losses={entry.total_losses}>
-                        <span style={{ color: "#39FF14", cursor: "pointer", fontWeight: 500 }}>{entry.display_name}</span>
-                      </ProfileHoverCard>
-                    </span>
-                    <span style={{ fontSize: 11, color: "#555" }}>{entry.total_wins} W / {entry.total_losses} L</span>
-                  </div>
-                ))}
+                {/*
+                  The handle is shown next to the display name, and clicking a
+                  row fills the challenge box with it. Previously only the
+                  display name was rendered while the challenge box required the
+                  username, so the value a player needed appeared nowhere in the
+                  UI and every challenge by the visible name 404'd.
+                */}
+                {leaderboard.slice(0, 5).map((entry: LeaderboardEntry, idx: number) => {
+                  const isSelf = entry.username === djangoUser.username;
+                  return (
+                    <div key={entry.username} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "10px 0" }}>
+                      <span style={{ fontSize: 12, color: "#777", minWidth: 0 }}>
+                        {String(idx + 1).padStart(2, "0")}.{" "}
+                        <ProfileHoverCard username={entry.username} wins={entry.total_wins} losses={entry.total_losses}>
+                          <span style={{ color: "#39FF14", cursor: "pointer", fontWeight: 500 }}>{entry.display_name}</span>
+                        </ProfileHoverCard>
+                        <button
+                          type="button"
+                          disabled={isSelf}
+                          title={isSelf ? "That's you" : `Challenge @${entry.username}`}
+                          onClick={() => { setOpponentUsername(entry.username); setError(null); }}
+                          style={{ display: "block", marginTop: 2, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "transparent", border: "none", padding: 0, textAlign: "left", fontFamily: "inherit", fontSize: 10, color: isSelf ? "#444" : "#00E5FF", cursor: isSelf ? "default" : "pointer" }}
+                        >
+                          @{entry.username}{isSelf ? " (you)" : ""}
+                        </button>
+                      </span>
+                      <span style={{ fontSize: 11, color: "#555", flexShrink: 0 }}>{entry.total_wins} W / {entry.total_losses} L</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -7,7 +7,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.db.models import F, Q
 
-from battles.events import spectator_group
+from battles.events import reject_socket, spectator_group
 
 logger = logging.getLogger(__name__)
 
@@ -76,15 +76,15 @@ class SpectatorConsumer(AsyncJsonWebsocketConsumer):
 
         user = self.scope.get("user")
         if user is None or not user.is_authenticated:
-            await self.close(code=4401)
+            await reject_socket(self, 4401)
             return
 
         if not await _battle_is_watchable(self.battle_id):
-            await self.close(code=4404)
+            await reject_socket(self, 4404)
             return
 
         if await _is_participant(self.battle_id, user.id):
-            await self.close(code=4403)
+            await reject_socket(self, 4403)
             return
 
         self.username = user.display_name or user.username

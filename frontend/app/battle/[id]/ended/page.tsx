@@ -63,11 +63,19 @@ export default function BattleEndedPage() {
         setMe({ id: u.id, username: u.username });
         setData(res.data);
       })
-      .catch((err: { response?: { data?: { detail?: string } } }) => {
-        if (cancelled) return;
-        const d = err?.response?.data?.detail;
-        setError(typeof d === "string" ? d : "Could not load battle report.");
-      });
+      .catch(
+        (err: { response?: { status?: number; data?: { detail?: string } } }) => {
+          if (cancelled) return;
+          const d = err?.response?.data?.detail;
+          setError(
+            err?.response?.status === 404
+              ? "That battle report does not exist."
+              : typeof d === "string"
+                ? d
+                : "Could not load battle report."
+          );
+        }
+      );
     return () => {
       cancelled = true;
     };

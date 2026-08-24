@@ -26,25 +26,14 @@ export function ProfileHoverCard({ username, wins, losses, daily_activity, child
       api.get(`/api/profile/${username}/`)
         .then(res => {
           const data = res.data;
-          let daily = data.daily_activity || [];
-          // Fallback heatmap if API does not provide a year of data
-          if (!daily || daily.length < 364) {
-             daily = [];
-             const today = new Date();
-             for (let i = 0; i < 364; i++) {
-               const d = new Date(today);
-               d.setDate(today.getDate() - i);
-               daily.push({
-                 date: d.toISOString().slice(0, 10),
-                 count: Math.floor(Math.random() * 5)
-               });
-             }
-             daily = daily.reverse();
-          }
+          // The API does not serve activity history yet. This used to fill the
+          // gap with `Math.random()`, so every profile showed a year of
+          // convincing, entirely invented battle activity — including for
+          // brand-new accounts. An empty grid is the honest placeholder.
           setProfileData({
             wins: data.total_wins ?? 0,
             losses: data.total_losses ?? 0,
-            daily: daily
+            daily: data.daily_activity ?? []
           });
         })
         .catch(console.error);
@@ -52,7 +41,12 @@ export function ProfileHoverCard({ username, wins, losses, daily_activity, child
   }, [open, username, api, profileData]);
 
   // Ensure daily array is exactly 364 days for a 52x7 grid (52*7 = 364)
-  const heatmapDisplay = profileData?.daily.slice(-364) || Array(364).fill({ date: '', count: 0 });
+  const days = profileData?.daily.slice(-364) ?? [];
+  const heatmapDisplay =
+    days.length === 364
+      ? days
+      : [...Array(364 - days.length).fill({ date: '', count: 0 }), ...days];
+  const hasActivity = days.some((d) => d.count > 0);
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -83,7 +77,14 @@ export function ProfileHoverCard({ username, wins, losses, daily_activity, child
           <div className="relative p-5 text-[#111] flex flex-col items-center">
             {profileData ? (
               <>
-                <h2 className="text-xl font-bold uppercase tracking-widest text-[#222]">
+                {/* Clerk-derived handles run to ~30 characters. At text-xl with
+                    widest tracking they overflowed the fixed 320px card and were
+                    clipped at both edges, so the name was unreadable — which is
+                    the one thing this card exists to show. */}
+                <h2
+                  className="w-full text-center text-base font-bold uppercase tracking-wide text-[#222] break-all leading-tight"
+                  title={username}
+                >
                   @{username}
                 </h2>
                 <div className="text-[2.5rem] font-black mt-2 mb-4 tracking-tighter text-[#111] drop-shadow-md">
@@ -91,7 +92,12 @@ export function ProfileHoverCard({ username, wins, losses, daily_activity, child
                 </div>
                 
                 <div className="w-full mt-2">
-                  <div 
+                  {!hasActivity && (
+                    <div className="text-[9px] uppercase tracking-widest text-black/40 mb-1 text-center">
+                      No activity recorded
+                    </div>
+                  )}
+                  <div
                     className="grid gap-[2px] w-full"
                     style={{ gridTemplateColumns: "repeat(52, 1fr)" }}
                   >

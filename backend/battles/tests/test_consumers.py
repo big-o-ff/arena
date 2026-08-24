@@ -33,6 +33,22 @@ class AnonUser:
     id = None
 
 
+async def _assert_rejected(communicator, expected_code):
+    """
+    A refused socket must complete the handshake and *then* close with our code.
+
+    Closing before accepting denies the WebSocket upgrade, and a denied upgrade
+    carries no close frame: browsers report 1006 regardless of the code passed
+    server-side. The client then cannot distinguish a policy refusal from a
+    flaky network, so it hides the real reason and reconnects forever.
+    """
+    connected, _ = await communicator.connect()
+    assert connected is True, "handshake must complete for the code to be deliverable"
+    message = await communicator.receive_output(timeout=2)
+    assert message["type"] == "websocket.close"
+    assert message["code"] == expected_code
+
+
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 class TestBattleConsumerAccess:
@@ -44,15 +60,11 @@ class TestBattleConsumerAccess:
 
     async def test_outsiders_are_rejected(self, battle, outsider):
         communicator = _communicator(BattleConsumer, battle.id, outsider)
-        connected, code = await communicator.connect()
-        assert connected is False
-        assert code == 4403
+        await _assert_rejected(communicator, 4403)
 
     async def test_anonymous_is_rejected(self, battle):
         communicator = _communicator(BattleConsumer, battle.id, AnonUser())
-        connected, code = await communicator.connect()
-        assert connected is False
-        assert code == 4401
+        await _assert_rejected(communicator, 4401)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -63,15 +75,11 @@ class TestSpectatorConsumerAccess:
     ):
         """The exploit: watching your own match showed the opponent's code."""
         communicator = _communicator(SpectatorConsumer, battle.id, player1)
-        connected, code = await communicator.connect()
-        assert connected is False
-        assert code == 4403
+        await _assert_rejected(communicator, 4403)
 
     async def test_anonymous_cannot_spectate(self, battle):
         communicator = _communicator(SpectatorConsumer, battle.id, AnonUser())
-        connected, code = await communicator.connect()
-        assert connected is False
-        assert code == 4401
+        await _assert_rejected(communicator, 4401)
 
     async def test_a_third_party_can_spectate(self, battle, outsider):
         communicator = _communicator(SpectatorConsumer, battle.id, outsider)

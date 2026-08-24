@@ -5,7 +5,7 @@ import logging
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from .events import code_activity, player_group, spectator_group
+from .events import code_activity, player_group, reject_socket, spectator_group
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +45,13 @@ class BattleConsumer(AsyncJsonWebsocketConsumer):
 
         user = self.scope.get("user")
         if user is None or not user.is_authenticated:
-            await self.close(code=4401)  # unauthenticated
+            await reject_socket(self, 4401)  # unauthenticated
             return
 
         self.user_id = user.id
         self.role = await _battle_role(self.battle_id, user.id)
         if self.role is None:
-            await self.close(code=4403)  # not a participant
+            await reject_socket(self, 4403)  # not a participant
             return
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)

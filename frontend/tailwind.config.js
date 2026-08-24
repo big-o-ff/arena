@@ -17,7 +17,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        mono: ['"JetBrains Mono"', '"Fira Code"', "monospace"]
+        // The variable is supplied by next/font in app/layout.tsx.
+        mono: ["var(--font-jetbrains-mono)", '"JetBrains Mono"', '"Fira Code"', "monospace"]
       }
     }
   },

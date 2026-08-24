@@ -25,6 +25,21 @@ from channels.layers import get_channel_layer
 logger = logging.getLogger(__name__)
 
 
+async def reject_socket(consumer, code: int) -> None:
+    """
+    Refuse a connection with a close code the *browser* can actually read.
+
+    Calling `close()` before `accept()` denies the WebSocket handshake, and a
+    denied handshake carries no close frame — every browser surfaces 1006
+    instead of the code we passed. The client then cannot tell "not a
+    participant" from a flaky network, so it hides the real reason and
+    reconnects forever. Accepting first costs one round trip and makes the code
+    visible to `onclose`.
+    """
+    await consumer.accept()
+    await consumer.close(code=code)
+
+
 def player_group(battle_id: int | str) -> str:
     return f"battle_{battle_id}"
 

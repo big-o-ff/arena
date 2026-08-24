@@ -4,6 +4,8 @@ import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
+from battles.events import reject_socket
+
 logger = logging.getLogger(__name__)
 
 ADMIN_ROLES = ("admin", "superadmin")
@@ -20,7 +22,7 @@ class LobbyConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         user = self.scope.get("user")
         if user is None or not user.is_authenticated:
-            await self.close(code=4401)
+            await reject_socket(self, 4401)
             return
 
         self.user_group = f"user_{user.id}"

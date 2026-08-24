@@ -47,6 +47,8 @@ export default function SpectateBattlePage() {
     Record<number, SampleRunPayload>
   >({});
   const [socketStatus, setSocketStatus] = useState<SocketStatus>("connecting");
+  /** Why the server refused the stream — 4403 participant, 4404 not watchable. */
+  const [refusedCode, setRefusedCode] = useState<number | null>(null);
 
   useEffect(() => {
     if (!battleId) return;
@@ -136,6 +138,7 @@ export default function SpectateBattlePage() {
     getUrl,
     onMessage: handleMessage,
     onStatusChange: setSocketStatus,
+    onFatalClose: setRefusedCode,
   });
 
   const sendLike = () => {
@@ -206,13 +209,20 @@ export default function SpectateBattlePage() {
           padding: "24px",
         }}
       >
-        <p>You can&apos;t spectate this battle.</p>
+        <p>
+          {refusedCode === 4404
+            ? "This battle isn't available to watch."
+            : "You can't spectate this battle."}
+        </p>
         <p style={{ fontSize: "12px", color: "rgba(200,211,224,0.35)", maxWidth: 380 }}>
-          Players can&apos;t watch their own match — that would show you your
-          opponent&apos;s code. Head back to your battle instead.
+          {refusedCode === 4403
+            ? "Players can't watch their own match — the live feed shows both players' code. Head back to your battle instead."
+            : refusedCode === 4404
+              ? "It may have already finished, or the link is wrong."
+              : "Your session isn't valid for this stream. Try signing in again."}
         </p>
         <Link
-          href="/lobby"
+          href={refusedCode === 4403 ? `/battle/${battleId}` : "/spectate"}
           style={{
             marginTop: "4px",
             border: "1px solid rgba(0,255,136,0.35)",
@@ -224,7 +234,7 @@ export default function SpectateBattlePage() {
             fontFamily: "monospace",
           }}
         >
-          Back to lobby
+          {refusedCode === 4403 ? "Go to your battle" : "Back to spectate lobby"}
         </Link>
       </div>
     );

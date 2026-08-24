@@ -19,6 +19,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .authentication import slugify_username
 from .models import User
 from .serializers import UserProfileSerializer
 
@@ -30,6 +31,14 @@ class ProfileView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     lookup_field = "username"
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # Usernames are stored slugified-lowercase, so an exact-match lookup made
+        # the challenge box reject the very name the leaderboard displays the
+        # moment a player typed it with its original capitalisation.
+        return generics.get_object_or_404(
+            self.get_queryset(), username__iexact=self.kwargs["username"]
+        )
 
 
 class LeaderboardView(generics.ListAPIView):
@@ -83,7 +92,16 @@ class AuthMeView(APIView):
         if not name_slug and email:
             name_slug = re.sub(r"[^a-z0-9]", "", email.split("@")[0].lower())
 
-        username_is_placeholder = user.username == user.clerk_id
+        # A first-sight user gets `slugify_username(clerk_id)` when the session
+        # JWT carries no name/email claims — which is the default for Clerk OAuth
+        # sessions. Comparing against the raw clerk_id alone never matched that,
+        # so every such account kept "user3ezl8ghujxekce5o00c404u4qzv" forever:
+        # unreadable on the leaderboard and impossible for an opponent to type
+        # into the challenge box.
+        username_is_placeholder = user.username in (
+            user.clerk_id,
+            slugify_username(user.clerk_id),
+        )
         display_is_placeholder = (
             not user.display_name
             or str(user.display_name).startswith("Player_")

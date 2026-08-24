@@ -30,6 +30,11 @@ type Options = {
   getUrl: () => Promise<string | null>;
   onMessage: (data: unknown) => void;
   onStatusChange?: (status: SocketStatus) => void;
+  /**
+   * Called with the close code when the server refuses the connection outright
+   * (4401/4403/4404), so the UI can say *why* rather than just "unavailable".
+   */
+  onFatalClose?: (code: number) => void;
   /** Set false to tear the socket down (e.g. while signed out). */
   enabled?: boolean;
 };
@@ -38,6 +43,7 @@ export function useReconnectingSocket({
   getUrl,
   onMessage,
   onStatusChange,
+  onFatalClose,
   enabled = true,
 }: Options): { send: (data: unknown) => boolean } {
   const socketRef = useRef<WebSocket | null>(null);
@@ -46,10 +52,12 @@ export function useReconnectingSocket({
   const getUrlRef = useRef(getUrl);
   const onMessageRef = useRef(onMessage);
   const onStatusChangeRef = useRef(onStatusChange);
+  const onFatalCloseRef = useRef(onFatalClose);
   useEffect(() => {
     getUrlRef.current = getUrl;
     onMessageRef.current = onMessage;
     onStatusChangeRef.current = onStatusChange;
+    onFatalCloseRef.current = onFatalClose;
   });
 
   useEffect(() => {
@@ -139,6 +147,7 @@ export function useReconnectingSocket({
 
         if (FATAL_CLOSE_CODES.has(event.code)) {
           setStatus("closed");
+          if (!cancelled) onFatalCloseRef.current?.(event.code);
           return;
         }
         scheduleReconnect();

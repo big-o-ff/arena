@@ -317,7 +317,7 @@ class MyActiveBattleView(views.APIView):
         if maybe_finalize_expired_battle(battle.id):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response(BattleSerializer(battle).data)
+        return Response(BattleSerializer(battle, context={"request": request}).data)
 
 
 class BattleStateView(views.APIView):
@@ -338,7 +338,7 @@ class BattleStateView(views.APIView):
                 {"detail": "You are not a participant in this battle."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        return Response(BattleSerializer(battle).data)
+        return Response(BattleSerializer(battle, context={"request": request}).data)
 
 
 class BattleResignView(views.APIView):
@@ -385,7 +385,7 @@ class BattleResignView(views.APIView):
             ),
             pk=pk,
         )
-        return Response(BattleSerializer(battle).data)
+        return Response(BattleSerializer(battle, context={"request": request}).data)
 
 
 class BattleEndedSummaryView(views.APIView):

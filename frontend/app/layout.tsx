@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { ReactNode } from "react";
+import { JetBrains_Mono, Share_Tech_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import ClientShell from "./ClientShell";
@@ -11,13 +12,30 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+/*
+ * Both faces were previously declared through `metadata.other`, which emits
+ * <meta name="rel"> / <meta name="url"> — inert. Neither font ever loaded, so
+ * the app fell back to the platform's default monospace everywhere despite
+ * globals.css and the Tailwind theme both naming these families. `next/font`
+ * self-hosts them, so there is no render-blocking third-party request either.
+ */
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+const shareTechMono = Share_Tech_Mono({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-share-tech-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Big O'ff",
   description: "gamified dsa platform",
-  other: {
-    rel: "stylesheet",
-    url: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap",
-  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -47,7 +65,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         },
       }}
     >
-      <html lang="en">
+      <html
+        lang="en"
+        className={`${jetbrainsMono.variable} ${shareTechMono.variable}`}
+      >
         <body className="relative min-h-screen bg-noir-bg font-mono text-noir-terminal">
           <ClientShell>{children}</ClientShell>
         </body>
