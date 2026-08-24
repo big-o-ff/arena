@@ -651,15 +651,30 @@ html {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* The hero cube is the product's identity, not incidental motion — it keeps
+     its slow spin/float. Everything else still honours the preference. */
+  .logo-3d {
+    animation: logo-float 6s ease-in-out infinite,
+      logo-spin 20s linear infinite !important;
+    animation-duration: 6s, 20s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
 
-/* Target the main Clerk card */
+/* Target the main Clerk card. The border lives on .cl-cardBox, not .cl-card —
+   the footer ("Sign up", dev badge) is a sibling of .cl-card, so bordering the
+   card alone leaves the frame open at the bottom. No translateZ(0) here:
+   backdrop-filter already promotes the layer, and the extra transform rounds
+   the layer width down a subpixel, clipping the 1px right border off. */
+.cl-cardBox {
+  border: 1px solid var(--terminal-green) !important;
+}
+
 .cl-card {
   -webkit-backdrop-filter: blur(20px) !important;
   backdrop-filter: blur(20px) !important;
   background-color: rgba(0, 0, 0, 0.75) !important;
-  border: 1px solid var(--terminal-green) !important;
-  transform: translateZ(0);
 }
 
 .cl-formButtonPrimary {
