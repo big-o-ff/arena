@@ -24,7 +24,8 @@ type EndedSummary = {
   player2_rating_change: number;
   problems_solved: number;
   fastest_solve_time_ms: number | null;
-  share_url: string;
+  /** Absent until a share-card endpoint exists server-side; the link is hidden without it. */
+  share_url?: string | null;
 };
 
 function reasonLabel(
@@ -134,9 +135,11 @@ export default function BattleEndedPage() {
   const oppName = iAmP1 ? data.player2.display_name : data.player1.display_name;
   const won = data.winner_id === me.id;
   const draw = data.winner_id == null;
-  const shareHref = data.share_url.startsWith("http")
-    ? data.share_url
-    : `${API_BASE}${data.share_url}`;
+  const shareHref = !data.share_url
+    ? null
+    : data.share_url.startsWith("http")
+      ? data.share_url
+      : `${API_BASE}${data.share_url}`;
 
   return (
     <div
@@ -207,24 +210,26 @@ export default function BattleEndedPage() {
           )}
         </div>
 
-        <a
-          href={shareHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "block",
-            textAlign: "center",
-            padding: "10px",
-            marginBottom: "12px",
-            border: "1px solid rgba(0,255,136,0.35)",
-            borderRadius: "6px",
-            color: "#00ff88",
-            fontSize: "12px",
-            textDecoration: "none",
-          }}
-        >
-          Open share card
-        </a>
+        {shareHref && (
+          <a
+            href={shareHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block",
+              textAlign: "center",
+              padding: "10px",
+              marginBottom: "12px",
+              border: "1px solid rgba(0,255,136,0.35)",
+              borderRadius: "6px",
+              color: "#00ff88",
+              fontSize: "12px",
+              textDecoration: "none",
+            }}
+          >
+            Open share card
+          </a>
+        )}
 
         <Link
           href="/lobby"
