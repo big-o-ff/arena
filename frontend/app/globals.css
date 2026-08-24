@@ -13,7 +13,7 @@
   --noir-border: #1a1a1a;
   --lobby-surface: #0d1117;
   --lobby-border: #1a1f2b;
-  --logo-size: clamp(10rem, 20vw, 17.5rem);
+  --logo-size: clamp(7.5rem, 15vw, 13rem);
   --logo-depth: calc(var(--logo-size) / 2);
 }
 
@@ -117,7 +117,7 @@ input[type="radio"] {
   justify-content: center;
   min-height: 100vh;
   padding: clamp(1rem, 5vw, 2rem);
-  gap: clamp(3rem, 10vw, 7rem);
+  gap: clamp(2rem, 7vw, 5rem);
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
@@ -287,9 +287,9 @@ input[type="radio"] {
 
 .cyber-button {
   position: relative;
-  padding: 1.2rem 2.5rem;
+  padding: 0.9rem 2rem;
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.125rem;
