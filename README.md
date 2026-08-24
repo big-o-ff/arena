@@ -34,22 +34,6 @@ cp .env.example .env       # then fill in the required values
 python3 manage.py migrate
 ```
 
-Two variables in `backend/.env` have no defaults and the app will not start
-without them:
-
-- `DJANGO_SECRET_KEY` — generate with
-  `python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"`
-- `CLERK_ISSUER` — your Clerk Frontend API origin, e.g.
-  `https://your-app.clerk.accounts.dev`. Session tokens are verified against
-  this issuer's JWKS; the server will not accept a token it cannot verify.
-
-`migrate` seeds 12 judgeable problems (four per difficulty), which is all you
-need to play. To load additional problems from a JSON file:
-
-```bash
-python3 manage.py import_problems path/to/problems.json
-```
-
 ### 2) Frontend
 
 ```bash
@@ -58,42 +42,38 @@ npm install
 cp .env.local.example .env.local   # then fill in your Clerk keys
 ```
 
-## Run Locally (4 Terminals)
+### Run Locally (4 Terminals)
 
-### Terminal A - Backend API + WebSockets
+Terminal A - Backend API + WebSockets
 
 ```bash
 cd backend
 source .venv/bin/activate
 daphne -b 127.0.0.1 -p 8000 config.asgi:application
 ```
-
-### Terminal B - Celery Worker
+Terminal B - Celery Worker
 
 ```bash
 cd backend
 source .venv/bin/activate
 celery -A config worker -l info -Q execution,events
 ```
-
-### Terminal C - Redis
+Terminal C - Redis
 
 ```bash
 redis-server
 ```
-
-### Terminal D - Frontend
+Terminal D - Frontend
 
 ```bash
 cd frontend
 npm run dev -- --hostname 0.0.0.0 --port 3000
 ```
-
 Open: `http://localhost:3000`
 
 ---
 
-## Quick Health Checks
+#### Quick Health Checks
 
 - Backend API:
   ```bash
@@ -109,7 +89,7 @@ Open: `http://localhost:3000`
 
 ---
 
-## Common Issues
+#### Common Issues
 
 - **`Address already in use` (8000/3000/6379):** Another process is already running on that port. Stop it first.
 - **Spectate/live updates not working:** Ensure you are running **Daphne** (ASGI), not only `runserver`.
@@ -127,7 +107,7 @@ Open: `http://localhost:3000`
   `CLERK_ISSUER` is unset or wrong. Decode a session token from the browser and check that its `iss` claim matches exactly. Unverifiable tokens are rejected rather than trusted.
 - **Spectate page says you can't watch:** Players can't spectate their own match: that would show them their opponent's code. Sign in as someone else, or use the battle page.
 
-## Tests
+#### Tests
 
 ```bash
 cd backend
@@ -143,7 +123,7 @@ cd frontend && npx tsc --noEmit
 ```
 ---
 
-### Notes
+#### Notes
 - Battles are time-bound. Finalisation is idempotent and happens on whichever comes first: the Celery timeout task, an HP wipe, a resignation, or the next state read after `ends_at`, so matches still end without a worker running.
 - Submissions are judged on the Celery `execution` queue. Without a worker the API falls back to judging inline, which is slower but correct.
 - Code execution is not sandboxed. `battles/execution.py` scrubs the environment, caps resources and kills the process group on timeout, but the child still shares the host kernel, filesystem and network. Before exposing this to untrusted users, move execution into a container run with `--network=none --read-only --pids-limit --memory`, or a gVisor/Firecracker
